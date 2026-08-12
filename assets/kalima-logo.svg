@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Kalima">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4C6BFF"/>
+      <stop offset="100%" stop-color="#6A3BFF"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="512" height="512" rx="116" fill="url(#bg)"/>
+
+  <!-- علامة الكتاب -->
+  <path fill="#FFFFFF"
+        d="M168 157c0-16 13-29 29-29h118c16 0 29 13 29 29v243c0 6.6-7.4 10.5-12.9 6.8L256 358.5l-75.1 48.3c-5.5 3.7-12.9-.2-12.9-6.8V157z"/>
+
+  <!-- الساق -->
+  <path stroke="#4257F5" stroke-width="15" stroke-linecap="round" fill="none"
+        d="M256 322V196"/>
+
+  <!-- الورقة اليمنى -->
+  <path fill="#4257F5"
+        d="M258 250 Q318.6 253.6 330 194 Q269.4 190.4 258 250 Z"/>
+
+  <!-- الورقة اليسرى -->
+  <path fill="#4257F5"
+        d="M254 289 Q241.7 237.7 189 241 Q201.3 292.3 254 289 Z"/>
+</svg>

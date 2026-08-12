@@ -1,0 +1,70 @@
+{
+  "expo": {
+    "name": "كلمة",
+    "slug": "kalima",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "kalima",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#3B5BFF"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.kalima.vocab",
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true,
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "app.kalima.vocab",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#3B5BFF"
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#3B5BFF",
+          "image": "./assets/splash.png",
+          "imageWidth": 180
+        }
+      ],
+      "expo-status-bar",
+      "expo-image",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "كلمة بتحتاج إذن الوصول لصورك عشان تختار صورة البروفايل بتاعتك.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      "expo-sharing"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "baef4c47-79f1-4626-804c-962615b7309c"
+      },
+      "router": {}
+    },
+    "owner": "ibrahem-hasaan"
+  }
+}

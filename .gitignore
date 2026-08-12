@@ -1,0 +1,34 @@
+node_modules/
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# الأسرار — لا ترفع هذا الملف أبدًا
+.env
+.env.local
+.env.*.local
+
+# native
+/ios
+/android
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# نظام التشغيل والمحررات
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.*
+yarn-debug.*
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Supabase CLI
+supabase/.branches
+supabase/.temp

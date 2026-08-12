@@ -1,0 +1,9 @@
+project_id = "kalima"
+
+[functions.enrich-word]
+verify_jwt = true
+entrypoint = "./functions/enrich-word/index.ts"
+
+[functions.delete-account]
+verify_jwt = true
+entrypoint = "./functions/delete-account/index.ts"
