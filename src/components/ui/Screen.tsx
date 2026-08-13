@@ -40,25 +40,33 @@ export function Screen({
     <View style={[{ flex: 1, backgroundColor: colors.bg }, style]}>
       <StatusBar style={isDark ? "light" : "dark"} />
 
-      {/* ambient background — subtle, never competes with content */}
+      {/*
+        Ambient background. The gradient's last stop is the page background
+        itself and it fades out over its final third, so there is no hard
+        horizontal line where it stops — that seam was reading as a random
+        grey/white split across the screen.
+      */}
       <LinearGradient
-        colors={[colors.bgTop, colors.bgBottom]}
-        style={{ position: "absolute", top: 0, left: 0, right: 0, height: 420 }}
+        colors={[colors.bgTop, colors.bgBottom, colors.bg]}
+        locations={[0, 0.55, 1]}
+        style={{ position: "absolute", top: 0, left: 0, right: 0, height: 520 }}
+        pointerEvents="none"
       />
       {glow ? (
         <LinearGradient
           colors={[colors.brandSoft, "transparent"]}
-          start={{ x: 0.1, y: 0 }}
-          end={{ x: 0.9, y: 1 }}
+          start={{ x: 0.2, y: 0 }}
+          end={{ x: 0.85, y: 1 }}
           style={{
             position: "absolute",
-            top: -120,
-            left: -80,
-            width: 380,
-            height: 380,
-            borderRadius: 190,
-            opacity: isDark ? 0.9 : 0.7,
+            top: -160,
+            left: -110,
+            width: 420,
+            height: 420,
+            borderRadius: 210,
+            opacity: isDark ? 0.8 : 0.55,
           }}
+          pointerEvents="none"
         />
       ) : null}
 

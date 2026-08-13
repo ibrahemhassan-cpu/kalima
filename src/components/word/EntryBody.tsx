@@ -48,8 +48,6 @@ export function EntryBody({ entry }: { entry: DictionaryEntry }) {
             <View
               style={{
                 backgroundColor: colors.brandSoft,
-                borderWidth: 1,
-                borderColor: colors.brandBorder,
                 padding: spacing.lg,
                 borderRadius: radius.lg,
                 gap: spacing.xs,

@@ -128,8 +128,6 @@ export const RelatedWordSheet = forwardRef<RelatedSheetRef>(
                 <View
                   style={{
                     backgroundColor: colors.brandSoft,
-                    borderWidth: 1,
-                    borderColor: colors.brandBorder,
                     borderRadius: radius.lg,
                     padding: spacing.lg,
                     gap: spacing.xs,

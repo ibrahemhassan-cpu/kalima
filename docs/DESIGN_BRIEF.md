@@ -29,12 +29,14 @@ mascots, no gradients on text.
 
 LIGHT THEME PALETTE
   Page background        #F6F7FB
-  Ambient gradient       #FFFFFF (top) → #EFF1F8 (bottom), top 420px only
+  Ambient gradient       #FFFFFF → #F6F7FB, top 520px, fading into the page
   Accent glow            radial #5B5BF5 at 10% opacity, top-left corner
-  Glass card fill        white at 66% opacity + background blur
+  Card fill              #FFFFFF (opaque). On iOS only, cards may use a
+                         frosted blur at 72% white; never on Android.
   Solid card             #FFFFFF
   Sunken / track         #ECEEF5
-  Hairline border        rgba(11,13,20,0.07)
+  Hairline border        rgba(11,13,20,0.06) — LIGHT MODE USES NO CARD BORDER,
+                         separation comes from the shadow alone
   Strong border          rgba(11,13,20,0.14)
   Primary text           #0B0D14
   Secondary text         #5C6373
@@ -95,7 +97,8 @@ CORE COMPONENTS
   Primary button — 56px tall, radius 14, linear gradient #5B5BF5 → #8B5CF6
                    (135°), white 16px/600 label, coloured glow beneath.
   Secondary button — same size, white-glass fill, hairline border, dark label.
-  Glass card — radius 20–36, white 66% + blur, hairline border, soft shadow.
+  Card — radius 20–36, opaque white fill, NO border in light mode, soft shadow.
+         In dark mode: no shadow, a single hairline border instead.
   Badge / chip — pill, tinted fill at ~10%, matching text colour, 13px/600,
                  optional 13px outline icon on the leading side.
   Bottom sheet — radius 36 top corners, 40×4px grey drag handle, dark
@@ -106,6 +109,7 @@ CORE COMPONENTS
 RULES
   • Arabic text renders right-to-left; English words always left-to-right.
   • State is never conveyed by colour alone — always icon + text as well.
+  • Never nest a bordered box inside a bordered card.
   • No emoji in the UI.
 ```
 

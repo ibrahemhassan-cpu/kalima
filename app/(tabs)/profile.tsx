@@ -52,7 +52,8 @@ export default function ProfileTab() {
   const span = Math.max(1, (summary?.xp_to_next ?? 0) + inLevel);
 
   return (
-    <Screen scroll>
+    <>
+      <Screen scroll>
       <Header title={t("tabs.profile")} />
 
       <Enter>
@@ -170,6 +171,8 @@ export default function ProfileTab() {
         {t("app.version", { v: "0.1.0" })}
       </Text>
 
+      </Screen>
+
       <Sheet ref={sheet}>
         <ConfirmBody
           title={t("sheet.signOutTitle")}
@@ -184,7 +187,7 @@ export default function ProfileTab() {
           }}
         />
       </Sheet>
-    </Screen>
+    </>
   );
 }
 

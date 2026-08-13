@@ -3,6 +3,7 @@ import { ActivityIndicator, View } from "react-native";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as SplashScreen from "expo-splash-screen";
 
@@ -34,7 +35,10 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <ThemeProvider>
-              <RouteGate />
+              {/* portals every bottom sheet above the whole app */}
+              <BottomSheetModalProvider>
+                <RouteGate />
+              </BottomSheetModalProvider>
             </ThemeProvider>
           </AuthProvider>
         </QueryClientProvider>

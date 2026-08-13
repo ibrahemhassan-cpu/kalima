@@ -11,23 +11,26 @@ export type SurfaceProps = {
   tone?: Tone;
   elevation?: Elevation;
   padded?: boolean | number;
+  /** force a hairline on/off; by default it follows the theme (see below) */
   bordered?: boolean;
   radiusKey?: "sm" | "md" | "lg" | "xl" | "xxl" | "pill";
   style?: StyleProp<ViewStyle>;
 };
 
 /**
- * The one container primitive.
- *
- * `glass` uses a real backdrop blur where the platform supports it and falls
- * back to a translucent fill elsewhere — so it never looks broken.
+ * Real backdrop blur only exists on iOS. On Android expo-blur falls back to a
+ * flat translucent overlay that reads as dirty grey, and its edge fights the
+ * hairline border, which is what made every card look like it had a strange
+ * inner outline. So: blur on iOS, a clean opaque fill everywhere else.
  */
+const CAN_BLUR = Platform.OS === "ios";
+
 export function Surface({
   children,
   tone = "glass",
   elevation = "sm",
   padded = true,
-  bordered = true,
+  bordered,
   radiusKey = "lg",
   style,
 }: SurfaceProps) {
@@ -36,10 +39,17 @@ export function Surface({
   const pad =
     padded === false ? 0 : padded === true ? spacing.lg : (padded as number);
 
+  /**
+   * Light mode separates cards with shadow; dark mode has no usable shadow so
+   * it separates them with a hairline. Drawing both at once is what produced
+   * the muddy double edge.
+   */
+  const showBorder = bordered ?? (isDark || tone === "brand");
+
   const base: StyleProp<ViewStyle> = [
     {
       borderRadius: radius[radiusKey],
-      borderWidth: bordered ? 1 : 0,
+      borderWidth: showBorder ? 1 : 0,
       borderColor: tone === "brand" ? colors.brandBorder : colors.border,
       overflow: "hidden",
     },
@@ -47,18 +57,17 @@ export function Surface({
     style,
   ];
 
-  const inner: ViewStyle = { padding: pad, backgroundColor: "transparent" };
+  const inner: ViewStyle = { padding: pad };
 
   if (tone === "clear") {
     return <View style={[base, inner]}>{children}</View>;
   }
 
-  // Only use BlurView on iOS where native backdrop blur works flawlessly without creating opaque block artifacts
-  if (tone === "glass" && Platform.OS === "ios") {
+  if (tone === "glass" && CAN_BLUR) {
     return (
       <View style={base}>
         <BlurView
-          intensity={isDark ? 28 : 45}
+          intensity={isDark ? 30 : 46}
           tint={colors.blurTint}
           style={[inner, { backgroundColor: colors.glass }]}
         >
@@ -69,7 +78,8 @@ export function Surface({
   }
 
   const fill = {
-    glass: colors.glassStrong,
+    // opaque on Android/web so cards read as clean panels, not grey haze
+    glass: colors.card,
     solid: colors.solid,
     raised: colors.raised,
     sunken: colors.sunken,

@@ -29,7 +29,7 @@ export function Badge({
   const { colors, radius, spacing } = useTheme();
 
   const map: Record<Tone, { bg: string; fg: string; bd: string }> = {
-    neutral: { bg: colors.sunken, fg: colors.textMuted, bd: colors.border },
+    neutral: { bg: colors.sunken, fg: colors.textMuted, bd: "transparent" },
     brand: { bg: colors.brandSoft, fg: colors.brand, bd: colors.brandBorder },
     success: { bg: colors.successSoft, fg: colors.success, bd: "transparent" },
     danger: { bg: colors.dangerSoft, fg: colors.danger, bd: "transparent" },

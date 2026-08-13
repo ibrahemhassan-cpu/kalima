@@ -15,7 +15,7 @@ export function WordCard({
   row: MyWordRow;
   onPress: () => void;
 }) {
-  const { colors, spacing, radius, shadow, minTouch } = useTheme();
+  const { colors, spacing, radius, shadow, minTouch, isDark } = useTheme();
   const { t } = useTranslation();
 
   return (
@@ -31,9 +31,10 @@ export function WordCard({
           gap: spacing.md,
           padding: spacing.lg,
           borderRadius: radius.lg,
-          borderWidth: 1,
+          // shadow in light, hairline in dark — never both
+          borderWidth: isDark ? 1 : 0,
           borderColor: colors.border,
-          backgroundColor: colors.glassStrong,
+          backgroundColor: colors.card,
         },
         shadow.sm,
       ]}
@@ -76,8 +77,6 @@ export function WordCard({
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: colors.brandSoft,
-          borderWidth: 1,
-          borderColor: colors.brandBorder,
         }}
       >
         <Ionicons name="volume-high" size={19} color={colors.brand} />

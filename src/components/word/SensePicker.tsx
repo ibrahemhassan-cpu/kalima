@@ -62,9 +62,11 @@ export function SensePicker({
                     paddingVertical: spacing.md,
                     paddingHorizontal: spacing.lg,
                     borderRadius: radius.md,
-                    borderWidth: active ? 2 : 1,
-                    borderColor: active ? colors.brand : colors.border,
-                    backgroundColor: active ? colors.brandSoft : colors.solid,
+                    // no hairline on the inactive rows: a bordered box inside
+                    // a bordered card is what reads as a stray inner outline
+                    borderWidth: active ? 1.5 : 0,
+                    borderColor: active ? colors.brand : "transparent",
+                    backgroundColor: active ? colors.brandSoft : colors.sunken,
                   }}
                 >
                   <View style={{ flex: 1, gap: 2 }}>

@@ -1,7 +1,6 @@
 import React from "react";
 import { View } from "react-native";
 import { useTranslation } from "react-i18next";
-import Animated, { FadeIn } from "react-native-reanimated";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useSettings } from "@/store/settings";
 import { setLanguage } from "@/i18n/rtl";
@@ -9,11 +8,19 @@ import { Text } from "./Text";
 import { Touchable } from "./Touchable";
 
 /**
- * One-tap language switch. Lives in every screen header.
- * Instant — no reload, no restart.
+ * One-tap language switch, in every screen header. Instant — no reload.
+ *
+ * Both the track and the active thumb use fixed heights with
+ * `overflow: hidden`. Android clips a rounded background to the *view* bounds
+ * only when the corner radius can be resolved against a known height; with an
+ * auto height it quietly squares the corners off, which is why the purple pill
+ * used to lose its rounding the moment it became active.
  */
+const TRACK_H = 36;
+const THUMB_H = TRACK_H - 8;
+
 export function LanguageToggle({ compact }: { compact?: boolean }) {
-  const { colors, radius, spacing, minTouch } = useTheme();
+  const { colors } = useTheme();
   const { t, i18n } = useTranslation();
   const setStoredLanguage = useSettings((s) => s.setLanguage);
 
@@ -29,17 +36,20 @@ export function LanguageToggle({ compact }: { compact?: boolean }) {
     <Touchable
       onPress={toggle}
       haptic="select"
+      scaleTo={0.95}
       accessibilityRole="button"
       accessibilityLabel={t("a11y.switchLanguage")}
+      accessibilityValue={{ text: current === "ar" ? "العربية" : "English" }}
       style={{
         flexDirection: "row",
         alignItems: "center",
-        height: compact ? 36 : minTouch - 8,
+        height: TRACK_H,
         paddingHorizontal: 4,
-        borderRadius: radius.pill,
+        borderRadius: TRACK_H / 2,
         borderWidth: 1,
         borderColor: colors.border,
-        backgroundColor: colors.glassStrong,
+        backgroundColor: colors.sunken,
+        overflow: "hidden",
       }}
     >
       <Pill label="EN" active={current === "en"} />
@@ -49,35 +59,30 @@ export function LanguageToggle({ compact }: { compact?: boolean }) {
 }
 
 function Pill({ label, active }: { label: string; active: boolean }) {
-  const { colors, radius, spacing } = useTheme();
+  const { colors } = useTheme();
   return (
     <View
       style={{
-        paddingHorizontal: spacing.md,
-        paddingVertical: 5,
-        borderRadius: radius.pill,
-        backgroundColor: active ? colors.brand : "transparent",
+        height: THUMB_H,
         minWidth: 34,
+        paddingHorizontal: 10,
         alignItems: "center",
+        justifyContent: "center",
+        borderRadius: THUMB_H / 2,
+        overflow: "hidden",
+        backgroundColor: active ? colors.brand : "transparent",
       }}
     >
-      {active ? (
-        <Animated.View entering={FadeIn.duration(160)}>
-          <Text
-            variant="label"
-            style={{ color: colors.onBrand, writingDirection: "ltr" }}
-          >
-            {label}
-          </Text>
-        </Animated.View>
-      ) : (
-        <Text
-          variant="label"
-          style={{ color: colors.textFaint, writingDirection: "ltr" }}
-        >
-          {label}
-        </Text>
-      )}
+      <Text
+        variant="label"
+        style={{
+          color: active ? colors.onBrand : colors.textMuted,
+          writingDirection: "ltr",
+          includeFontPadding: false,
+        }}
+      >
+        {label}
+      </Text>
     </View>
   );
 }

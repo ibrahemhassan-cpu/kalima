@@ -77,7 +77,8 @@ export default function SessionResult() {
   }
 
   return (
-    <Screen scroll>
+    <>
+      <Screen scroll>
       <View style={{ alignItems: "center", gap: spacing.lg, paddingTop: spacing.xxl }}>
         {/* Animated Green Checkmark Circle matching Screen 8 */}
         <Animated.View entering={ZoomIn.duration(450).springify().damping(12)}>
@@ -183,6 +184,7 @@ export default function SessionResult() {
         />
       </View>
 
+      </Screen>
       <Sheet ref={permSheet}>
         <View style={{ gap: spacing.lg }}>
           <View
@@ -226,7 +228,7 @@ export default function SessionResult() {
           </View>
         </View>
       </Sheet>
-    </Screen>
+    </>
   );
 }
 

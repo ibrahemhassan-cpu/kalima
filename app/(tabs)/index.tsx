@@ -121,7 +121,6 @@ export default function Home() {
           elevation="lg"
           radiusKey="xxl"
           padded={spacing.xl}
-          bordered
         >
           <View style={{ gap: spacing.lg }}>
             <View

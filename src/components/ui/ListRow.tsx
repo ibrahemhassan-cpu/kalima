@@ -105,7 +105,7 @@ export function ListGroup({
   title?: string;
   children: React.ReactNode;
 }) {
-  const { colors, spacing, radius } = useTheme();
+  const { colors, spacing, radius, shadow, isDark } = useTheme();
   return (
     <View style={{ gap: spacing.sm }}>
       {title ? (
@@ -114,13 +114,17 @@ export function ListGroup({
         </Text>
       ) : null}
       <View
-        style={{
-          backgroundColor: colors.glassStrong,
-          borderRadius: radius.lg,
-          borderWidth: 1,
-          borderColor: colors.border,
-          overflow: "hidden",
-        }}
+        style={[
+          {
+            backgroundColor: colors.card,
+            borderRadius: radius.lg,
+            // shadow separates in light, hairline separates in dark
+            borderWidth: isDark ? 1 : 0,
+            borderColor: colors.border,
+            overflow: "hidden",
+          },
+          shadow.sm,
+        ]}
       >
         {children}
       </View>

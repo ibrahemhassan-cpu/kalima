@@ -165,8 +165,6 @@ export function FlipCard({
                 style={{
                   backgroundColor: colors.brandSoft,
                   borderRadius: radius.lg,
-                  borderWidth: 1,
-                  borderColor: colors.brandBorder,
                   padding: spacing.lg,
                   gap: spacing.xs,
                 }}

@@ -14,6 +14,8 @@ export type Colors = {
   // surfaces
   glass: string;
   glassStrong: string;
+  /** opaque card fill used where real blur isn't available */
+  card: string;
   solid: string;
   raised: string;
   sunken: string;
@@ -68,16 +70,18 @@ export type Colors = {
 export const light: Colors = {
   bg: "#F6F7FB",
   bgTop: "#FFFFFF",
-  bgBottom: "#EFF1F8",
+  // must equal `bg`, or the gradient ends in a visible horizontal seam
+  bgBottom: "#F6F7FB",
 
   glass: "rgba(255,255,255,0.72)",
-  glassStrong: "rgba(255,255,255,0.90)",
+  glassStrong: "rgba(255,255,255,0.92)",
+  card: "#FFFFFF",
   solid: "#FFFFFF",
   raised: "#FFFFFF",
   sunken: "#ECEEF5",
 
-  border: "rgba(11,13,20,0.07)",
-  borderStrong: "rgba(11,13,20,0.14)",
+  border: "rgba(11,13,20,0.06)",
+  borderStrong: "rgba(11,13,20,0.13)",
 
   text: "#0B0D14",
   textMuted: "#5C6373",
@@ -127,7 +131,8 @@ export const dark: Colors = {
   bgBottom: "#08090E",
 
   glass: "rgba(255,255,255,0.06)",
-  glassStrong: "rgba(255,255,255,0.10)",
+  glassStrong: "rgba(255,255,255,0.08)",
+  card: "#13161F",
   solid: "#12141C",
   raised: "#171A24",
   sunken: "#0D0F16",
