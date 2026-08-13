@@ -1,16 +1,18 @@
 import React from "react";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Screen, Text } from "@/components/ui";
-import { AuthHeader } from "@/features/auth/AuthHeader";
+import { Header } from "@/components/ui";
 import { Bullet, P, Section } from "@/components/LegalText";
 import { CONTACT_EMAIL, LAST_UPDATED } from "./privacy";
 
 export default function Terms() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <Screen scroll>
-      <AuthHeader title="شروط الاستخدام" onBack={() => router.back()} />
+      <Header title={t("profile.terms")} onBack={() => router.back()} language={false} />
       <Text variant="caption" tone="faint">
         آخر تحديث: {LAST_UPDATED}
       </Text>

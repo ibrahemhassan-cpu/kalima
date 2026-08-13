@@ -20,6 +20,7 @@ import { WordCard } from "@/components/word/WordCard";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useSettings } from "@/store/settings";
 import { useMyWords, type WordFilter, type WordSort } from "@/api/words";
+import { TAB_BAR_HEIGHT } from "@/theme/spacing";
 
 const FILTERS: WordFilter[] = ["all", "learning", "mastered", "hard", "favorite"];
 const SORTS: WordSort[] = ["recent", "alpha", "hardest"];
@@ -164,7 +165,8 @@ export default function Words() {
           contentContainerStyle={{
             paddingHorizontal: spacing.lg,
             gap: spacing.sm,
-            paddingBottom: insets.bottom + 110,
+            // clear the floating tab bar
+            paddingBottom: insets.bottom + TAB_BAR_HEIGHT + spacing.lg,
             flexGrow: 1,
           }}
           refreshControl={

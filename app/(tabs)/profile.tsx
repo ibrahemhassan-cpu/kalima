@@ -53,7 +53,7 @@ export default function ProfileTab() {
 
   return (
     <>
-      <Screen scroll>
+      <Screen scroll tabBar>
       <Header title={t("tabs.profile")} />
 
       <Enter>

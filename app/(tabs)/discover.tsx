@@ -10,7 +10,7 @@ export default function Discover() {
   const { t } = useTranslation();
 
   return (
-    <Screen>
+    <Screen tabBar>
       <Header title={t("tabs.discover")} />
       <View
         style={{

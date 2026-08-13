@@ -28,7 +28,7 @@ export default function ReviewTab() {
   const totalCount = 20;
 
   return (
-    <Screen scroll style={{ paddingBottom: 90 }}>
+    <Screen scroll tabBar>
       <Header
         title={t("review.title")}
         right={

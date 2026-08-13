@@ -78,14 +78,20 @@ function RouteGate() {
     const group = segments[0];
     const inAuth = group === "(auth)";
     const inOnboarding = group === "(onboarding)";
+    /**
+     * Privacy and Terms must be reachable *before* signing in — the sign-up
+     * screen links to them. Without this exemption the guard bounced the user
+     * straight back to Welcome and the links looked broken.
+     */
+    const isPublic = group === "legal";
 
     if (!session) {
-      if (!inAuth) router.replace("/(auth)/welcome");
+      if (!inAuth && !isPublic) router.replace("/(auth)/welcome");
       return;
     }
 
     if (profile && !profile.onboarded_at) {
-      if (!inOnboarding) router.replace("/(onboarding)/level");
+      if (!inOnboarding && !isPublic) router.replace("/(onboarding)/level");
       return;
     }
 
@@ -107,7 +113,11 @@ function RouteGate() {
       <Stack.Screen name="session" options={{ animation: "fade" }} />
       <Stack.Screen name="achievements" />
       <Stack.Screen name="settings" options={{ presentation: "card" }} />
-      <Stack.Screen name="legal" options={{ presentation: "card" }} />
+      {/* legal slides up like a sheet — it's a detour, not a destination */}
+      <Stack.Screen
+        name="legal"
+        options={{ presentation: "modal", animation: "slide_from_bottom" }}
+      />
     </Stack>
   );
 }

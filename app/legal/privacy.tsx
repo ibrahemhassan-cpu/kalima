@@ -1,18 +1,20 @@
 import React from "react";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Screen, Text } from "@/components/ui";
-import { AuthHeader } from "@/features/auth/AuthHeader";
+import { Header } from "@/components/ui";
 import { Bullet, P, Section } from "@/components/LegalText";
 
 export const LAST_UPDATED = "12 أغسطس 2026";
-export const CONTACT_EMAIL = "ahmed.alaa1362001@gmail.com";
+export const CONTACT_EMAIL = "hibrahem266@gmail.com";
 
 export default function Privacy() {
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <Screen scroll>
-      <AuthHeader title="سياسة الخصوصية" onBack={() => router.back()} />
+      <Header title={t("profile.privacy")} onBack={() => router.back()} language={false} />
       <Text variant="caption" tone="faint">
         آخر تحديث: {LAST_UPDATED}
       </Text>

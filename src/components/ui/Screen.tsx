@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "@/theme/ThemeProvider";
+import { TAB_BAR_HEIGHT } from "@/theme/spacing";
 
 export type ScreenProps = {
   children: React.ReactNode;
@@ -11,6 +12,8 @@ export type ScreenProps = {
   padded?: boolean;
   /** soft coloured wash behind the content */
   glow?: boolean;
+  /** reserve room for the floating tab bar — set on every screen inside (tabs) */
+  tabBar?: boolean;
   edges?: { top?: boolean; bottom?: boolean };
   style?: StyleProp<ViewStyle>;
 };
@@ -20,6 +23,7 @@ export function Screen({
   scroll = false,
   padded = true,
   glow = true,
+  tabBar = false,
   edges,
   style,
 }: ScreenProps) {
@@ -31,7 +35,9 @@ export function Screen({
 
   const inner: StyleProp<ViewStyle> = {
     paddingTop: top + (padded ? spacing.md : 0),
-    paddingBottom: bottom + (scroll ? 100 : spacing.xl),
+    // inside (tabs) the floating bar covers the bottom of the screen, so the
+    // last element needs to clear it — everywhere else a normal gap is enough
+    paddingBottom: bottom + (tabBar ? TAB_BAR_HEIGHT + spacing.lg : spacing.xl),
     paddingHorizontal: padded ? spacing.lg : 0,
     gap: spacing.lg,
   };

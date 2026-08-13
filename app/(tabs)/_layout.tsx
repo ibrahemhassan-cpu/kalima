@@ -2,12 +2,14 @@ import React from "react";
 import { Platform, View, StyleSheet } from "react-native";
 import { Tabs, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { useTheme } from "@/theme/ThemeProvider";
 import { useSettings } from "@/store/settings";
+import { TAB_BAR_HEIGHT } from "@/theme/spacing";
 import { Touchable } from "@/components/ui/Touchable";
 import { Text } from "@/components/ui/Text";
 
@@ -18,6 +20,7 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
   const { t } = useTranslation();
   const router = useRouter();
   const simple = useSettings((s) => s.simpleMode);
+  const insets = useSafeAreaInsets();
 
   // Design system tab configuration matching mockup
   const tabIcons: Record<string, { outline: keyof typeof Ionicons.glyphMap; filled: keyof typeof Ionicons.glyphMap }> = {
@@ -34,7 +37,14 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
   );
 
   return (
-    <View style={styles.floatingContainer} pointerEvents="box-none">
+    <View
+      style={[
+        styles.floatingContainer,
+        // sit above the gesture bar, never on top of it
+        { bottom: Math.max(insets.bottom, 8) + 12 },
+      ]}
+      pointerEvents="box-none"
+    >
       <View style={[styles.barWrapper, shadow.lg, { backgroundColor: Platform.OS === "android" ? colors.solid : "transparent" }]}>
         {Platform.OS === "ios" ? (
           <BlurView
@@ -186,7 +196,6 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   floatingContainer: {
     position: "absolute",
-    bottom: 22,
     left: 16,
     right: 16,
     alignItems: "center",

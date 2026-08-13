@@ -25,6 +25,7 @@ export type SheetRef = {
 export type SheetProps = {
   children: React.ReactNode;
   title?: string;
+  subtitle?: string;
   snapPoints?: (string | number)[];
   scrollable?: boolean;
   onClose?: () => void;
@@ -33,17 +34,20 @@ export type SheetProps = {
 /**
  * Bottom sheet.
  *
- * Uses BottomSheetModal, NOT the inline BottomSheet. The inline component
- * participates in normal layout — put one inside a ScrollView (as several of
- * our screens do) and it renders as part of the scroll content, showing up
- * already open and stacked over whatever it happens to land on. The modal
- * variant portals to the top of the app, so it is genuinely hidden until
- * `open()` and always draws above everything.
+ * Two things here are easy to get wrong and both bit us:
  *
- * Requires <BottomSheetModalProvider> at the root — see app/_layout.tsx.
+ * 1. Use BottomSheetModal, never the inline BottomSheet. The inline component
+ *    participates in normal layout, so putting one inside a ScrollView renders
+ *    it as page content — visible, already open, stacked over whatever it
+ *    lands on. The modal variant portals above the whole app.
+ *
+ * 2. BottomSheetView does NOT accept `contentContainerStyle`. Pass padding
+ *    there and it is silently dropped, which is why every sheet used to sit
+ *    flush against the screen edges. Padding lives on an inner View so it
+ *    applies no matter which body component we use.
  */
 export const Sheet = forwardRef<SheetRef, SheetProps>(function Sheet(
-  { children, title, snapPoints, scrollable, onClose },
+  { children, title, subtitle, snapPoints, scrollable, onClose },
   ref,
 ) {
   const { colors, spacing, radius, isDark } = useTheme();
@@ -70,7 +74,29 @@ export const Sheet = forwardRef<SheetRef, SheetProps>(function Sheet(
     [],
   );
 
-  const Body = scrollable ? BottomSheetScrollView : BottomSheetView;
+  const padding = {
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.md,
+    // clears the home indicator / gesture bar, plus breathing room
+    paddingBottom: insets.bottom + spacing.xl,
+    gap: spacing.md,
+  } as const;
+
+  const body = (
+    <>
+      {title ? (
+        <View style={{ gap: spacing.xs, paddingBottom: spacing.xs }}>
+          <Text variant="heading">{title}</Text>
+          {subtitle ? (
+            <Text variant="caption" tone="muted">
+              {subtitle}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
+      {children}
+    </>
+  );
 
   return (
     <BottomSheetModal
@@ -80,8 +106,8 @@ export const Sheet = forwardRef<SheetRef, SheetProps>(function Sheet(
       snapPoints={points}
       backdropComponent={backdrop}
       onDismiss={onClose}
-      // Opaque on purpose: a translucent sheet over a busy screen is the
-      // number one way these end up looking muddy.
+      // never let a tall sheet slide under the status bar
+      topInset={insets.top + spacing.lg}
       backgroundStyle={{
         backgroundColor: colors.raised,
         borderTopLeftRadius: radius.xxl,
@@ -89,27 +115,25 @@ export const Sheet = forwardRef<SheetRef, SheetProps>(function Sheet(
         borderWidth: isDark ? 1 : 0,
         borderColor: colors.border,
       }}
+      handleStyle={{ paddingTop: spacing.md, paddingBottom: spacing.xs }}
       handleIndicatorStyle={{
         backgroundColor: colors.borderStrong,
         width: 40,
         height: 4,
       }}
     >
-      <Body
-        contentContainerStyle={{
-          paddingHorizontal: spacing.lg,
-          paddingBottom: insets.bottom + spacing.xl,
-          paddingTop: spacing.sm,
-          gap: spacing.md,
-        }}
-      >
-        {title ? (
-          <View style={{ paddingBottom: spacing.xs }}>
-            <Text variant="heading">{title}</Text>
-          </View>
-        ) : null}
-        {children}
-      </Body>
+      {scrollable ? (
+        <BottomSheetScrollView
+          contentContainerStyle={padding}
+          showsVerticalScrollIndicator={false}
+        >
+          {body}
+        </BottomSheetScrollView>
+      ) : (
+        <BottomSheetView>
+          <View style={padding}>{body}</View>
+        </BottomSheetView>
+      )}
     </BottomSheetModal>
   );
 });

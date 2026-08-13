@@ -54,7 +54,7 @@ export default function Home() {
   const flame = usePulse(streak > 0);
 
   return (
-    <Screen scroll style={{ paddingBottom: 90 }}>
+    <Screen scroll tabBar>
       {/* header */}
       <Enter>
         <View

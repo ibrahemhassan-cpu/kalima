@@ -8,6 +8,14 @@ export const spacing = {
   xxxl: 48,
 } as const;
 
+/**
+ * Vertical room the floating tab bar occupies, *excluding* the bottom
+ * safe-area inset: 68px bar + 12px gap + a little breathing space.
+ * The bar is absolutely positioned, so every screen inside (tabs) must
+ * reserve this or its last element hides behind it.
+ */
+export const TAB_BAR_HEIGHT = 88;
+
 /** Generous radii — the single biggest lever on "modern vs dated". */
 export const radius = {
   sm: 10,
