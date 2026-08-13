@@ -68,13 +68,26 @@ export function EntryBody({ entry }: { entry: DictionaryEntry }) {
 
       {entry.memory_tip_ar ? (
         <Surface tone="brand" radiusKey="xl">
-          <View style={{ flexDirection: "row", gap: spacing.md }}>
-            <Ionicons name="bulb" size={20} color={colors.accent} />
+          <View style={{ flexDirection: "row", gap: spacing.md, alignItems: "center" }}>
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: radius.md,
+                backgroundColor: colors.accentSoft,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Ionicons name="bulb" size={20} color={colors.accent} />
+            </View>
             <View style={{ flex: 1, gap: 2 }}>
-              <Text variant="micro" tone="faint">
-                {t("word.memoryTip").toUpperCase()}
+              <Text variant="micro" tone="faint" style={{ textTransform: "uppercase" }}>
+                {t("word.memoryTip")}
               </Text>
-              <Text variant="body">{entry.memory_tip_ar}</Text>
+              <Text variant="body" style={{ color: colors.text }}>
+                {entry.memory_tip_ar}
+              </Text>
             </View>
           </View>
         </Surface>
@@ -90,7 +103,8 @@ export function EntryBody({ entry }: { entry: DictionaryEntry }) {
                   gap: spacing.xs,
                   paddingStart: spacing.md,
                   borderStartWidth: 3,
-                  borderStartColor: colors.borderStrong,
+                  borderStartColor: colors.brandBorder,
+                  backgroundColor: "transparent",
                 }}
               >
                 <View
@@ -98,6 +112,7 @@ export function EntryBody({ entry }: { entry: DictionaryEntry }) {
                     flexDirection: "row",
                     alignItems: "center",
                     gap: spacing.sm,
+                    backgroundColor: "transparent",
                   }}
                 >
                   <Text variant="body" ltr style={{ flex: 1 }}>
@@ -110,11 +125,19 @@ export function EntryBody({ entry }: { entry: DictionaryEntry }) {
                     onPress={() => speak(ex.en)}
                     accessibilityRole="button"
                     accessibilityLabel={t("a11y.listenExample")}
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: 17,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: colors.brandSoft,
+                    }}
                   >
                     <Ionicons
                       name="volume-medium-outline"
-                      size={19}
-                      color={colors.textMuted}
+                      size={18}
+                      color={colors.brand}
                     />
                   </Touchable>
                 </View>
@@ -131,13 +154,13 @@ export function EntryBody({ entry }: { entry: DictionaryEntry }) {
         <Section title={t("word.otherMeanings")}>
           <View style={{ gap: spacing.lg }}>
             {entry.senses.slice(1).map((s, i) => (
-              <View key={i} style={{ gap: 2 }}>
+              <View key={i} style={{ gap: 2, backgroundColor: "transparent" }}>
                 <Text variant="bodyStrong">{s.ar_translations.join(" · ")}</Text>
                 <Text variant="caption" tone="muted">
                   {s.ar_definition}
                 </Text>
-                <Text variant="micro" tone="faint" ltr>
-                  {s.pos.toUpperCase()}
+                <Text variant="micro" tone="faint" ltr style={{ textTransform: "uppercase" }}>
+                  {s.pos}
                 </Text>
               </View>
             ))}

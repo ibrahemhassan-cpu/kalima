@@ -31,7 +31,7 @@ export function SensePicker({
 
   return (
     <Animated.View entering={FadeInDown.duration(320).springify().damping(18)}>
-      <Surface tone="brand" radiusKey="xl">
+      <Surface tone="glass" elevation="md" radiusKey="xl">
         <View style={{ gap: spacing.md }}>
           <View
             style={{ flexDirection: "row", gap: spacing.sm, alignItems: "center" }}
@@ -62,9 +62,9 @@ export function SensePicker({
                     paddingVertical: spacing.md,
                     paddingHorizontal: spacing.lg,
                     borderRadius: radius.md,
-                    borderWidth: active ? 1.5 : 1,
+                    borderWidth: active ? 2 : 1,
                     borderColor: active ? colors.brand : colors.border,
-                    backgroundColor: active ? colors.glassStrong : "transparent",
+                    backgroundColor: active ? colors.brandSoft : colors.solid,
                   }}
                 >
                   <View style={{ flex: 1, gap: 2 }}>

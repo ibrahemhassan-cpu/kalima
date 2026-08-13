@@ -349,8 +349,8 @@ function Metric({ label, value }: { label: string; value: number | string }) {
       }}
     >
       <Text variant="bodyStrong">{value}</Text>
-      <Text variant="micro" tone="faint" numberOfLines={1}>
-        {String(label).toUpperCase()}
+      <Text variant="micro" tone="faint" numberOfLines={1} style={{ textTransform: "uppercase" }}>
+        {label}
       </Text>
     </View>
   );

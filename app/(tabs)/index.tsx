@@ -96,19 +96,18 @@ export default function Home() {
 
             <Animated.View style={flame}>
               <View
-                style={[
-                  {
-                    width: 58,
-                    height: 58,
-                    borderRadius: radius.lg,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: colors.accentSoft,
-                  },
-                  shadow.sm,
-                ]}
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 26,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: colors.accentSoft,
+                  borderWidth: 1,
+                  borderColor: "rgba(255,138,61,0.22)",
+                }}
               >
-                <Ionicons name="flame" size={34} color={colors.accent} />
+                <Ionicons name="flame" size={30} color={colors.accent} />
               </View>
             </Animated.View>
           </View>
@@ -290,11 +289,11 @@ function Stat({
   const shown = useCountUp(value);
   return (
     <Surface tone="glass" radiusKey="lg" padded={spacing.lg} style={{ flex: 1 }}>
-      <View style={{ alignItems: "center", gap: spacing.xs }}>
+      <View style={{ alignItems: "center", gap: spacing.xs, backgroundColor: "transparent" }}>
         <Ionicons name={icon} size={19} color={colors.textFaint} />
         <Text variant="heading">{shown}</Text>
-        <Text variant="micro" tone="faint" numberOfLines={1}>
-          {label.toUpperCase()}
+        <Text variant="micro" tone="faint" numberOfLines={1} style={{ textTransform: "uppercase" }}>
+          {label}
         </Text>
       </View>
     </Surface>

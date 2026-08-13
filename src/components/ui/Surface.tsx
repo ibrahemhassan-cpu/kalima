@@ -47,17 +47,18 @@ export function Surface({
     style,
   ];
 
-  const inner: ViewStyle = { padding: pad };
+  const inner: ViewStyle = { padding: pad, backgroundColor: "transparent" };
 
   if (tone === "clear") {
     return <View style={[base, inner]}>{children}</View>;
   }
 
-  if (tone === "glass" && Platform.OS !== "web") {
+  // Only use BlurView on iOS where native backdrop blur works flawlessly without creating opaque block artifacts
+  if (tone === "glass" && Platform.OS === "ios") {
     return (
       <View style={base}>
         <BlurView
-          intensity={isDark ? 28 : 40}
+          intensity={isDark ? 28 : 45}
           tint={colors.blurTint}
           style={[inner, { backgroundColor: colors.glass }]}
         >

@@ -26,12 +26,12 @@ export function Screen({
   const { colors, spacing, isDark } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const top = edges?.top === false ? 0 : insets.top;
-  const bottom = edges?.bottom === false ? 0 : insets.bottom;
+  const top = edges?.top === false ? 0 : Math.max(insets.top, 16);
+  const bottom = edges?.bottom === false ? 0 : Math.max(insets.bottom, 16);
 
   const inner: StyleProp<ViewStyle> = {
-    paddingTop: top + (padded ? spacing.lg : 0),
-    paddingBottom: bottom + spacing.xxl,
+    paddingTop: top + (padded ? spacing.md : 0),
+    paddingBottom: bottom + (scroll ? 100 : spacing.xl),
     paddingHorizontal: padded ? spacing.lg : 0,
     gap: spacing.lg,
   };

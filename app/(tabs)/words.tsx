@@ -191,36 +191,7 @@ export default function Words() {
         />
       )}
 
-      {/* floating add */}
-      <Touchable
-        haptic="medium"
-        accessibilityRole="button"
-        accessibilityLabel={t("a11y.addWord")}
-        onPress={() => router.push("/add-word")}
-        scaleTo={0.92}
-        style={[
-          {
-            position: "absolute",
-            bottom: insets.bottom + spacing.lg,
-            insetInlineEnd: spacing.lg,
-            width: 62,
-            height: 62,
-            borderRadius: radius.pill,
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden",
-          },
-          shadow.brand,
-        ]}
-      >
-        <LinearGradient
-          colors={[colors.brand, colors.brandAlt]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{ position: "absolute", inset: 0 }}
-        />
-        <Ionicons name="add" size={30} color={colors.onBrand} />
-      </Touchable>
+
 
       {/* filter + sort sheet */}
       <Sheet ref={sheet} title={t("sheet.filters")}>

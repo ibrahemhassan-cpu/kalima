@@ -27,7 +27,7 @@ export function Header({
   const { t } = useTranslation();
 
   return (
-    <View style={{ gap: spacing.sm }}>
+    <View style={{ gap: spacing.sm, paddingTop: spacing.xs }}>
       <View
         style={{
           flexDirection: "row",
