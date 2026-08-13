@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInDown, ZoomIn } from "react-native-reanimated";
 
-import { Button, LanguageToggle, Screen, Surface, Text } from "@/components/ui";
+import { Button, LanguageToggle, ProgressDots, Screen, Surface, Text } from "@/components/ui";
 import { useTheme } from "@/theme/ThemeProvider";
 
 export default function Welcome() {
@@ -21,19 +21,19 @@ export default function Welcome() {
   ];
 
   return (
-    <Screen scroll>
+    <Screen scroll style={{ justifyContent: "space-between" }}>
       <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
         <LanguageToggle />
       </View>
 
-      <View style={{ alignItems: "center", gap: spacing.md, paddingTop: spacing.xl }}>
+      <View style={{ alignItems: "center", gap: spacing.lg, paddingTop: spacing.xxl }}>
         <Animated.View entering={ZoomIn.duration(500).springify().damping(13)}>
           <View
             style={[
               {
-                width: 96,
-                height: 96,
-                borderRadius: radius.xl,
+                width: 110,
+                height: 110,
+                borderRadius: 28,
                 alignItems: "center",
                 justifyContent: "center",
                 overflow: "hidden",
@@ -47,7 +47,7 @@ export default function Welcome() {
               end={{ x: 1, y: 1 }}
               style={{ position: "absolute", inset: 0 }}
             />
-            <Ionicons name="bookmark" size={48} color={colors.onBrand} />
+            <Ionicons name="bookmark" size={54} color={colors.onBrand} />
           </View>
         </Animated.View>
 
@@ -55,14 +55,20 @@ export default function Welcome() {
           entering={FadeInDown.delay(120).duration(420).springify()}
           style={{ alignItems: "center", gap: spacing.xs }}
         >
-          <Text variant="display">{t("app.name")}</Text>
-          <Text variant="body" tone="muted" center>
+          <Text variant="display" style={{ fontSize: 34, fontWeight: "700" }}>
+            {t("app.name")}
+          </Text>
+          <Text variant="body" tone="muted" center style={{ maxWidth: 260 }}>
             {t("app.tagline")}
           </Text>
         </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(200).duration(300)}>
+          <ProgressDots total={4} index={0} />
+        </Animated.View>
       </View>
 
-      <View style={{ gap: spacing.md, paddingVertical: spacing.lg }}>
+      <View style={{ gap: spacing.md, paddingVertical: spacing.xl }}>
         {features.map((f, i) => (
           <Animated.View
             key={f.key}
@@ -106,13 +112,12 @@ export default function Welcome() {
 
       <Animated.View
         entering={FadeInDown.delay(520).duration(400).springify()}
-        style={{ gap: spacing.md }}
+        style={{ gap: spacing.md, paddingBottom: spacing.lg }}
       >
         <Button
           title={t("auth.welcomeCta")}
           size="lg"
           fullWidth
-          iconEnd="arrow-forward"
           onPress={() => router.push("/(auth)/sign-up")}
         />
         <Button
@@ -122,18 +127,18 @@ export default function Welcome() {
           fullWidth
           onPress={() => router.push("/(auth)/sign-in")}
         />
-      </Animated.View>
 
-      <Text variant="caption" tone="faint" center>
-        {t("auth.legalNotice")}{" "}
-        <Link href="/legal/terms" style={{ color: colors.brand }}>
-          {t("profile.terms")}
-        </Link>{" "}
-        {t("auth.andWord")}{" "}
-        <Link href="/legal/privacy" style={{ color: colors.brand }}>
-          {t("profile.privacy")}
-        </Link>
-      </Text>
+        <Text variant="caption" tone="faint" center style={{ marginTop: spacing.xs }}>
+          {t("auth.legalNotice")}{" "}
+          <Link href="/legal/terms" style={{ color: colors.brand }}>
+            {t("profile.terms")}
+          </Link>{" "}
+          {t("auth.andWord")}{" "}
+          <Link href="/legal/privacy" style={{ color: colors.brand }}>
+            {t("profile.privacy")}
+          </Link>
+        </Text>
+      </Animated.View>
     </Screen>
   );
 }

@@ -12,5 +12,6 @@ export { Avatar } from "./Avatar";
 export { ChoiceList, ProgressDots } from "./Choice";
 export { LanguageToggle } from "./LanguageToggle";
 export { Touchable } from "./Touchable";
+export { CircularProgress } from "./CircularProgress";
 export { Enter, ProgressBar, useCountUp, usePulse } from "./motion";
 export type { ChoiceOption } from "./Choice";

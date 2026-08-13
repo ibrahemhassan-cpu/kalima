@@ -192,6 +192,36 @@ export default function WordDetail() {
             {status}
           </Text>
         ) : null}
+
+        {/* Bottom Actions Bar matching Screen 3 of Design System */}
+        <View
+          style={{
+            flexDirection: "row",
+            gap: spacing.md,
+            marginTop: spacing.md,
+            paddingBottom: spacing.xl,
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <Button
+              title="Edit"
+              variant="secondary"
+              size="lg"
+              fullWidth
+              onPress={() => actions.current?.open()}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Button
+              title="Practice"
+              variant="primary"
+              size="lg"
+              fullWidth
+              icon="play"
+              onPress={() => router.push("/session/review")}
+            />
+          </View>
+        </View>
       </Screen>
 
       {/* ── sheets ── */}

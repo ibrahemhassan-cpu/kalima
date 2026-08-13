@@ -194,7 +194,7 @@ function OptionButton({
   disabled?: boolean;
   onPress: () => void;
 }) {
-  const { colors, spacing, radius, minTouch } = useTheme();
+  const { colors, spacing, radius, minTouch, shadow } = useTheme();
 
   const isChosen = answered?.chosen === label;
   const isAnswer = answered?.correctAnswer === label;
@@ -203,6 +203,7 @@ function OptionButton({
   let border = colors.border;
   let fg = colors.text;
   let icon: keyof typeof Ionicons.glyphMap | null = null;
+  let shadowStyle = undefined;
 
   if (answered) {
     if (isAnswer) {
@@ -228,23 +229,26 @@ function OptionButton({
       scaleTo={0.98}
       accessibilityRole="button"
       accessibilityLabel={label}
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.md,
-        minHeight: minTouch + 10,
-        paddingHorizontal: spacing.lg,
-        paddingVertical: spacing.md,
-        borderRadius: radius.md,
-        borderWidth: answered && (isAnswer || isChosen) ? 1.5 : 1,
-        borderColor: border,
-        backgroundColor: bg,
-      }}
+      style={[
+        {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: spacing.md,
+          minHeight: minTouch + 12,
+          paddingHorizontal: spacing.lg,
+          paddingVertical: spacing.md,
+          borderRadius: radius.lg,
+          borderWidth: answered && (isAnswer || isChosen) ? 2 : 1,
+          borderColor: border,
+          backgroundColor: bg,
+        },
+        shadowStyle,
+      ]}
     >
       <Text
         variant="bodyStrong"
         ltr={ltr}
-        style={{ flex: 1, color: fg }}
+        style={{ flex: 1, color: fg, fontSize: 16 }}
         numberOfLines={2}
       >
         {label}

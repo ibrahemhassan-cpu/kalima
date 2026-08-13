@@ -6,7 +6,16 @@ import { useTheme } from "@/theme/ThemeProvider";
 import { Text } from "./Text";
 import type { WordStatus } from "@/lib/database.types";
 
-type Tone = "neutral" | "brand" | "success" | "danger" | "accent";
+type Tone =
+  | "neutral"
+  | "brand"
+  | "success"
+  | "danger"
+  | "accent"
+  | "chipNew"
+  | "chipHard"
+  | "chipReview"
+  | "chipLearned";
 
 export function Badge({
   label,
@@ -25,6 +34,10 @@ export function Badge({
     success: { bg: colors.successSoft, fg: colors.success, bd: "transparent" },
     danger: { bg: colors.dangerSoft, fg: colors.danger, bd: "transparent" },
     accent: { bg: colors.accentSoft, fg: colors.warning, bd: "transparent" },
+    chipNew: { bg: colors.chipNewBg, fg: colors.chipNewFg, bd: "transparent" },
+    chipHard: { bg: colors.chipHardBg, fg: colors.chipHardFg, bd: "transparent" },
+    chipReview: { bg: colors.chipReviewBg, fg: colors.chipReviewFg, bd: "transparent" },
+    chipLearned: { bg: colors.chipLearnedBg, fg: colors.chipLearnedFg, bd: "transparent" },
   };
   const c = map[tone];
 
@@ -36,7 +49,7 @@ export function Badge({
         gap: spacing.xs,
         backgroundColor: c.bg,
         borderColor: c.bd,
-        borderWidth: 1,
+        borderWidth: c.bd === "transparent" ? 0 : 1,
         borderRadius: radius.pill,
         paddingHorizontal: spacing.md,
         paddingVertical: 5,
@@ -51,7 +64,7 @@ export function Badge({
   );
 }
 
-/** Status is conveyed by icon + text, never colour alone. */
+/** Status is conveyed by icon + text, matching design system chips. */
 export function StatusBadge({ status }: { status: WordStatus }) {
   const { t } = useTranslation();
 
@@ -59,12 +72,12 @@ export function StatusBadge({ status }: { status: WordStatus }) {
     WordStatus,
     { tone: Tone; icon: keyof typeof Ionicons.glyphMap }
   > = {
-    new: { tone: "brand", icon: "sparkles-outline" },
-    learning: { tone: "brand", icon: "school-outline" },
-    review: { tone: "neutral", icon: "repeat-outline" },
-    mastered: { tone: "success", icon: "checkmark-circle-outline" },
-    leech: { tone: "danger", icon: "alert-circle-outline" },
-    archived: { tone: "neutral", icon: "archive-outline" },
+    new: { tone: "chipNew", icon: "sparkles" },
+    learning: { tone: "brand", icon: "school" },
+    review: { tone: "chipReview", icon: "time" },
+    mastered: { tone: "chipLearned", icon: "checkmark-circle" },
+    leech: { tone: "chipHard", icon: "flame" },
+    archived: { tone: "neutral", icon: "archive" },
   };
 
   return (

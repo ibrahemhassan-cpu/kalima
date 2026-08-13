@@ -23,7 +23,7 @@ export const radius = {
  * two soft stacked layers read as depth.
  */
 export function makeShadows(color: string, isDark: boolean) {
-  const o = isDark ? 0.5 : 1;
+  const o = isDark ? 0.6 : 1;
   return {
     none: {},
     sm: {
@@ -47,9 +47,23 @@ export function makeShadows(color: string, isDark: boolean) {
       shadowOffset: { width: 0, height: 14 },
       elevation: 8,
     },
+    card: {
+      shadowColor: color,
+      shadowOpacity: isDark ? 0.35 : 0.07,
+      shadowRadius: 18,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 4,
+    },
+    raised: {
+      shadowColor: color,
+      shadowOpacity: isDark ? 0.45 : 0.11,
+      shadowRadius: 22,
+      shadowOffset: { width: 0, height: 10 },
+      elevation: 6,
+    },
     brand: {
       shadowColor: "#5B5BF5",
-      shadowOpacity: isDark ? 0.4 : 0.28,
+      shadowOpacity: isDark ? 0.45 : 0.28,
       shadowRadius: 22,
       shadowOffset: { width: 0, height: 10 },
       elevation: 8,
@@ -61,6 +75,7 @@ export type Shadows = ReturnType<typeof makeShadows>;
 
 /** Spring config used across every press + transition. */
 export const spring = {
-  snappy: { damping: 18, stiffness: 260, mass: 0.7 },
+  snappy: { damping: 16, stiffness: 240, mass: 0.7 },
   soft: { damping: 22, stiffness: 150, mass: 0.9 },
+  bounce: { damping: 12, stiffness: 180, mass: 0.8 },
 } as const;

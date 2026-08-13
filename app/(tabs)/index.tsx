@@ -54,7 +54,7 @@ export default function Home() {
   const flame = usePulse(streak > 0);
 
   return (
-    <Screen scroll>
+    <Screen scroll style={{ paddingBottom: 90 }}>
       {/* header */}
       <Enter>
         <View
@@ -62,45 +62,61 @@ export default function Home() {
             flexDirection: "row",
             alignItems: "center",
             gap: spacing.md,
+            marginBottom: spacing.xs,
           }}
         >
           <View style={{ flex: 1, gap: 2 }}>
             <Text variant="caption" tone="muted">
               {t("home.greeting")}
             </Text>
-            <Text variant="title" numberOfLines={1}>
+            <Text variant="title" numberOfLines={1} style={{ fontSize: 24, fontWeight: "700" }}>
               {profile?.display_name ?? "—"}
             </Text>
           </View>
 
           <LanguageToggle compact />
-
-          <Animated.View
-            style={flame}
-            accessibilityLabel={t("a11y.streakDays", { count: streak })}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: spacing.xs,
-                backgroundColor: colors.accentSoft,
-                paddingHorizontal: spacing.md,
-                paddingVertical: 7,
-                borderRadius: radius.pill,
-              }}
-            >
-              <Ionicons name="flame" size={17} color={colors.accent} />
-              <Text variant="bodyStrong" style={{ color: colors.warning }}>
-                {streakShown}
-              </Text>
-            </View>
-          </Animated.View>
         </View>
       </Enter>
 
-      {/* hero */}
+      {/* streak hero card matching mockup */}
       <Enter index={1}>
+        <Surface tone="glass" elevation="md" radiusKey="xl" padded={spacing.lg}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <View style={{ gap: 4 }}>
+              <Text variant="micro" tone="muted" style={{ textTransform: "uppercase", letterSpacing: 0.5 }}>
+                Current Streak
+              </Text>
+              <Text variant="display" style={{ fontSize: 32, fontWeight: "800" }}>
+                {streakShown}{" "}
+                <Text variant="heading" tone="muted">
+                  days
+                </Text>
+              </Text>
+            </View>
+
+            <Animated.View style={flame}>
+              <View
+                style={[
+                  {
+                    width: 58,
+                    height: 58,
+                    borderRadius: radius.lg,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: colors.accentSoft,
+                  },
+                  shadow.sm,
+                ]}
+              >
+                <Ionicons name="flame" size={34} color={colors.accent} />
+              </View>
+            </Animated.View>
+          </View>
+        </Surface>
+      </Enter>
+
+      {/* today's progress summary card */}
+      <Enter index={2}>
         <Surface
           tone="glass"
           elevation="lg"
@@ -149,22 +165,21 @@ export default function Home() {
               </View>
 
               <View style={{ flex: 1, gap: 2 }}>
-                <Text variant="heading">
-                  {due > 0
-                    ? t("home.dueCount", { count: due })
-                    : total > 0
-                      ? t("home.allDone")
-                      : t("home.nothingYet")}
+                <Text variant="micro" tone="muted" style={{ letterSpacing: 0.5 }}>
+                  Today's Progress
                 </Text>
-                <Text variant="caption" tone="muted">
-                  {due > 0
-                    ? t("home.dueSubtitle")
-                    : total > 0
-                      ? t("home.allDoneSubtitle")
-                      : t("home.nothingYetSubtitle")}
+                <Text variant="title" style={{ fontSize: 24, fontWeight: "700" }}>
+                  {done} <Text variant="heading" tone="muted">/ {goal}</Text>{" "}
+                  <Text variant="caption" tone="faint">words reviewed</Text>
                 </Text>
               </View>
             </View>
+
+            <ProgressBar
+              value={pct}
+              tone={pct >= 1 ? "success" : "brand"}
+              label={t("a11y.progressOf", { done, total: goal })}
+            />
 
             <Button
               title={due > 0 ? t("home.startReview") : t("home.addWord")}
@@ -179,44 +194,7 @@ export default function Home() {
         </Surface>
       </Enter>
 
-      {/* daily goal */}
-      <Enter index={2}>
-        <Surface tone="glass" radiusKey="xl">
-          <View style={{ gap: spacing.md }}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Text variant="label" tone="muted">
-                {t("home.dailyGoal")}
-              </Text>
-              <Text
-                variant="bodyStrong"
-                tone={pct >= 1 ? "success" : "default"}
-              >
-                {done} / {goal}
-              </Text>
-            </View>
-
-            <ProgressBar
-              value={pct}
-              tone={pct >= 1 ? "success" : "brand"}
-              label={t("a11y.progressOf", { done, total: goal })}
-            />
-
-            {pct >= 1 ? (
-              <Text variant="caption" tone="success">
-                {t("home.goalReached")}
-              </Text>
-            ) : null}
-          </View>
-        </Surface>
-      </Enter>
-
-      {/* stats */}
+      {/* stats summary grid */}
       <Enter index={3}>
         <View style={{ flexDirection: "row", gap: spacing.md }}>
           <Stat label={t("home.statWords")} value={total} icon="library-outline" />
@@ -233,7 +211,7 @@ export default function Home() {
         </View>
       </Enter>
 
-      {/* recent */}
+      {/* recent words */}
       {recent && recent.length > 0 ? (
         <Enter index={4}>
           <View style={{ gap: spacing.md }}>
@@ -271,7 +249,7 @@ export default function Home() {
         </Enter>
       ) : null}
 
-      {/* add */}
+      {/* quick add word button */}
       <Enter index={5}>
         <Touchable
           accessibilityRole="button"
@@ -282,7 +260,7 @@ export default function Home() {
             alignItems: "center",
             justifyContent: "center",
             gap: spacing.sm,
-            minHeight: 58,
+            minHeight: 56,
             borderRadius: radius.lg,
             borderWidth: 1.5,
             borderStyle: "dashed",

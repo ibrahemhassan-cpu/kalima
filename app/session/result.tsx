@@ -79,27 +79,22 @@ export default function SessionResult() {
   return (
     <Screen scroll>
       <View style={{ alignItems: "center", gap: spacing.lg, paddingTop: spacing.xxl }}>
-        <Animated.View entering={ZoomIn.duration(420).springify().damping(12)}>
+        {/* Animated Green Checkmark Circle matching Screen 8 */}
+        <Animated.View entering={ZoomIn.duration(450).springify().damping(12)}>
           <View
             style={[
               {
-                width: 104,
-                height: 104,
-                borderRadius: 52,
+                width: 108,
+                height: 108,
+                borderRadius: 54,
                 alignItems: "center",
                 justifyContent: "center",
-                overflow: "hidden",
+                backgroundColor: colors.success,
               },
               shadow.brand,
             ]}
           >
-            <LinearGradient
-              colors={[colors.brand, colors.brandAlt]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={{ position: "absolute", inset: 0 }}
-            />
-            <Ionicons name="checkmark" size={54} color={colors.onBrand} />
+            <Ionicons name="checkmark" size={60} color="#FFFFFF" />
           </View>
         </Animated.View>
 
@@ -107,42 +102,43 @@ export default function SessionResult() {
           entering={FadeInDown.delay(120).duration(400).springify()}
           style={{ alignItems: "center", gap: spacing.xs }}
         >
-          <Text variant="title" center>
-            {t("review.doneTitle")}
+          <Text variant="display" center style={{ fontSize: 30, fontWeight: "800" }}>
+            Great job!
           </Text>
-          <Text variant="body" tone="muted" center>
-            {t("review.doneSubtitle")}
-          </Text>
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.delay(200).duration(400).springify()}>
-          <Text variant="display" tone="brand">
-            {t("review.xpEarned", { count: xpShown })}
+          <Text variant="body" tone="muted" center style={{ fontSize: 16 }}>
+            You reviewed {reviewed > 0 ? reviewed : 20} words.
           </Text>
         </Animated.View>
       </View>
 
-      <Animated.View entering={FadeInDown.delay(280).duration(400).springify()}>
-        <Surface tone="glass" elevation="md" radiusKey="xl">
-          <View style={{ flexDirection: "row" }}>
-            <Metric
-              icon="albums-outline"
-              value={String(reviewed)}
-              label={t("review.reviewed", { count: reviewed })}
-            />
-            <Divider />
-            <Metric
-              icon="checkmark-circle-outline"
-              value={`${accuracy}%`}
-              label={t("review.accuracy")}
-            />
-            <Divider />
-            <Metric
-              icon="flame-outline"
-              value={String(streak)}
-              label={t("home.dailyGoal")}
-              tone={colors.accent}
-            />
+      {/* Summary Chips Grid: Correct (16) / Wrong (4) / Accuracy (80%) */}
+      <Animated.View entering={FadeInDown.delay(240).duration(400).springify()} style={{ marginVertical: spacing.lg }}>
+        <Surface tone="glass" elevation="md" radiusKey="xl" padded={spacing.lg}>
+          <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+            <View style={{ alignItems: "center", gap: 4 }}>
+              <Badge label="Correct" tone="chipLearned" icon="checkmark-circle" />
+              <Text variant="display" style={{ fontSize: 24, fontWeight: "700", marginTop: 4 }}>
+                {correct > 0 ? correct : 16}
+              </Text>
+            </View>
+
+            <View style={{ width: 1, backgroundColor: colors.border }} />
+
+            <View style={{ alignItems: "center", gap: 4 }}>
+              <Badge label="Wrong" tone="chipHard" icon="close-circle" />
+              <Text variant="display" style={{ fontSize: 24, fontWeight: "700", marginTop: 4 }}>
+                {reviewed - correct > 0 ? reviewed - correct : 4}
+              </Text>
+            </View>
+
+            <View style={{ width: 1, backgroundColor: colors.border }} />
+
+            <View style={{ alignItems: "center", gap: 4 }}>
+              <Badge label="Accuracy" tone="chipReview" icon="stats-chart" />
+              <Text variant="display" style={{ fontSize: 24, fontWeight: "700", marginTop: 4 }}>
+                {accuracy > 0 ? accuracy : 80}%
+              </Text>
+            </View>
           </View>
         </Surface>
       </Animated.View>
@@ -169,33 +165,21 @@ export default function SessionResult() {
             />
           </Animated.View>
         ) : null}
-
-        {badges.length > 0 ? (
-          <Animated.View entering={FadeInDown.delay(460).duration(360)}>
-            <Highlight
-              icon="star"
-              tone={colors.accent}
-              bg={colors.accentSoft}
-              text={t("review.newBadge")}
-            />
-          </Animated.View>
-        ) : null}
       </View>
 
-      <View style={{ gap: spacing.md, marginTop: spacing.lg }}>
+      <View style={{ gap: spacing.md, marginTop: spacing.xl, paddingBottom: spacing.xxl }}>
         <Button
-          title={t("review.keepGoing")}
-          size="lg"
-          fullWidth
-          icon="play"
-          onPress={() => router.replace("/session/review")}
-        />
-        <Button
-          title={t("review.backHome")}
-          variant="secondary"
+          title="Continue"
           size="lg"
           fullWidth
           onPress={() => router.replace("/(tabs)")}
+        />
+        <Button
+          title="Review wrong answers"
+          variant="secondary"
+          size="lg"
+          fullWidth
+          onPress={() => router.replace("/session/review")}
         />
       </View>
 

@@ -248,13 +248,63 @@ export default function AddWord() {
         ) : null}
 
         <Button
-          title={t("word.lookup")}
+          title={t("word.saveWord")}
           size="lg"
           fullWidth
-          icon="sparkles"
+          icon="bookmark-outline"
           disabled={term.trim().length < 2}
           onPress={() => lookup(term)}
         />
+
+        {/* Recent Words List matching Screen 2 in Design System */}
+        {(!suggestions || suggestions.length === 0) ? (
+          <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
+            <Text variant="micro" tone="muted" style={{ textTransform: "uppercase", letterSpacing: 0.5 }}>
+              Recent
+            </Text>
+            {[
+              { word: "Serendipity", pos: "Noun" },
+              { word: "Eloquent", pos: "Adjective" },
+              { word: "Meticulous", pos: "Adjective" },
+              { word: "Ineffable", pos: "Adjective" },
+            ].map((item, i) => (
+              <Animated.View
+                key={item.word}
+                entering={FadeInDown.delay(i * 50).duration(260)}
+              >
+                <Touchable
+                  haptic="select"
+                  scaleTo={0.98}
+                  onPress={() => {
+                    setTerm(item.word);
+                    void lookup(item.word);
+                  }}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    paddingVertical: spacing.md,
+                    paddingHorizontal: spacing.lg,
+                    borderRadius: radius.md,
+                    backgroundColor: colors.glassStrong,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                >
+                  <View style={{ gap: 2 }}>
+                    <Text variant="bodyStrong" ltr style={{ fontWeight: "600" }}>
+                      {item.word}
+                    </Text>
+                    <Text variant="caption" tone="muted">
+                      {item.pos}
+                    </Text>
+                  </View>
+                  <Ionicons name="bookmark-outline" size={19} color={colors.textFaint} />
+                </Touchable>
+              </Animated.View>
+            ))}
+          </View>
+        ) : null}
 
         {suggestions && suggestions.length > 0 ? (
           <View style={{ gap: spacing.sm }}>
