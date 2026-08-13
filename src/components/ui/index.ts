@@ -1,11 +1,16 @@
 export { Text } from "./Text";
 export { Button } from "./Button";
+export { Surface } from "./Surface";
 export { Card } from "./Card";
 export { Input } from "./Input";
 export { Screen } from "./Screen";
+export { Header } from "./Header";
 export { Badge, StatusBadge } from "./Badge";
 export { SpeakButton } from "./SpeakButton";
 export { ListRow, ListGroup } from "./ListRow";
 export { Avatar } from "./Avatar";
 export { ChoiceList, ProgressDots } from "./Choice";
+export { LanguageToggle } from "./LanguageToggle";
+export { Touchable } from "./Touchable";
+export { Enter, ProgressBar, useCountUp, usePulse } from "./motion";
 export type { ChoiceOption } from "./Choice";

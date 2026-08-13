@@ -10,7 +10,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { corsHeaders, fail, json } from "../_shared/cors.ts";
-import { callGemini, MODEL } from "./gemini.ts";
+import { callGemini, MODEL, sanitizeQuestions } from "./gemini.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -163,9 +163,13 @@ Deno.serve(async (req) => {
 
   if (!ai.data.is_valid_word || ai.data.senses.length === 0) {
     await admin.rpc("refund_ai_usage", { p_user: user.id });
-    return fail(
-      "not_a_word",
-      "ما لقيناش الكلمة دي في الإنجليزي. اتأكد من الإملاء",
+    // Spelling help costs nothing extra — the model already guessed for us.
+    return json(
+      {
+        error: "not_a_word",
+        message_ar: "ما لقيناش الكلمة دي في الإنجليزي. اتأكد من الإملاء",
+        did_you_mean: ai.data.did_you_mean ?? [],
+      },
       404,
     );
   }
@@ -199,6 +203,26 @@ Deno.serve(async (req) => {
     return fail("server_error", "ما قدرناش نحفظ الكلمة. جرّب تاني", 500);
   }
 
+  // ── 7b. بنك الأسئلة — يُولَّد مع الكلمة في نفس النداء ──────
+  const questions = sanitizeQuestions(ai.data.questions ?? [], entry.lemma);
+  if (questions.length > 0) {
+    const { error: qErr } = await admin.from("entry_questions").upsert(
+      questions.map((q) => ({
+        entry_id: entry.id,
+        kind: q.kind,
+        difficulty: q.difficulty,
+        prompt: q.prompt,
+        prompt_hint: q.prompt_hint || null,
+        answer: q.answer,
+        distractors: q.distractors,
+        explanation_ar: q.explanation_ar || null,
+        source: "gemini",
+      })),
+      { onConflict: "entry_id,kind,prompt", ignoreDuplicates: true },
+    );
+    if (qErr) console.error("questions insert failed", qErr);
+  }
+
   // ── 8. إضافتها لمكتبة المستخدم (اختياري) ─────────────────
   let userWordId: string | null = null;
   if (body.add) {
@@ -211,5 +235,6 @@ Deno.serve(async (req) => {
     cached: false,
     user_word_id: userWordId,
     ai_remaining: usage.remaining,
+    questions_generated: questions.length,
   });
 });

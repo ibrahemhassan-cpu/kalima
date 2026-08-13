@@ -1,14 +1,13 @@
 import React from "react";
 import { useRouter } from "expo-router";
-import { ChoiceList, Screen } from "@/components/ui";
-import { AuthHeader } from "@/features/auth/AuthHeader";
+import { useTranslation } from "react-i18next";
+import { ChoiceList, Header, Screen } from "@/components/ui";
 import { useProfile, useUpdateProfile } from "@/api/profile";
-import { formatHour } from "@/features/onboarding/store";
-
-const HOURS = [7, 9, 12, 15, 17, 19, 20, 21, 22];
+import { formatHour, REMINDER_HOURS } from "@/features/onboarding/store";
 
 export default function ReminderSetting() {
   const router = useRouter();
+  const { t, i18n } = useTranslation();
   const { data: profile } = useProfile();
   const update = useUpdateProfile();
 
@@ -16,13 +15,16 @@ export default function ReminderSetting() {
 
   return (
     <Screen scroll>
-      <AuthHeader
-        title="وقت التذكير"
-        subtitle="تذكير واحد في اليوم — مش أكتر"
+      <Header
+        title={t("settings.reminderTime")}
+        subtitle={t("settings.reminderHint")}
         onBack={() => router.back()}
       />
       <ChoiceList<number>
-        options={HOURS.map((h) => ({ key: h, title: formatHour(h) }))}
+        options={REMINDER_HOURS.map((h) => ({
+          key: h,
+          title: formatHour(h, i18n.language),
+        }))}
         value={current}
         onChange={(h) =>
           update.mutate({

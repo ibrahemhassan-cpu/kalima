@@ -1,117 +1,132 @@
 import React from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  type PressableProps,
-  type StyleProp,
-  StyleSheet,
-  View,
-  type ViewStyle,
-} from "react-native";
-import * as Haptics from "expo-haptics";
+import { ActivityIndicator, type ViewStyle, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/theme/ThemeProvider";
 import { Text } from "./Text";
+import { Touchable } from "./Touchable";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
-type Size = "md" | "lg";
+type Size = "sm" | "md" | "lg";
 
-export type ButtonProps = Omit<PressableProps, "style"> & {
+export type ButtonProps = {
   title: string;
+  onPress?: () => void;
   variant?: Variant;
   size?: Size;
   icon?: keyof typeof Ionicons.glyphMap;
+  iconEnd?: keyof typeof Ionicons.glyphMap;
   loading?: boolean;
+  disabled?: boolean;
   fullWidth?: boolean;
-  haptic?: boolean;
-  style?: StyleProp<ViewStyle>;
+  style?: ViewStyle;
 };
 
 export function Button({
   title,
+  onPress,
   variant = "primary",
   size = "md",
   icon,
+  iconEnd,
   loading,
-  fullWidth,
-  haptic = true,
   disabled,
-  onPress,
+  fullWidth,
   style,
-  ...rest
 }: ButtonProps) {
-  const { colors, radius, spacing, minTouch } = useTheme();
-  const isDisabled = disabled || loading;
+  const { colors, radius, spacing, shadow, minTouch } = useTheme();
+  const off = disabled || loading;
 
-  const bg: Record<Variant, string> = {
-    primary: colors.brand,
-    secondary: colors.surfaceAlt,
-    ghost: "transparent",
-    danger: colors.danger,
-  };
-  const fg: Record<Variant, string> = {
+  const height = size === "lg" ? 56 : size === "sm" ? minTouch - 8 : minTouch;
+  const padX = size === "lg" ? spacing.xl : spacing.lg;
+
+  const fg = {
     primary: colors.onBrand,
     secondary: colors.text,
     ghost: colors.brand,
     danger: colors.onDanger,
-  };
+  }[variant];
 
-  const height = size === "lg" ? 58 : minTouch;
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={title}
-      accessibilityState={{ disabled: !!isDisabled, busy: !!loading }}
-      disabled={isDisabled}
-      onPress={(e) => {
-        if (haptic) {
-          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
-        onPress?.(e);
-      }}
-      style={({ pressed }) => [
-        styles.base,
-        {
-          minHeight: height,
-          paddingHorizontal: spacing.xl,
-          borderRadius: radius.md,
-          backgroundColor: bg[variant],
-          borderWidth: variant === "ghost" ? 0 : variant === "secondary" ? 1 : 0,
-          borderColor: colors.border,
-          opacity: isDisabled ? 0.5 : pressed ? 0.85 : 1,
-          alignSelf: fullWidth ? "stretch" : "flex-start",
-        },
-        style,
-      ]}
-      {...rest}
-    >
-      {loading ? (
-        <ActivityIndicator color={fg[variant]} />
-      ) : (
-        <View style={[styles.row, { gap: spacing.sm }]}>
-          {icon ? (
-            <Ionicons name={icon} size={20} color={fg[variant]} />
-          ) : null}
-          <Text
-            variant={size === "lg" ? "heading" : "bodyStrong"}
-            style={{ color: fg[variant] }}
-          >
-            {title}
-          </Text>
-        </View>
-      )}
-    </Pressable>
-  );
-}
-
-const styles = StyleSheet.create({
-  base: {
+  const shell: ViewStyle = {
+    minHeight: height,
+    paddingHorizontal: padX,
+    borderRadius: radius.md,
     alignItems: "center",
     justifyContent: "center",
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-});
+    alignSelf: fullWidth ? "stretch" : "flex-start",
+    overflow: "hidden",
+    ...(style ?? {}),
+  };
+
+  const label = (
+    <View
+      style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}
+    >
+      {icon ? <Ionicons name={icon} size={19} color={fg} /> : null}
+      <Text
+        variant={size === "lg" ? "heading" : "bodyStrong"}
+        style={{ color: fg }}
+      >
+        {title}
+      </Text>
+      {iconEnd ? <Ionicons name={iconEnd} size={19} color={fg} /> : null}
+    </View>
+  );
+
+  const body = loading ? <ActivityIndicator color={fg} /> : label;
+
+  // Primary gets the gradient + coloured glow.
+  if (variant === "primary") {
+    return (
+      <Touchable
+        onPress={onPress}
+        disabled={off}
+        accessibilityRole="button"
+        accessibilityLabel={title}
+        accessibilityState={{ disabled: !!off, busy: !!loading }}
+        style={[shell, shadow.brand]}
+      >
+        <LinearGradient
+          colors={[colors.brand, colors.brandAlt]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+          }}
+        />
+        {body}
+      </Touchable>
+    );
+  }
+
+  const bg = {
+    secondary: colors.glassStrong,
+    ghost: "transparent",
+    danger: colors.danger,
+  }[variant as "secondary" | "ghost" | "danger"];
+
+  return (
+    <Touchable
+      onPress={onPress}
+      disabled={off}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityState={{ disabled: !!off, busy: !!loading }}
+      style={[
+        shell,
+        {
+          backgroundColor: bg,
+          borderWidth: variant === "secondary" ? 1 : 0,
+          borderColor: colors.border,
+        },
+        variant === "danger" ? shadow.sm : undefined,
+      ]}
+    >
+      {body}
+    </Touchable>
+  );
+}

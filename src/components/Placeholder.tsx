@@ -33,7 +33,7 @@ export function Placeholder({
             width: 88,
             height: 88,
             borderRadius: radius.xl,
-            backgroundColor: colors.surfaceAlt,
+            backgroundColor: colors.sunken,
             alignItems: "center",
             justifyContent: "center",
           }}

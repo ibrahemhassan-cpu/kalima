@@ -1,32 +1,40 @@
 /**
- * ألوان كلمة.
- * كل الألوان هنا وبس. تغيير الهوية بعدين = تعديل هذا الملف فقط.
+ * Kalima design tokens.
+ *
+ * Aesthetic: near-monochrome canvas, one confident accent, translucent
+ * surfaces, generous radii. Everything lives here — no hex outside this file.
  */
 
-export const palette = {
-  brand: "#3B5BFF",
-  brandDark: "#2843C8",
-  accent: "#FF9F1C", // الستريك والإنجازات فقط
-  success: "#16A34A",
-  danger: "#E03B3B",
-  warning: "#D97706",
-} as const;
-
 export type Colors = {
+  // canvas
   bg: string;
-  surface: string;
-  surfaceAlt: string;
+  bgTop: string;
+  bgBottom: string;
+
+  // surfaces
+  glass: string;
+  glassStrong: string;
+  solid: string;
+  raised: string;
+  sunken: string;
+
+  // hairlines
   border: string;
   borderStrong: string;
+
+  // type
   text: string;
   textMuted: string;
   textFaint: string;
 
+  // accent
   brand: string;
-  brandDark: string;
+  brandAlt: string;
   brandSoft: string;
+  brandBorder: string;
   onBrand: string;
 
+  // semantic
   accent: string;
   accentSoft: string;
   success: string;
@@ -35,69 +43,110 @@ export type Colors = {
   dangerSoft: string;
   onDanger: string;
   warning: string;
+  warningSoft: string;
 
-  /** ألوان أزرار التقييم الأربعة: نسيت · صعبة · تمام · سهلة */
+  /** forgot · hard · good · easy */
   rating: readonly [string, string, string, string];
+  ratingSoft: readonly [string, string, string, string];
 
   overlay: string;
+  /** blur tint for expo-blur */
+  blurTint: "light" | "dark";
+  shadowColor: string;
 };
 
 export const light: Colors = {
-  bg: "#FFFFFF",
-  surface: "#F5F7FC",
-  surfaceAlt: "#EDF1F9",
-  border: "#DCE3EF",
-  borderStrong: "#C3CEE2",
-  text: "#0F1729",
-  textMuted: "#5B6779",
-  textFaint: "#8B96A8",
+  bg: "#F6F7FB",
+  bgTop: "#FFFFFF",
+  bgBottom: "#EFF1F8",
 
-  brand: palette.brand,
-  brandDark: palette.brandDark,
-  brandSoft: "#E8ECFF",
+  glass: "rgba(255,255,255,0.66)",
+  glassStrong: "rgba(255,255,255,0.86)",
+  solid: "#FFFFFF",
+  raised: "#FFFFFF",
+  sunken: "#ECEEF5",
+
+  border: "rgba(11,13,20,0.07)",
+  borderStrong: "rgba(11,13,20,0.14)",
+
+  text: "#0B0D14",
+  textMuted: "#5C6373",
+  textFaint: "#98A0B2",
+
+  brand: "#5B5BF5",
+  brandAlt: "#8B5CF6",
+  brandSoft: "rgba(91,91,245,0.10)",
+  brandBorder: "rgba(91,91,245,0.22)",
   onBrand: "#FFFFFF",
 
-  accent: palette.accent,
-  accentSoft: "#FFF2DE",
-  success: palette.success,
-  successSoft: "#E4F6EA",
-  danger: palette.danger,
-  dangerSoft: "#FCE9E9",
+  accent: "#FF8A3D",
+  accentSoft: "rgba(255,138,61,0.12)",
+  success: "#10B981",
+  successSoft: "rgba(16,185,129,0.12)",
+  danger: "#F43F5E",
+  dangerSoft: "rgba(244,63,94,0.10)",
   onDanger: "#FFFFFF",
-  warning: palette.warning,
+  warning: "#E08600",
+  warningSoft: "rgba(224,134,0,0.12)",
 
-  rating: ["#E03B3B", "#D97706", "#16A34A", "#3B5BFF"],
+  rating: ["#F43F5E", "#F59E0B", "#10B981", "#5B5BF5"],
+  ratingSoft: [
+    "rgba(244,63,94,0.10)",
+    "rgba(245,158,11,0.12)",
+    "rgba(16,185,129,0.12)",
+    "rgba(91,91,245,0.10)",
+  ],
 
-  overlay: "rgba(15, 23, 41, 0.45)",
+  overlay: "rgba(11,13,20,0.42)",
+  blurTint: "light",
+  shadowColor: "#0B0D14",
 };
 
 export const dark: Colors = {
-  bg: "#0B1120",
-  surface: "#151C2E",
-  surfaceAlt: "#1E2739",
-  border: "#2A3550",
-  borderStrong: "#3B4763",
-  text: "#E9EEF9",
-  textMuted: "#9AA7BD",
-  textFaint: "#6C7A93",
+  bg: "#08090E",
+  bgTop: "#12141C",
+  bgBottom: "#08090E",
 
-  brand: "#6C86FF", // أفتح للتباين على خلفية غامقة
-  brandDark: "#4C6BFF",
-  brandSoft: "#1B2440",
-  onBrand: "#0B1120",
+  glass: "rgba(255,255,255,0.055)",
+  glassStrong: "rgba(255,255,255,0.09)",
+  solid: "#12141C",
+  raised: "#171A24",
+  sunken: "#0D0F16",
 
-  accent: "#FFB347",
-  accentSoft: "#33270F",
-  success: "#34C76A",
-  successSoft: "#12301E",
-  danger: "#FF6B6B",
-  dangerSoft: "#331717",
-  onDanger: "#1A0B0B",
-  warning: "#F0A93B",
+  border: "rgba(255,255,255,0.09)",
+  borderStrong: "rgba(255,255,255,0.16)",
 
-  rating: ["#FF6B6B", "#F0A93B", "#34C76A", "#6C86FF"],
+  text: "#F2F4FA",
+  textMuted: "#9BA3B6",
+  textFaint: "#666E80",
 
-  overlay: "rgba(0, 0, 0, 0.6)",
+  brand: "#8080FF",
+  brandAlt: "#A78BFA",
+  brandSoft: "rgba(128,128,255,0.16)",
+  brandBorder: "rgba(128,128,255,0.30)",
+  onBrand: "#0A0B12",
+
+  accent: "#FF9F5A",
+  accentSoft: "rgba(255,159,90,0.16)",
+  success: "#34D399",
+  successSoft: "rgba(52,211,153,0.15)",
+  danger: "#FB7185",
+  dangerSoft: "rgba(251,113,133,0.15)",
+  onDanger: "#1A0A0E",
+  warning: "#FBBF24",
+  warningSoft: "rgba(251,191,36,0.15)",
+
+  rating: ["#FB7185", "#FBBF24", "#34D399", "#8080FF"],
+  ratingSoft: [
+    "rgba(251,113,133,0.15)",
+    "rgba(251,191,36,0.15)",
+    "rgba(52,211,153,0.15)",
+    "rgba(128,128,255,0.16)",
+  ],
+
+  overlay: "rgba(0,0,0,0.66)",
+  blurTint: "dark",
+  shadowColor: "#000000",
 };
 
 export const themes = { light, dark } as const;

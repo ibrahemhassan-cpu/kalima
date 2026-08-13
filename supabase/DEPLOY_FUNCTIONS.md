@@ -11,6 +11,36 @@
 
 ---
 
+## 0-ب. شغّل `0006_questions.sql` كمان
+
+بعد `0005`، شغّل `0006_questions.sql` في SQL Editor. بيضيف:
+
+- `entry_questions` — بنك أسئلة مولّد بالـ AI، مشترك بين كل المستخدمين
+- `get_session_items` — مُنسّق الجلسة اللي بيختار نوع سؤال مختلف كل مرة
+- `submit_quiz_answer` — تصحيح على السيرفر (الإجابة الصحيحة ما بتوصلش للتطبيق أبدًا)
+- `entries_missing_questions` · `lookup_words`
+
+تحقّق:
+
+```sql
+select routine_name from information_schema.routines
+where routine_schema='public'
+  and routine_name in ('get_session_items','submit_quiz_answer',
+                       'entries_missing_questions','lookup_words','last_modes');
+-- المتوقع: 5 صفوف
+
+select count(*) from public.entry_questions;  -- 0 دلوقتي، هتزيد مع كل كلمة جديدة
+```
+
+ولازم تنشر الدالة الجديدة كمان:
+
+```powershell
+npx eas-cli@latest --version   # (غير مطلوب، ده مجرد فاصل)
+npx supabase functions deploy generate-questions
+```
+
+---
+
 ## 0. شغّل `0005_ai_usage.sql` الأول
 
 نفس الطريقة السابقة: **SQL Editor** → الصق → Run.
@@ -100,6 +130,7 @@ npx supabase secrets list
 
 ```powershell
 npx supabase functions deploy enrich-word
+npx supabase functions deploy generate-questions
 npx supabase functions deploy delete-account
 ```
 

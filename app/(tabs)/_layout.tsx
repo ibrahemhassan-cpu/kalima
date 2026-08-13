@@ -1,13 +1,27 @@
 import React from "react";
+import { type ColorValue, Platform, View } from "react-native";
 import { Tabs } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useSettings } from "@/store/settings";
 
 export default function TabsLayout() {
-  const { colors, type } = useTheme();
-  // الوضع المبسّط: 3 تبويبات بدل 5
+  const { colors, type, isDark } = useTheme();
+  const { t } = useTranslation();
   const simple = useSettings((s) => s.simpleMode);
+
+  // Signature must match what expo-router hands us: color is ColorValue.
+  const icon =
+    (name: string) =>
+    ({ color, focused }: { focused: boolean; color: ColorValue; size: number }) => (
+      <Ionicons
+        name={(focused ? name : `${name}-outline`) as never}
+        size={23}
+        color={color}
+      />
+    );
 
   return (
     <Tabs
@@ -16,77 +30,57 @@ export default function TabsLayout() {
         tabBarActiveTintColor: colors.brand,
         tabBarInactiveTintColor: colors.textFaint,
         tabBarStyle: {
-          backgroundColor: colors.bg,
+          position: "absolute",
+          borderTopWidth: 0.5,
           borderTopColor: colors.border,
-          height: 64,
-          paddingTop: 6,
-          paddingBottom: 8,
+          backgroundColor:
+            Platform.OS === "android" ? colors.solid : "transparent",
+          height: 78,
+          paddingTop: 8,
+          paddingBottom: 20,
+          elevation: 0,
         },
-        tabBarLabelStyle: { fontSize: type.caption.fontSize, fontWeight: "600" },
+        tabBarBackground:
+          Platform.OS === "ios"
+            ? () => (
+                <BlurView
+                  intensity={isDark ? 40 : 60}
+                  tint={colors.blurTint}
+                  style={{ flex: 1, backgroundColor: colors.glass }}
+                />
+              )
+            : undefined,
+        tabBarLabelStyle: {
+          fontSize: type.micro.fontSize,
+          fontWeight: "600",
+          letterSpacing: 0,
+        },
         tabBarItemStyle: { minHeight: 48 },
       }}
     >
       <Tabs.Screen
         name="index"
-        options={{
-          title: "الرئيسية",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "home" : "home-outline"} size={24} color={color} />
-          ),
-        }}
+        options={{ title: t("tabs.home"), tabBarIcon: icon("home") }}
       />
       <Tabs.Screen
         name="words"
-        options={{
-          title: "كلماتي",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "library" : "library-outline"}
-              size={24}
-              color={color}
-            />
-          ),
-        }}
+        options={{ title: t("tabs.words"), tabBarIcon: icon("library") }}
       />
       <Tabs.Screen
         name="review"
-        options={{
-          title: "المراجعة",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "repeat" : "repeat-outline"}
-              size={24}
-              color={color}
-            />
-          ),
-        }}
+        options={{ title: t("tabs.review"), tabBarIcon: icon("repeat") }}
       />
       <Tabs.Screen
         name="discover"
         options={{
-          title: "اكتشف",
+          title: t("tabs.discover"),
           href: simple ? null : undefined,
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "compass" : "compass-outline"}
-              size={24}
-              color={color}
-            />
-          ),
+          tabBarIcon: icon("compass"),
         }}
       />
       <Tabs.Screen
         name="profile"
-        options={{
-          title: "حسابي",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "person" : "person-outline"}
-              size={24}
-              color={color}
-            />
-          ),
-        }}
+        options={{ title: t("tabs.profile"), tabBarIcon: icon("person") }}
       />
     </Tabs>
   );

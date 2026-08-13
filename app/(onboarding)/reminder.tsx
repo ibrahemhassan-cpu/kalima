@@ -1,24 +1,30 @@
 import React, { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
+
 import {
   Button,
-  Card,
+  Header,
   ProgressDots,
   Screen,
+  Surface,
   Text,
+  Touchable,
 } from "@/components/ui";
 import { useTheme } from "@/theme/ThemeProvider";
-import { formatHour, useOnboarding } from "@/features/onboarding/store";
-import { AuthHeader } from "@/features/auth/AuthHeader";
+import {
+  formatHour,
+  REMINDER_HOURS,
+  useOnboarding,
+} from "@/features/onboarding/store";
 import { deviceTimezone, useUpdateProfile } from "@/api/profile";
 import { useSettings } from "@/store/settings";
 
-const HOURS = [7, 9, 12, 15, 17, 19, 20, 21, 22];
-
 export default function ReminderStep() {
   const { colors, spacing, radius, minTouch } = useTheme();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
 
   const { level, dailyGoal, reminderHour, reminderEnabled, setReminder, reset } =
@@ -42,99 +48,103 @@ export default function ReminderStep() {
       reset();
       router.replace("/(tabs)");
     } catch {
-      setError("ما قدرناش نحفظ إعداداتك. اتأكد من الإنترنت وجرّب تاني");
+      setError(t("onboarding.saveFailed"));
     }
   }
 
   return (
     <Screen scroll>
-      <AuthHeader title="" onBack={() => router.back()} />
+      <Header onBack={() => router.back()} />
       <ProgressDots total={3} index={2} />
 
       <View style={{ gap: spacing.sm, paddingTop: spacing.lg }}>
-        <Text variant="title">نفكّرك امتى؟</Text>
+        <Text variant="title">{t("onboarding.reminderTitle")}</Text>
         <Text variant="body" tone="muted">
-          تذكير واحد في اليوم في الوقت اللي يناسبك. تقدر تقفله من الإعدادات.
+          {t("onboarding.reminderSubtitle")}
         </Text>
       </View>
 
-      <Card>
+      <Surface tone="glass" radiusKey="xl">
         <View style={{ gap: spacing.lg }}>
           <View
             style={{ flexDirection: "row", alignItems: "center", gap: spacing.md }}
           >
-            <Ionicons name="notifications-outline" size={24} color={colors.brand} />
+            <Ionicons name="notifications-outline" size={22} color={colors.brand} />
             <Text variant="bodyStrong" style={{ flex: 1 }}>
-              {reminderEnabled ? formatHour(reminderHour ?? 19) : "التذكير مقفول"}
+              {reminderEnabled
+                ? formatHour(reminderHour ?? 19, i18n.language)
+                : t("onboarding.reminderOff")}
             </Text>
-            <Text
-              variant="label"
-              tone="brand"
-              accessibilityRole="button"
+            <Touchable
+              haptic="select"
               onPress={() => setReminder(reminderHour, !reminderEnabled)}
+              scaleTo={0.94}
             >
-              {reminderEnabled ? "اقفله" : "شغّله"}
-            </Text>
+              <Text variant="label" tone="brand">
+                {reminderEnabled ? t("onboarding.turnOff") : t("onboarding.turnOn")}
+              </Text>
+            </Touchable>
           </View>
 
           {reminderEnabled ? (
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: spacing.sm }}
+              contentContainerStyle={{ gap: spacing.sm, paddingVertical: 2 }}
             >
-              {HOURS.map((h) => {
+              {REMINDER_HOURS.map((h) => {
                 const active = h === reminderHour;
                 return (
-                  <Text
+                  <Touchable
                     key={h}
-                    variant="label"
+                    haptic="select"
+                    onPress={() => setReminder(h, true)}
                     accessibilityRole="radio"
                     accessibilityState={{ selected: active }}
-                    onPress={() => setReminder(h, true)}
                     style={{
-                      minHeight: minTouch,
-                      lineHeight: minTouch,
+                      minHeight: minTouch - 6,
+                      justifyContent: "center",
                       paddingHorizontal: spacing.lg,
                       borderRadius: radius.pill,
-                      overflow: "hidden",
-                      textAlign: "center",
-                      borderWidth: active ? 2 : 1,
+                      borderWidth: active ? 1.5 : 1,
                       borderColor: active ? colors.brand : colors.border,
-                      backgroundColor: active ? colors.brandSoft : colors.bg,
-                      color: active ? colors.brand : colors.textMuted,
+                      backgroundColor: active ? colors.brandSoft : colors.glassStrong,
                     }}
                   >
-                    {formatHour(h)}
-                  </Text>
+                    <Text
+                      variant="label"
+                      style={{ color: active ? colors.brand : colors.textMuted }}
+                    >
+                      {formatHour(h, i18n.language)}
+                    </Text>
+                  </Touchable>
                 );
               })}
             </ScrollView>
           ) : null}
         </View>
-      </Card>
+      </Surface>
 
-      <Card tone="brand">
+      <Surface tone="brand" radiusKey="xl">
         <View style={{ flexDirection: "row", gap: spacing.md }}>
-          <Ionicons name="accessibility-outline" size={24} color={colors.brand} />
+          <Ionicons name="accessibility-outline" size={22} color={colors.brand} />
           <View style={{ flex: 1, gap: spacing.xs }}>
-            <Text variant="bodyStrong">محتاج خط أكبر وخيارات أقل؟</Text>
+            <Text variant="bodyStrong">{t("onboarding.simpleTitle")}</Text>
             <Text variant="caption" tone="muted">
-              الوضع المبسّط بيكبّر كل حاجة ويخفي التفاصيل المتقدّمة. مناسب جدًا لو
-              التطبيق لحد كبير في السن.
+              {t("onboarding.simpleBody")}
             </Text>
-            <Text
-              variant="label"
-              tone="brand"
-              accessibilityRole="button"
+            <Touchable
+              haptic="select"
               onPress={() => setSimpleMode(true)}
               style={{ paddingVertical: spacing.sm }}
             >
-              فعّل الوضع المبسّط
-            </Text>
+              <Text variant="label" tone="brand">
+                {t("onboarding.simpleAction")}
+              </Text>
+            </Touchable>
           </View>
         </View>
-      </Card>
+      </Surface>
 
       {error ? (
         <Text variant="caption" tone="danger" center>
@@ -143,9 +153,10 @@ export default function ReminderStep() {
       ) : null}
 
       <Button
-        title="يلا نبدأ"
+        title={t("onboarding.finish")}
         size="lg"
         fullWidth
+        iconEnd="arrow-forward"
         loading={update.isPending}
         onPress={finish}
       />

@@ -90,7 +90,7 @@ export function ListRow({
       accessibilityLabel={title}
       onPress={onPress}
       style={({ pressed }) => ({
-        backgroundColor: pressed ? colors.surfaceAlt : "transparent",
+        backgroundColor: pressed ? colors.sunken : "transparent",
       })}
     >
       {content}
@@ -115,7 +115,7 @@ export function ListGroup({
       ) : null}
       <View
         style={{
-          backgroundColor: colors.surface,
+          backgroundColor: colors.glassStrong,
           borderRadius: radius.lg,
           borderWidth: 1,
           borderColor: colors.border,

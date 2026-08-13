@@ -5,6 +5,11 @@ import {
   type TextInputProps,
   View,
 } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 import { useTheme } from "@/theme/ThemeProvider";
 import { Text } from "./Text";
 
@@ -12,8 +17,9 @@ export type InputProps = TextInputProps & {
   label?: string;
   error?: string;
   hint?: string;
-  /** حقول الكلمة الإنجليزية — تفرض اتجاه LTR ولوحة مفاتيح إنجليزية */
+  /** English-only field: forces LTR and disables autocorrect */
   english?: boolean;
+  size?: "md" | "lg";
 };
 
 export function Input({
@@ -21,58 +27,73 @@ export function Input({
   error,
   hint,
   english,
+  size = "md",
   style,
   ...rest
 }: InputProps) {
-  const { colors, radius, spacing, type, minTouch } = useTheme();
+  const { colors, radius, spacing, type, minTouch, spring } = useTheme();
   const [focused, setFocused] = useState(false);
+  const ring = useSharedValue(0);
 
-  const borderColor = error
-    ? colors.danger
-    : focused
-      ? colors.brand
-      : colors.border;
+  const ringStyle = useAnimatedStyle(() => ({
+    borderWidth: 1 + ring.value,
+    borderColor: error
+      ? colors.danger
+      : ring.value > 0.5
+        ? colors.brand
+        : colors.border,
+  }));
 
   return (
-    <View style={{ gap: spacing.xs }}>
+    <View style={{ gap: spacing.sm }}>
       {label ? (
         <Text variant="label" tone="muted">
           {label}
         </Text>
       ) : null}
 
-      <TextInput
-        onFocus={(e) => {
-          setFocused(true);
-          rest.onFocus?.(e);
-        }}
-        onBlur={(e) => {
-          setFocused(false);
-          rest.onBlur?.(e);
-        }}
-        placeholderTextColor={colors.textFaint}
-        maxFontSizeMultiplier={1.6}
-        accessibilityLabel={label}
-        autoCapitalize={english ? "none" : rest.autoCapitalize}
-        autoCorrect={english ? false : rest.autoCorrect}
+      <Animated.View
         style={[
-          type.body,
+          ringStyle,
           {
-            minHeight: minTouch,
-            paddingHorizontal: spacing.lg,
-            paddingVertical: spacing.md,
             borderRadius: radius.md,
-            borderWidth: focused ? 2 : 1,
-            borderColor,
-            backgroundColor: colors.bg,
-            color: colors.text,
-            textAlign: english ? "left" : I18nManager.isRTL ? "right" : "left",
-            writingDirection: english ? "ltr" : undefined,
+            backgroundColor: colors.glassStrong,
+            overflow: "hidden",
           },
-          style,
         ]}
-        {...rest}
-      />
+      >
+        <TextInput
+          onFocus={(e) => {
+            setFocused(true);
+            ring.value = withSpring(1, spring.snappy);
+            rest.onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setFocused(false);
+            ring.value = withSpring(0, spring.snappy);
+            rest.onBlur?.(e);
+          }}
+          placeholderTextColor={colors.textFaint}
+          maxFontSizeMultiplier={1.6}
+          accessibilityLabel={label}
+          autoCapitalize={english ? "none" : rest.autoCapitalize}
+          autoCorrect={english ? false : rest.autoCorrect}
+          selectionColor={colors.brand}
+          style={[
+            size === "lg" ? type.heading : type.body,
+            {
+              minHeight: size === "lg" ? 60 : minTouch,
+              paddingHorizontal: spacing.lg,
+              paddingVertical: spacing.md,
+              color: colors.text,
+              textAlign: english ? "left" : I18nManager.isRTL ? "right" : "left",
+              writingDirection: english ? "ltr" : undefined,
+            },
+            style,
+          ]}
+          {...rest}
+        />
+      </Animated.View>
 
       {error ? (
         <Text variant="caption" tone="danger">

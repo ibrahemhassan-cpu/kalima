@@ -1,59 +1,26 @@
 import React from "react";
-import {
-  Pressable,
-  type StyleProp,
-  View,
-  type ViewStyle,
-} from "react-native";
-import { useTheme } from "@/theme/ThemeProvider";
+import type { StyleProp, ViewStyle } from "react-native";
+import { Surface, type SurfaceProps } from "./Surface";
+import { Touchable } from "./Touchable";
 
-export type CardProps = {
-  children: React.ReactNode;
+export type CardProps = Omit<SurfaceProps, "style"> & {
   onPress?: () => void;
-  tone?: "surface" | "bg" | "brand";
-  padded?: boolean;
-  style?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
+  style?: StyleProp<ViewStyle>;
 };
 
-export function Card({
-  children,
-  onPress,
-  tone = "surface",
-  padded = true,
-  style,
-  accessibilityLabel,
-}: CardProps) {
-  const { colors, radius, spacing, shadow } = useTheme();
-
-  const bg = {
-    surface: colors.surface,
-    bg: colors.bg,
-    brand: colors.brandSoft,
-  }[tone];
-
-  const base: StyleProp<ViewStyle> = [
-    {
-      backgroundColor: bg,
-      borderRadius: radius.lg,
-      borderWidth: 1,
-      borderColor: colors.border,
-      padding: padded ? spacing.lg : 0,
-    },
-    shadow.card,
-    style,
-  ];
-
-  if (!onPress) return <View style={base}>{children}</View>;
+export function Card({ onPress, accessibilityLabel, style, ...rest }: CardProps) {
+  if (!onPress) return <Surface {...rest} style={style} />;
 
   return (
-    <Pressable
+    <Touchable
+      onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      onPress={onPress}
-      style={({ pressed }) => [base, { opacity: pressed ? 0.9 : 1 }]}
+      scaleTo={0.985}
+      style={style as ViewStyle}
     >
-      {children}
-    </Pressable>
+      <Surface {...rest} />
+    </Touchable>
   );
 }

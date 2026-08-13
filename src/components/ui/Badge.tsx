@@ -1,5 +1,6 @@
 import React from "react";
 import { View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/theme/ThemeProvider";
 import { Text } from "./Text";
@@ -18,14 +19,14 @@ export function Badge({
 }) {
   const { colors, radius, spacing } = useTheme();
 
-  const map: Record<Tone, { bg: string; fg: string }> = {
-    neutral: { bg: colors.surfaceAlt, fg: colors.textMuted },
-    brand: { bg: colors.brandSoft, fg: colors.brand },
-    success: { bg: colors.successSoft, fg: colors.success },
-    danger: { bg: colors.dangerSoft, fg: colors.danger },
-    accent: { bg: colors.accentSoft, fg: colors.warning },
+  const map: Record<Tone, { bg: string; fg: string; bd: string }> = {
+    neutral: { bg: colors.sunken, fg: colors.textMuted, bd: colors.border },
+    brand: { bg: colors.brandSoft, fg: colors.brand, bd: colors.brandBorder },
+    success: { bg: colors.successSoft, fg: colors.success, bd: "transparent" },
+    danger: { bg: colors.dangerSoft, fg: colors.danger, bd: "transparent" },
+    accent: { bg: colors.accentSoft, fg: colors.warning, bd: "transparent" },
   };
-  const { bg, fg } = map[tone];
+  const c = map[tone];
 
   return (
     <View
@@ -33,34 +34,44 @@ export function Badge({
         flexDirection: "row",
         alignItems: "center",
         gap: spacing.xs,
-        backgroundColor: bg,
+        backgroundColor: c.bg,
+        borderColor: c.bd,
+        borderWidth: 1,
         borderRadius: radius.pill,
         paddingHorizontal: spacing.md,
-        paddingVertical: spacing.xs,
+        paddingVertical: 5,
         alignSelf: "flex-start",
       }}
     >
-      {icon ? <Ionicons name={icon} size={14} color={fg} /> : null}
-      <Text variant="caption" style={{ color: fg, fontWeight: "600" }}>
+      {icon ? <Ionicons name={icon} size={13} color={c.fg} /> : null}
+      <Text variant="caption" style={{ color: c.fg, fontWeight: "600" }}>
         {label}
       </Text>
     </View>
   );
 }
 
-/** حالة الكلمة تُبلَّغ بأيقونة ونص — لا باللون وحده */
+/** Status is conveyed by icon + text, never colour alone. */
 export function StatusBadge({ status }: { status: WordStatus }) {
+  const { t } = useTranslation();
+
   const map: Record<
     WordStatus,
-    { label: string; tone: Tone; icon: keyof typeof Ionicons.glyphMap }
+    { tone: Tone; icon: keyof typeof Ionicons.glyphMap }
   > = {
-    new: { label: "جديدة", tone: "brand", icon: "sparkles-outline" },
-    learning: { label: "بتتعلمها", tone: "brand", icon: "school-outline" },
-    review: { label: "في المراجعة", tone: "neutral", icon: "repeat-outline" },
-    mastered: { label: "متقنة", tone: "success", icon: "checkmark-circle-outline" },
-    leech: { label: "صعبة عليك", tone: "danger", icon: "alert-circle-outline" },
-    archived: { label: "مؤرشفة", tone: "neutral", icon: "archive-outline" },
+    new: { tone: "brand", icon: "sparkles-outline" },
+    learning: { tone: "brand", icon: "school-outline" },
+    review: { tone: "neutral", icon: "repeat-outline" },
+    mastered: { tone: "success", icon: "checkmark-circle-outline" },
+    leech: { tone: "danger", icon: "alert-circle-outline" },
+    archived: { tone: "neutral", icon: "archive-outline" },
   };
-  const cfg = map[status];
-  return <Badge label={cfg.label} tone={cfg.tone} icon={cfg.icon} />;
+
+  return (
+    <Badge
+      label={t(`status.${status}`)}
+      tone={map[status].tone}
+      icon={map[status].icon}
+    />
+  );
 }

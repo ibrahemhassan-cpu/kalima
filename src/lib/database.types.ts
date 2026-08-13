@@ -28,6 +28,8 @@ export type Sense = {
   en_definition: string;
   ar_definition: string;
   ar_translations: string[];
+  /** short phrase that tells this sense apart, e.g. "in a money context" */
+  disambiguator_ar?: string;
 };
 
 export type Example = {

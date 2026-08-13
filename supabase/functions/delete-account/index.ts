@@ -47,8 +47,10 @@ Deno.serve(async (req) => {
   } catch {
     body = {};
   }
-  if (body.confirm !== "حذف" && body.confirm !== "DELETE") {
-    return fail("confirm_required", "اكتب كلمة «حذف» للتأكيد", 400);
+  const confirmed = ["DELETE", "حذف"].includes((body.confirm ?? "").trim().toUpperCase())
+    || (body.confirm ?? "").trim() === "حذف";
+  if (!confirmed) {
+    return fail("confirm_required", "اكتب كلمة «حذف» للتأكيد · Type DELETE to confirm", 400);
   }
 
   const admin = createClient(SUPABASE_URL, SERVICE_KEY, {

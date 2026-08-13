@@ -20,9 +20,13 @@ export type EnrichResponse = {
 
 export class EnrichError extends Error {
   code: string;
-  constructor(code: string, messageAr: string) {
+  /** spelling suggestions the model offered when the word wasn't recognised */
+  didYouMean: string[];
+
+  constructor(code: string, messageAr: string, didYouMean: string[] = []) {
     super(messageAr);
     this.code = code;
+    this.didYouMean = didYouMean;
   }
 }
 
@@ -54,6 +58,7 @@ export async function enrichWord(
     throw new EnrichError(
       body?.error ?? "unknown",
       body?.message_ar ?? "حصل خطأ. جرّب تاني",
+      body?.did_you_mean ?? [],
     );
   }
   return body as EnrichResponse;
@@ -238,20 +243,26 @@ export function useReportWord() {
 // أدوات عرض
 // ═══════════════════════════════════════════════════════════
 
-/** «بعد 4 أيام» / «بعد ساعتين» / «مستحقة دلوقتي» */
-export function formatDue(dueAt: string): string {
+type Translate = (key: string, opts?: Record<string, unknown>) => string;
+
+/** "in 4 days" / "in an hour" / "due now" — localised via the `due.*` keys. */
+export function formatDue(dueAt: string, t: Translate): string {
   const diffMs = new Date(dueAt).getTime() - Date.now();
-  if (diffMs <= 0) return "مستحقة دلوقتي";
+  if (diffMs <= 0) return t("due.now");
 
   const mins = Math.round(diffMs / 60_000);
-  if (mins < 60) return `بعد ${mins} دقيقة`;
+  if (mins < 60) return t("due.minutes", { count: mins });
 
   const hours = Math.round(mins / 60);
-  if (hours < 24) return hours === 1 ? "بعد ساعة" : `بعد ${hours} ساعة`;
+  if (hours < 24) {
+    return hours === 1 ? t("due.hour") : t("due.hours", { count: hours });
+  }
 
   const days = Math.round(hours / 24);
-  if (days < 30) return days === 1 ? "بكرة" : `بعد ${days} يوم`;
+  if (days < 30) {
+    return days === 1 ? t("due.tomorrow") : t("due.days", { count: days });
+  }
 
   const months = Math.round(days / 30);
-  return months === 1 ? "بعد شهر" : `بعد ${months} شهور`;
+  return months === 1 ? t("due.month") : t("due.months", { count: months });
 }

@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { View } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import * as ImagePicker from "expo-image-picker";
 import { decode } from "base64-arraybuffer";
-import { Avatar, Button, Card, Input, Screen, Text } from "@/components/ui";
-import { AuthHeader } from "@/features/auth/AuthHeader";
+import { LinearGradient } from "expo-linear-gradient";
+
+import { Avatar, Button, Header, Input, Screen, Surface, Text } from "@/components/ui";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useProfile, useUpdateProfile } from "@/api/profile";
 import { validateName } from "@/features/auth/errors";
@@ -12,7 +14,8 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth/AuthProvider";
 
 export default function EditProfile() {
-  const { spacing } = useTheme();
+  const { colors, spacing, radius } = useTheme();
+  const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
   const { data: profile } = useProfile();
@@ -26,7 +29,7 @@ export default function EditProfile() {
   async function pickAvatar() {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
-      setStatus("محتاجين إذن الوصول للصور عشان تغيّر صورتك");
+      setStatus(t("profile.photoPermission"));
       return;
     }
 
@@ -56,74 +59,82 @@ export default function EditProfile() {
 
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
       await update.mutateAsync({ avatar_url: data.publicUrl });
-      setStatus("اتغيّرت الصورة");
+      setStatus(t("common.saved"));
     } catch {
-      setStatus("ما قدرناش نرفع الصورة. جرّب تاني");
+      setStatus(t("profile.photoFailed"));
     } finally {
       setUploading(false);
     }
   }
 
   async function saveName() {
-    const e = validateName(name);
+    const e = validateName(name, t);
     setError(e);
     setStatus(null);
     if (e) return;
 
     try {
       await update.mutateAsync({ display_name: name.trim() });
-      setStatus("اتحفظ");
+      setStatus(t("common.saved"));
     } catch {
-      setStatus("ما قدرناش نحفظ. اتأكد من الإنترنت");
+      setStatus(t("profile.saveFailed"));
     }
   }
 
   return (
     <Screen scroll>
-      <AuthHeader title="تعديل البيانات" onBack={() => router.back()} />
+      <Header title={t("profile.editProfile")} onBack={() => router.back()} />
 
-      <Card>
-        <View style={{ alignItems: "center", gap: spacing.md }}>
-          <Avatar
-            uri={profile?.avatar_url}
-            name={profile?.display_name ?? "متعلّم"}
-            size={104}
-          />
+      <Surface tone="glass" radiusKey="xxl" elevation="md" padded={spacing.xl}>
+        <View style={{ alignItems: "center", gap: spacing.lg }}>
+          <View style={{ padding: 3, borderRadius: radius.pill, overflow: "hidden" }}>
+            <LinearGradient
+              colors={[colors.brand, colors.brandAlt]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{ position: "absolute", inset: 0 }}
+            />
+            <Avatar
+              uri={profile?.avatar_url}
+              name={profile?.display_name ?? "—"}
+              size={104}
+            />
+          </View>
           <Button
-            title="غيّر الصورة"
+            title={t("profile.changePhoto")}
             variant="secondary"
             icon="camera-outline"
             loading={uploading}
             onPress={pickAvatar}
           />
         </View>
-      </Card>
+      </Surface>
 
-      <Card>
+      <Surface tone="glass" radiusKey="xl">
         <View style={{ gap: spacing.lg }}>
           <Input
-            label="اسمك"
+            label={t("profile.yourName")}
             value={name}
             onChangeText={setName}
             error={error ?? undefined}
-            placeholder="أحمد"
+            placeholder={t("auth.namePlaceholder")}
           />
           <Input
-            label="الإيميل"
+            label={t("auth.email")}
             english
             value={user?.email ?? ""}
             editable={false}
-            hint="الإيميل ما ينفعش يتغيّر حاليًا"
+            hint={t("profile.emailLocked")}
           />
           <Button
-            title="احفظ"
+            title={t("common.save")}
             size="lg"
             fullWidth
             loading={update.isPending}
             onPress={saveName}
           />
         </View>
-      </Card>
+      </Surface>
 
       {status ? (
         <Text variant="caption" tone="muted" center>

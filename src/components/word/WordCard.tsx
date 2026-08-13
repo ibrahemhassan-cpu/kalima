@@ -1,8 +1,9 @@
 import React from "react";
-import { I18nManager, Pressable, View } from "react-native";
+import { I18nManager, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/theme/ThemeProvider";
-import { StatusBadge, Text } from "@/components/ui";
+import { StatusBadge, Text, Touchable } from "@/components/ui";
 import { speak } from "@/features/tts";
 import type { MyWordRow } from "@/lib/database.types";
 import { formatDue } from "@/api/words";
@@ -14,23 +15,28 @@ export function WordCard({
   row: MyWordRow;
   onPress: () => void;
 }) {
-  const { colors, spacing, radius, minTouch } = useTheme();
+  const { colors, spacing, radius, shadow, minTouch } = useTheme();
+  const { t } = useTranslation();
 
   return (
-    <Pressable
+    <Touchable
       accessibilityRole="button"
-      accessibilityLabel={`${row.lemma}، ${row.ar_preview}`}
+      accessibilityLabel={`${row.lemma}, ${row.ar_preview}`}
       onPress={onPress}
-      style={({ pressed }) => ({
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.md,
-        padding: spacing.lg,
-        borderRadius: radius.lg,
-        borderWidth: 1,
-        borderColor: colors.border,
-        backgroundColor: pressed ? colors.surfaceAlt : colors.surface,
-      })}
+      scaleTo={0.985}
+      style={[
+        {
+          flexDirection: "row",
+          alignItems: "center",
+          gap: spacing.md,
+          padding: spacing.lg,
+          borderRadius: radius.lg,
+          borderWidth: 1,
+          borderColor: colors.border,
+          backgroundColor: colors.glassStrong,
+        },
+        shadow.sm,
+      ]}
     >
       <View style={{ flex: 1, gap: spacing.xs }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
@@ -51,33 +57,37 @@ export function WordCard({
         >
           <StatusBadge status={row.status} />
           <Text variant="caption" tone="faint">
-            {formatDue(row.due_at)}
+            {formatDue(row.due_at, t)}
           </Text>
         </View>
       </View>
 
-      <Pressable
+      <Touchable
+        haptic="select"
         accessibilityRole="button"
-        accessibilityLabel={`اسمع نطق ${row.lemma}`}
+        accessibilityLabel={t("a11y.listenTo", { word: row.lemma })}
+        scaleTo={0.88}
         hitSlop={8}
         onPress={() => speak(row.lemma)}
         style={{
-          width: minTouch,
-          height: minTouch,
+          width: minTouch - 4,
+          height: minTouch - 4,
           borderRadius: radius.pill,
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: colors.brandSoft,
+          borderWidth: 1,
+          borderColor: colors.brandBorder,
         }}
       >
-        <Ionicons name="volume-high" size={20} color={colors.brand} />
-      </Pressable>
+        <Ionicons name="volume-high" size={19} color={colors.brand} />
+      </Touchable>
 
       <Ionicons
         name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"}
         size={18}
         color={colors.textFaint}
       />
-    </Pressable>
+    </Touchable>
   );
 }

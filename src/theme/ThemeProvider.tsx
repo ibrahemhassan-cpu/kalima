@@ -2,7 +2,7 @@ import React, { createContext, useContext, useMemo } from "react";
 import { useColorScheme } from "react-native";
 import { useSettings } from "@/store/settings";
 import { type Colors, themes } from "./colors";
-import { radius, shadow, spacing } from "./spacing";
+import { makeShadows, radius, type Shadows, spacing, spring } from "./spacing";
 import {
   fontScales,
   makeTypography,
@@ -15,7 +15,8 @@ export type Theme = {
   type: TypeScale;
   spacing: typeof spacing;
   radius: typeof radius;
-  shadow: typeof shadow;
+  shadow: Shadows;
+  spring: typeof spring;
   isDark: boolean;
   simpleMode: boolean;
   minTouch: number;
@@ -32,7 +33,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const isDark = pref === "system" ? systemScheme === "dark" : pref === "dark";
 
   const value = useMemo<Theme>(() => {
-    // الوضع المبسّط يرفع درجة إضافية في حجم الخط
+    // Simple mode bumps one step up the scale.
     const bumped: Record<string, number> = {
       sm: fontScales.md,
       md: fontScales.lg,
@@ -43,12 +44,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       ? (bumped[fontScale] ?? fontScales.lg)
       : fontScales[fontScale];
 
+    const colors = isDark ? themes.dark : themes.light;
+
     return {
-      colors: isDark ? themes.dark : themes.light,
+      colors,
       type: makeTypography(scale),
       spacing,
       radius,
-      shadow,
+      shadow: makeShadows(colors.shadowColor, isDark),
+      spring,
       isDark,
       simpleMode,
       minTouch: MIN_TOUCH,

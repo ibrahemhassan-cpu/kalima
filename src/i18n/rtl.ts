@@ -1,52 +1,47 @@
 import { I18nManager, Platform } from "react-native";
 import * as Updates from "expo-updates";
-import i18n from "./index";
-import type { UILanguage } from "@/store/settings";
+import i18n, { type UILanguage } from "./index";
 
 export const isRTL = () => I18nManager.isRTL;
 
 /**
- * React Native يحتاج إعادة تحميل كاملة لتبديل اتجاه الواجهة.
- * نستدعي هذه الدالة فقط عند تغيير اللغة من الإعدادات.
+ * Switching direction needs a full reload in React Native.
+ *
+ * We avoid forcing RTL layout entirely and instead keep the layout LTR while
+ * translating the copy. That means the toggle is *instant* — no reload, no
+ * jarring restart — which matters a lot for a one-tap language button.
+ *
+ * Arabic text still renders right-to-left inside each Text node, which is what
+ * actually matters for readability. Full mirrored layout is available behind
+ * `applyMirroredLayout` for users who want it from Settings.
  */
-export async function applyLanguage(lang: UILanguage) {
+export async function setLanguage(lang: UILanguage) {
   await i18n.changeLanguage(lang);
-  const shouldBeRTL = lang === "ar";
+}
 
-  if (I18nManager.isRTL !== shouldBeRTL) {
-    I18nManager.allowRTL(shouldBeRTL);
-    I18nManager.forceRTL(shouldBeRTL);
+/** Opt-in full layout mirroring. Requires a reload. */
+export async function applyMirroredLayout(enabled: boolean) {
+  if (I18nManager.isRTL === enabled) return;
+  I18nManager.allowRTL(enabled);
+  I18nManager.forceRTL(enabled);
 
-    if (__DEV__) {
-      // في وضع التطوير أعد التحميل يدويًا من قائمة المطوّر
-      console.warn("[rtl] direction changed — reload the app to apply");
-      return;
-    }
-    try {
-      await Updates.reloadAsync();
-    } catch {
-      // إعادة التحميل غير متاحة (Expo Go مثلًا) — سيُطبَّق عند الفتح القادم
-    }
+  if (__DEV__) {
+    console.warn("[rtl] direction changed — reload to apply");
+    return;
+  }
+  try {
+    await Updates.reloadAsync();
+  } catch {
+    // Not available (dev client / Expo Go) — applies on next cold start.
   }
 }
 
 /**
- * الكلمة الإنجليزية يجب أن تبقى LTR دائمًا حتى داخل واجهة عربية،
- * وإلا تتحرك علامات الترقيم لمكان غلط.
+ * English words must stay LTR even inside Arabic copy, otherwise punctuation
+ * jumps to the wrong side.
  */
-export const ltrText = {
-  writingDirection: "ltr" as const,
-  textAlign: (I18nManager.isRTL ? "right" : "left") as "right" | "left",
-};
+export const ltrText = { writingDirection: "ltr" as const };
 
-/** اقلب الأيقونات الاتجاهية (سهم رجوع، سهم التالي) في وضع RTL */
-export const flipForRTL = {
-  transform: [{ scaleX: I18nManager.isRTL ? -1 : 1 }],
-};
-
-/** أندرويد يحتاج تفعيل RTL على مستوى النظام مرة واحدة */
 export function ensureRTLAllowed() {
-  if (Platform.OS === "android") {
-    I18nManager.allowRTL(true);
-  }
+  if (Platform.OS === "android") I18nManager.allowRTL(true);
 }

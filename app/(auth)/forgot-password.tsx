@@ -1,67 +1,72 @@
 import React, { useState } from "react";
 import { View } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Card, Input, Screen, Text } from "@/components/ui";
+import Animated, { ZoomIn } from "react-native-reanimated";
+
+import { Button, Header, Input, Screen, Surface, Text } from "@/components/ui";
+import { FormError } from "@/components/auth/AuthForm";
 import { useTheme } from "@/theme/ThemeProvider";
-import { supabase } from "@/lib/supabase";
-import { authErrorAr, validateEmail } from "@/features/auth/errors";
-import { AuthHeader } from "@/features/auth/AuthHeader";
+import { useRequestPasswordReset } from "@/features/auth/actions";
+import { authErrorKey, validateEmail } from "@/features/auth/errors";
 
 export default function ForgotPassword() {
   const { colors, spacing } = useTheme();
+  const { t } = useTranslation();
   const router = useRouter();
+  const request = useRequestPasswordReset();
 
   const [email, setEmail] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [fieldError, setFieldError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
 
   async function submit() {
-    const e = validateEmail(email);
-    setError(e);
+    const e = validateEmail(email, t);
+    setFieldError(e);
+    setFormError(null);
     if (e) return;
 
-    setBusy(true);
-    const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: "kalima://reset-password",
-    });
-    setBusy(false);
-
-    // بنعرض نفس الرسالة سواء الإيميل موجود أو لأ —
-    // عشان محدش يستخدم الشاشة دي عشان يعرف مين مسجّل عندنا
-    if (err && !err.message.toLowerCase().includes("not found")) {
-      setError(authErrorAr(err.message));
-      return;
+    try {
+      await request.mutateAsync(email);
+      setSent(true);
+    } catch (err) {
+      setFormError(t(authErrorKey((err as Error).message)));
     }
-    setSent(true);
   }
 
   if (sent) {
     return (
       <Screen scroll>
-        <AuthHeader title="" onBack={() => router.back()} />
-        <View style={{ alignItems: "center", gap: spacing.lg, paddingTop: spacing.xxl }}>
-          <View
-            style={{
-              width: 88,
-              height: 88,
-              borderRadius: 44,
-              backgroundColor: colors.successSoft,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Ionicons name="mail-outline" size={44} color={colors.success} />
-          </View>
+        <Header onBack={() => router.back()} />
+        <View
+          style={{ alignItems: "center", gap: spacing.lg, paddingTop: spacing.xxl }}
+        >
+          <Animated.View entering={ZoomIn.duration(420).springify().damping(13)}>
+            <View
+              style={{
+                width: 92,
+                height: 92,
+                borderRadius: 46,
+                backgroundColor: colors.successSoft,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Ionicons name="send-outline" size={42} color={colors.success} />
+            </View>
+          </Animated.View>
+
           <Text variant="title" center>
-            بعتنا الرابط
+            {t("auth.linkSentTitle")}
           </Text>
           <Text variant="body" tone="muted" center>
-            لو الإيميل ده مسجّل عندنا، هيوصله رابط لتغيير كلمة المرور.
+            {t("auth.linkSentBody")}
           </Text>
+
           <Button
-            title="رجوع لتسجيل الدخول"
+            title={t("auth.backToSignIn")}
             size="lg"
             fullWidth
             onPress={() => router.replace("/(auth)/sign-in")}
@@ -73,35 +78,37 @@ export default function ForgotPassword() {
 
   return (
     <Screen scroll>
-      <AuthHeader
-        title="نسيت كلمة المرور"
-        subtitle="اكتب إيميلك وهنبعتلك رابط تغيّرها منه"
+      <Header
+        title={t("auth.forgotTitle")}
+        subtitle={t("auth.forgotSubtitle")}
         onBack={() => router.back()}
       />
 
-      <Card>
+      <Surface tone="glass" radiusKey="xl" elevation="md">
         <View style={{ gap: spacing.lg }}>
           <Input
-            label="الإيميل"
+            label={t("auth.email")}
             english
             value={email}
             onChangeText={setEmail}
-            error={error ?? undefined}
+            error={fieldError ?? undefined}
             keyboardType="email-address"
             autoComplete="email"
+            textContentType="emailAddress"
             placeholder="you@example.com"
-            returnKeyType="done"
+            returnKeyType="go"
             onSubmitEditing={submit}
           />
+          <FormError message={formError} />
           <Button
-            title="ابعت الرابط"
+            title={t("auth.sendLink")}
             size="lg"
             fullWidth
-            loading={busy}
+            loading={request.isPending}
             onPress={submit}
           />
         </View>
-      </Card>
+      </Surface>
     </Screen>
   );
 }

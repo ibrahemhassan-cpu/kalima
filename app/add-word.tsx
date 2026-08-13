@@ -1,26 +1,38 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, View } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useQueryClient } from "@tanstack/react-query";
+import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 
-import { Badge, Button, Card, Input, Screen, Text } from "@/components/ui";
-import { AuthHeader } from "@/features/auth/AuthHeader";
+import {
+  Badge,
+  Button,
+  Header,
+  Input,
+  Screen,
+  Surface,
+  Text,
+  Touchable,
+} from "@/components/ui";
 import { EntryBody } from "@/components/word/EntryBody";
+import { DidYouMean, SensePicker } from "@/components/word/SensePicker";
 import { useTheme } from "@/theme/ThemeProvider";
 import {
-  EnrichError,
+  type EnrichError,
   enrichWord,
+  type EnrichResponse,
   useAddWord,
   useDictionarySearch,
-  type EnrichResponse,
 } from "@/api/words";
 
 type Phase = "input" | "loading" | "result";
 
 export default function AddWord() {
   const { colors, spacing, radius, minTouch } = useTheme();
+  const { t } = useTranslation();
   const router = useRouter();
   const qc = useQueryClient();
   const addWord = useAddWord();
@@ -32,12 +44,14 @@ export default function AddWord() {
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [didYouMean, setDidYouMean] = useState<string[]>([]);
+  const [senseIndex, setSenseIndex] = useState(0);
 
-  // اقتراحات من الكاش أثناء الكتابة
   useEffect(() => {
-    const t = setTimeout(() => setDebounced(term), 250);
-    return () => clearTimeout(t);
+    const id = setTimeout(() => setDebounced(term), 250);
+    return () => clearTimeout(id);
   }, [term]);
+
   const { data: suggestions } = useDictionarySearch(
     phase === "input" ? debounced : "",
   );
@@ -45,6 +59,8 @@ export default function AddWord() {
   async function lookup(word: string) {
     setError(null);
     setErrorCode(null);
+    setDidYouMean([]);
+    setSenseIndex(0);
     setPhase("loading");
     try {
       const res = await enrichWord(word, false);
@@ -55,6 +71,7 @@ export default function AddWord() {
       const err = e as EnrichError;
       setError(err.message);
       setErrorCode(err.code ?? null);
+      setDidYouMean(err.didYouMean ?? []);
       setPhase("input");
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
@@ -63,22 +80,30 @@ export default function AddWord() {
   async function save() {
     if (!result) return;
     try {
+      const chosen = result.entry.senses[senseIndex];
+      const prefix =
+        senseIndex > 0 && chosen
+          ? `${chosen.ar_translations.join(" · ")}`
+          : "";
+      const combined = [prefix, note.trim()].filter(Boolean).join(" — ");
+
       await addWord.mutateAsync({
         entryId: result.entry.id,
-        note: note.trim() || undefined,
+        note: combined || undefined,
       });
       void qc.invalidateQueries({ queryKey: ["home-summary"] });
+      void qc.invalidateQueries({ queryKey: ["due-words"] });
       router.back();
     } catch {
-      setError("ما قدرناش نحفظ الكلمة. جرّب تاني");
+      setError(t("errors.generic"));
     }
   }
 
-  // ── حالة التحميل ─────────────────────────────────────────
+  // ── loading ──────────────────────────────────────────────
   if (phase === "loading") {
     return (
       <Screen>
-        <AuthHeader title="" onBack={() => setPhase("input")} />
+        <Header onBack={() => setPhase("input")} language={false} />
         <View
           style={{
             flex: 1,
@@ -88,21 +113,21 @@ export default function AddWord() {
           }}
         >
           <ActivityIndicator size="large" color={colors.brand} />
-          <Text variant="title" ltr>
+          <Text variant="title" ltr center>
             {term.trim()}
           </Text>
           <Text variant="body" tone="muted" center>
-            بنجهّز الترجمة والأمثلة والنطق...
+            {t("word.preparing")}
           </Text>
           <Text variant="caption" tone="faint" center>
-            ممكن تاخد شوية لو الكلمة جديدة علينا
+            {t("word.preparingHint")}
           </Text>
         </View>
       </Screen>
     );
   }
 
-  // ── حالة النتيجة ─────────────────────────────────────────
+  // ── result ───────────────────────────────────────────────
   if (phase === "result" && result) {
     return (
       <KeyboardAvoidingView
@@ -110,8 +135,8 @@ export default function AddWord() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <Screen scroll>
-          <AuthHeader
-            title=""
+          <Header
+            language={false}
             onBack={() => {
               setPhase("input");
               setResult(null);
@@ -119,31 +144,45 @@ export default function AddWord() {
             }}
           />
 
-          {result.cached ? (
-            <Badge label="من القاموس — فوري" tone="success" icon="flash-outline" />
-          ) : (
-            <Badge
-              label={`اتولّدت دلوقتي · فاضلك ${result.ai_remaining ?? "?"} النهاردة`}
-              tone="brand"
-              icon="sparkles-outline"
-            />
-          )}
-
-          <EntryBody entry={result.entry} />
-
-          <Card>
-            <View style={{ gap: spacing.md }}>
-              <Input
-                label="ملاحظتي (اختياري)"
-                value={note}
-                onChangeText={setNote}
-                placeholder="أي حاجة تفكّرك بالكلمة"
-                multiline
-                numberOfLines={3}
-                style={{ minHeight: 90, textAlignVertical: "top" }}
+          <Animated.View entering={FadeIn.duration(240)}>
+            {result.cached ? (
+              <Badge
+                label={t("word.fromCache")}
+                tone="success"
+                icon="flash-outline"
               />
-            </View>
-          </Card>
+            ) : (
+              <Badge
+                label={`${t("word.freshlyGenerated")} · ${t("word.remainingToday", {
+                  count: result.ai_remaining ?? 0,
+                })}`}
+                tone="brand"
+                icon="sparkles-outline"
+              />
+            )}
+          </Animated.View>
+
+          <SensePicker
+            senses={result.entry.senses}
+            selected={senseIndex}
+            onSelect={setSenseIndex}
+          />
+
+          <Animated.View entering={FadeInDown.duration(380).springify().damping(18)}>
+            <EntryBody entry={result.entry} />
+          </Animated.View>
+
+          <Surface tone="glass" radiusKey="xl">
+            <Input
+              label={`${t("word.myNote")} · ${t("common.optional")}`}
+              value={note}
+              onChangeText={setNote}
+              placeholder={t("word.notePlaceholder")}
+              multiline
+              numberOfLines={3}
+              style={{ minHeight: 92, textAlignVertical: "top" }}
+            />
+          </Surface>
 
           {error ? (
             <Text variant="caption" tone="danger" center>
@@ -152,7 +191,7 @@ export default function AddWord() {
           ) : null}
 
           <Button
-            title="احفظ الكلمة"
+            title={t("word.saveWord")}
             size="lg"
             fullWidth
             icon="bookmark-outline"
@@ -164,106 +203,129 @@ export default function AddWord() {
     );
   }
 
-  // ── حالة الإدخال ─────────────────────────────────────────
+  // ── input ────────────────────────────────────────────────
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <Screen scroll>
-        <AuthHeader
-          title="أضف كلمة"
-          subtitle="اكتب أي كلمة إنجليزية وإحنا نجيبلك الباقي"
+        <Header
+          title={t("word.addTitle")}
+          subtitle={t("word.addSubtitle")}
           onBack={() => router.back()}
         />
 
         <Input
           english
+          size="lg"
           value={term}
           onChangeText={(v) => {
             setTerm(v);
             setError(null);
           }}
-          placeholder="resilient"
+          placeholder={t("word.placeholder")}
           autoFocus
           returnKeyType="search"
-          onSubmitEditing={() => term.trim() && lookup(term)}
+          onSubmitEditing={() => term.trim().length >= 2 && lookup(term)}
           error={error ?? undefined}
-          style={{ fontSize: 22, minHeight: 62 }}
+        />
+
+        <DidYouMean
+          suggestions={didYouMean}
+          onPick={(w) => {
+            setTerm(w);
+            void lookup(w);
+          }}
         />
 
         {errorCode === "rate_limited" ? (
-          <Card tone="brand">
+          <Surface tone="brand" radiusKey="lg">
             <Text variant="caption" tone="muted">
-              الحد اليومي بيحمي الخدمة من الاستنزاف عشان تفضل مجانية. مراجعة كلماتك
-              المحفوظة مالهاش أي حد.
+              {t("errors.rateLimitedHint")}
             </Text>
-          </Card>
+          </Surface>
         ) : null}
 
         <Button
-          title="هات الكلمة"
+          title={t("word.lookup")}
           size="lg"
           fullWidth
-          icon="sparkles-outline"
+          icon="sparkles"
           disabled={term.trim().length < 2}
           onPress={() => lookup(term)}
         />
 
-        {/* اقتراحات من الكاش */}
         {suggestions && suggestions.length > 0 ? (
           <View style={{ gap: spacing.sm }}>
-            <Text variant="label" tone="muted">
-              موجودة عندنا خلاص
+            <Text variant="micro" tone="faint">
+              {t("word.inDictionary").toUpperCase()}
             </Text>
-            {suggestions.map((s) => (
-              <Pressable
+            {suggestions.map((s, i) => (
+              <Animated.View
                 key={s.entry_id}
-                accessibilityRole="button"
-                accessibilityLabel={`${s.lemma}، ${s.ar_preview}`}
-                onPress={() => {
-                  setTerm(s.lemma);
-                  void lookup(s.lemma);
-                }}
-                style={({ pressed }) => ({
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: spacing.md,
-                  minHeight: minTouch,
-                  paddingVertical: spacing.md,
-                  paddingHorizontal: spacing.lg,
-                  borderRadius: radius.md,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  backgroundColor: pressed ? colors.surfaceAlt : colors.surface,
-                })}
+                entering={FadeInDown.delay(i * 40).duration(280)}
               >
-                <Ionicons name="flash-outline" size={18} color={colors.success} />
-                <View style={{ flex: 1 }}>
-                  <Text variant="bodyStrong" ltr>
-                    {s.lemma}
-                  </Text>
-                  <Text variant="caption" tone="muted" numberOfLines={1}>
-                    {s.ar_preview}
-                  </Text>
-                </View>
-                {s.already_mine ? (
-                  <Badge label="عندك" tone="neutral" icon="checkmark-outline" />
-                ) : null}
-              </Pressable>
+                <Touchable
+                  haptic="select"
+                  scaleTo={0.985}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${s.lemma}, ${s.ar_preview}`}
+                  onPress={() => {
+                    setTerm(s.lemma);
+                    void lookup(s.lemma);
+                  }}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: spacing.md,
+                    minHeight: minTouch,
+                    paddingVertical: spacing.md,
+                    paddingHorizontal: spacing.lg,
+                    borderRadius: radius.md,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    backgroundColor: colors.glassStrong,
+                  }}
+                >
+                  <Ionicons name="flash" size={17} color={colors.success} />
+                  <View style={{ flex: 1 }}>
+                    <Text variant="bodyStrong" ltr>
+                      {s.lemma}
+                    </Text>
+                    <Text variant="caption" tone="muted" numberOfLines={1}>
+                      {s.ar_preview}
+                    </Text>
+                  </View>
+                  {s.already_mine ? (
+                    <Badge
+                      label={t("word.alreadyYours")}
+                      tone="neutral"
+                      icon="checkmark-outline"
+                    />
+                  ) : null}
+                </Touchable>
+              </Animated.View>
             ))}
           </View>
         ) : null}
 
-        <Card>
-          <View style={{ flexDirection: "row", gap: spacing.md }}>
-            <Ionicons name="information-circle-outline" size={20} color={colors.textMuted} />
-            <Text variant="caption" tone="muted" style={{ flex: 1 }}>
-              الترجمات مولّدة بالذكاء الاصطناعي وممكن تحتوي أخطاء. تقدر تبلّغنا عن أي
-              خطأ من شاشة الكلمة.
-            </Text>
-          </View>
-        </Card>
+        <View
+          style={{
+            flexDirection: "row",
+            gap: spacing.md,
+            paddingHorizontal: spacing.xs,
+          }}
+        >
+          <Ionicons
+            name="information-circle-outline"
+            size={18}
+            color={colors.textFaint}
+          />
+          <Text variant="caption" tone="faint" style={{ flex: 1 }}>
+            {t("word.aiDisclaimer")}
+          </Text>
+        </View>
       </Screen>
     </KeyboardAvoidingView>
   );

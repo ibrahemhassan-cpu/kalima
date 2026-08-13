@@ -4,6 +4,10 @@ project_id = "kalima"
 verify_jwt = true
 entrypoint = "./functions/enrich-word/index.ts"
 
+[functions.generate-questions]
+verify_jwt = true
+entrypoint = "./functions/generate-questions/index.ts"
+
 [functions.delete-account]
 verify_jwt = true
 entrypoint = "./functions/delete-account/index.ts"

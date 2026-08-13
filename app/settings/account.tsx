@@ -1,19 +1,26 @@
 import React, { useState } from "react";
 import { View } from "react-native";
 import { useRouter } from "expo-router";
-import * as FileSystem from "expo-file-system";
+import { useTranslation } from "react-i18next";
+import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Card, Input, Screen, Text } from "@/components/ui";
-import { AuthHeader } from "@/features/auth/AuthHeader";
+
+import { Button, Header, Input, Screen, Surface, Text } from "@/components/ui";
+import { FormError } from "@/components/auth/AuthForm";
 import { useTheme } from "@/theme/ThemeProvider";
 import { supabase, SUPABASE_URL } from "@/lib/supabase";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useSignOut } from "@/features/auth/actions";
 
 export default function AccountSettings() {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, radius } = useTheme();
+  const { t } = useTranslation();
   const router = useRouter();
   const { user, session } = useAuth();
+  const signOut = useSignOut();
+
+  const CONFIRM = t("settings.deleteConfirmWord");
 
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
@@ -21,7 +28,6 @@ export default function AccountSettings() {
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
-  // ── تصدير البيانات (GDPR) ────────────────────────────────
   async function exportData() {
     setExporting(true);
     setStatus(null);
@@ -44,26 +50,28 @@ export default function AccountSettings() {
         achievements: badges.data,
       };
 
-      const path = `${FileSystem.documentDirectory}kalima-data.json`;
-      await FileSystem.writeAsStringAsync(path, JSON.stringify(payload, null, 2));
+      // expo-file-system SDK 54+ API: File / Paths instead of documentDirectory
+      const file = new File(Paths.document, "kalima-data.json");
+      if (file.exists) file.delete();
+      file.create();
+      file.write(JSON.stringify(payload, null, 2));
 
       if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(path, { mimeType: "application/json" });
+        await Sharing.shareAsync(file.uri, { mimeType: "application/json" });
       } else {
-        setStatus(`اتحفظ الملف: ${path}`);
+        setStatus(file.uri);
       }
     } catch {
-      setError("ما قدرناش نجهّز الملف. جرّب تاني");
+      setError(t("settings.exportFailed"));
     } finally {
       setExporting(false);
     }
   }
 
-  // ── حذف الحساب (متطلب إلزامي من Apple) ───────────────────
   async function deleteAccount() {
     setError(null);
-    if (confirm.trim() !== "حذف") {
-      setError("اكتب كلمة «حذف» بالظبط للتأكيد");
+    if (confirm.trim().toUpperCase() !== CONFIRM.toUpperCase()) {
+      setError(t("settings.deleteMismatch"));
       return;
     }
 
@@ -75,55 +83,49 @@ export default function AccountSettings() {
           Authorization: `Bearer ${session!.access_token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ confirm: "حذف" }),
+        // the function accepts either language's confirmation word
+        body: JSON.stringify({ confirm: "DELETE" }),
       });
+      if (!res.ok) throw new Error("failed");
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.message_ar ?? "فشل الحذف");
-      }
-
-      await supabase.auth.signOut();
-      // حارس التوجيه هيرجّعك لشاشة الترحيب لوحده
-    } catch (e) {
-      setError(
-        e instanceof Error && e.message !== "فشل الحذف"
-          ? e.message
-          : "ما قدرناش نحذف الحساب. لو المشكلة استمرت راسلنا",
-      );
+      signOut.mutate();
+    } catch {
+      setError(t("settings.deleteFailed"));
     } finally {
       setBusy(false);
     }
   }
 
+  const armed = confirm.trim().toUpperCase() === CONFIRM.toUpperCase();
+
   return (
     <Screen scroll>
-      <AuthHeader title="الحساب" onBack={() => router.back()} />
+      <Header title={t("profile.account")} onBack={() => router.back()} />
 
-      {/* تصدير */}
-      <Card>
+      <Surface tone="glass" radiusKey="xl">
         <View style={{ gap: spacing.md }}>
-          <Text variant="heading">نزّل بياناتك</Text>
+          <Text variant="heading">{t("settings.exportData")}</Text>
           <Text variant="caption" tone="muted">
-            ملف JSON فيه كل كلماتك وسجل مراجعاتك وإحصائياتك.
+            {t("settings.exportHint")}
           </Text>
           <Button
-            title="جهّز الملف"
+            title={t("settings.exportPrepare")}
             variant="secondary"
             icon="download-outline"
             loading={exporting}
             onPress={exportData}
           />
         </View>
-      </Card>
+      </Surface>
 
-      {/* حذف */}
-      <Card>
+      <Surface tone="glass" radiusKey="xl">
         <View style={{ gap: spacing.md }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
-            <Ionicons name="warning-outline" size={22} color={colors.danger} />
+          <View
+            style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}
+          >
+            <Ionicons name="warning" size={20} color={colors.danger} />
             <Text variant="heading" tone="danger">
-              حذف الحساب
+              {t("settings.deleteHeading")}
             </Text>
           </View>
 
@@ -131,50 +133,47 @@ export default function AccountSettings() {
             style={{
               backgroundColor: colors.dangerSoft,
               padding: spacing.md,
-              borderRadius: 12,
+              borderRadius: radius.md,
               gap: spacing.xs,
             }}
           >
             <Text variant="caption" tone="danger">
-              هيتمسح نهائيًا: حسابك، كل كلماتك، تقدّمك، نقاطك، والستريك.
+              {t("settings.deleteWarn1")}
             </Text>
             <Text variant="caption" tone="danger">
-              مفيش رجوع، ومفيش نسخة احتياطية.
+              {t("settings.deleteWarn2")}
             </Text>
           </View>
 
           <Text variant="caption" tone="muted">
-            لو عايز تحتفظ ببياناتك، نزّلها الأول من فوق.
+            {t("settings.deleteExportFirst")}
           </Text>
 
           <Input
-            label="اكتب كلمة «حذف» للتأكيد"
+            label={t("settings.deleteConfirmLabel")}
             value={confirm}
             onChangeText={setConfirm}
-            placeholder="حذف"
+            placeholder={CONFIRM}
             autoCorrect={false}
+            autoCapitalize="characters"
           />
 
-          {error ? (
-            <Text variant="caption" tone="danger">
-              {error}
-            </Text>
-          ) : null}
+          <FormError message={error} />
 
           <Button
-            title="احذف حسابي نهائيًا"
+            title={t("settings.deleteButton")}
             variant="danger"
             size="lg"
             fullWidth
             loading={busy}
-            disabled={confirm.trim() !== "حذف"}
+            disabled={!armed}
             onPress={deleteAccount}
           />
         </View>
-      </Card>
+      </Surface>
 
       {status ? (
-        <Text variant="caption" tone="muted" center>
+        <Text variant="caption" tone="muted" center ltr>
           {status}
         </Text>
       ) : null}

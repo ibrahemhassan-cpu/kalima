@@ -11,7 +11,9 @@ import { ensureRTLAllowed } from "@/i18n/rtl";
 import { ThemeProvider, useTheme } from "@/theme/ThemeProvider";
 import { useSettings } from "@/store/settings";
 import { AuthProvider, useAuth } from "@/features/auth/AuthProvider";
+import { useDeepLinkAuth } from "@/features/auth/useDeepLinkAuth";
 import { useProfile } from "@/api/profile";
+import { useReminders } from "@/features/notifications/useReminders";
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -56,6 +58,9 @@ function RouteGate() {
   const segments = useSegments();
   const router = useRouter();
 
+  useDeepLinkAuth();
+  useReminders(!!session);
+
   const waitingForProfile = !!session && loadingProfile;
   const ready = !initializing && hydrated && !waitingForProfile;
 
@@ -95,6 +100,8 @@ function RouteGate() {
         options={{ presentation: "modal", animation: "slide_from_bottom" }}
       />
       <Stack.Screen name="word/[id]" />
+      <Stack.Screen name="session" options={{ animation: "fade" }} />
+      <Stack.Screen name="achievements" />
       <Stack.Screen name="settings" options={{ presentation: "card" }} />
       <Stack.Screen name="legal" options={{ presentation: "card" }} />
     </Stack>

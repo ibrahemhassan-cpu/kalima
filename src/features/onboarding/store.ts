@@ -13,7 +13,7 @@ type OnboardingDraft = {
   reset: () => void;
 };
 
-/** مسودة مؤقتة في الذاكرة — تُحفظ في البروفايل في آخر خطوة */
+/** In-memory draft — written to the profile on the final step. */
 export const useOnboarding = create<OnboardingDraft>((set) => ({
   level: null,
   dailyGoal: null,
@@ -28,24 +28,39 @@ export const useOnboarding = create<OnboardingDraft>((set) => ({
     set({ level: null, dailyGoal: null, reminderHour: 19, reminderEnabled: true }),
 }));
 
-export const LEVELS: { key: CefrLevel; title: string; subtitle: string }[] = [
-  { key: "A1", title: "مبتدئ خالص", subtitle: "بعرف كلمات بسيطة زي الأرقام والألوان" },
-  { key: "A2", title: "مبتدئ", subtitle: "بفهم جمل قصيرة وبعرف أعرّف عن نفسي" },
-  { key: "B1", title: "متوسط", subtitle: "بتكلّم في مواضيع يومية وبفهم أغلب الكلام" },
-  { key: "B2", title: "فوق المتوسط", subtitle: "بقرا مقالات وبتابع أفلام من غير ترجمة" },
-  { key: "C1", title: "متقدّم", subtitle: "بتعامل مع نصوص أكاديمية ومهنية" },
-  { key: "C2", title: "شبه أصلي", subtitle: "بفهم كل حاجة تقريبًا" },
-];
+export const LEVEL_KEYS: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
+export const GOAL_VALUES = [5, 10, 20, 40] as const;
+export const REMINDER_HOURS = [7, 9, 12, 15, 17, 19, 20, 21, 22];
 
-export const GOALS: { key: number; title: string; subtitle: string }[] = [
-  { key: 5, title: "5 كلمات في اليوم", subtitle: "دقيقتين — مناسب لو وقتك ضيّق" },
-  { key: 10, title: "10 كلمات في اليوم", subtitle: "5 دقايق — الأكثر اختيارًا" },
-  { key: 20, title: "20 كلمة في اليوم", subtitle: "10 دقايق — لو عايز تتقدّم بسرعة" },
-  { key: 40, title: "40 كلمة في اليوم", subtitle: "20 دقيقة — للجادّين جدًا" },
-];
+type Translate = (key: string, opts?: Record<string, unknown>) => string;
 
-export function formatHour(h: number): string {
-  const period = h < 12 ? "صباحًا" : "مساءً";
-  const display = h % 12 === 0 ? 12 : h % 12;
-  return `${display}:00 ${period}`;
+export function levelOptions(t: Translate) {
+  return LEVEL_KEYS.map((key) => ({
+    key,
+    title: t(`onboarding.level${key}`),
+    subtitle: t(`onboarding.level${key}Sub`),
+  }));
+}
+
+export function goalOptions(t: Translate) {
+  return GOAL_VALUES.map((key) => ({
+    key: key as number,
+    title: t(`onboarding.goal${key}`),
+    subtitle: t(`onboarding.goal${key}Sub`),
+  }));
+}
+
+/** 24h number → localised clock label. */
+export function formatHour(h: number, lang: string): string {
+  const d = new Date();
+  d.setHours(h, 0, 0, 0);
+  try {
+    return new Intl.DateTimeFormat(lang === "ar" ? "ar-EG" : "en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(d);
+  } catch {
+    return `${h}:00`;
+  }
 }

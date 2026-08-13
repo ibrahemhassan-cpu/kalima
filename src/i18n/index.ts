@@ -4,15 +4,18 @@ import ar from "./ar.json";
 import en from "./en.json";
 
 export const resources = {
-  ar: { translation: ar },
   en: { translation: en },
+  ar: { translation: ar },
 } as const;
 
+export type UILanguage = keyof typeof resources;
+
+/** English is the default. Arabic is one tap away from any screen header. */
 i18n.use(initReactI18next).init({
   resources,
-  lng: "ar",
-  fallbackLng: "ar",
-  compatibilityJSON: "v4",
+  lng: "en",
+  fallbackLng: "en",
+  supportedLngs: ["en", "ar"],
   interpolation: { escapeValue: false },
   returnNull: false,
 });

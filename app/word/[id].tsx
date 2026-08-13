@@ -1,18 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 
 import {
   Badge,
   Button,
-  Card,
+  Header,
   Input,
   Screen,
   StatusBadge,
+  Surface,
   Text,
+  Touchable,
 } from "@/components/ui";
-import { AuthHeader } from "@/features/auth/AuthHeader";
+import { Sheet, type SheetRef } from "@/components/ui/Sheet";
+import { ConfirmBody, SheetAction } from "@/components/ui/SheetAction";
 import { EntryBody } from "@/components/word/EntryBody";
 import { useTheme } from "@/theme/ThemeProvider";
 import {
@@ -25,7 +29,8 @@ import {
 
 export default function WordDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { colors, spacing, radius } = useTheme();
+  const { colors, spacing, radius, minTouch } = useTheme();
+  const { t } = useTranslation();
   const router = useRouter();
 
   const { data: word, isLoading, error } = useWordDetail(id);
@@ -33,13 +38,17 @@ export default function WordDetail() {
   const remove = useDeleteWord();
   const report = useReportWord();
 
+  const actions = useRef<SheetRef>(null);
+  const reportSheet = useRef<SheetRef>(null);
+  const deleteSheet = useRef<SheetRef>(null);
+
   const [note, setNote] = useState("");
-  const [noteDirty, setNoteDirty] = useState(false);
+  const [dirty, setDirty] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    if (word && !noteDirty) setNote(word.personal_note ?? "");
-  }, [word, noteDirty]);
+    if (word && !dirty) setNote(word.personal_note ?? "");
+  }, [word, dirty]);
 
   if (isLoading) {
     return (
@@ -54,53 +63,22 @@ export default function WordDetail() {
   if (error || !word) {
     return (
       <Screen>
-        <AuthHeader title="" onBack={() => router.back()} />
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: spacing.md }}>
+        <Header onBack={() => router.back()} />
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            gap: spacing.md,
+          }}
+        >
           <Ionicons name="alert-circle-outline" size={48} color={colors.textFaint} />
           <Text variant="body" tone="muted">
-            ما لقيناش الكلمة دي
+            {t("errors.notFound")}
           </Text>
         </View>
       </Screen>
     );
-  }
-
-  function confirmDelete() {
-    Alert.alert(
-      "حذف الكلمة",
-      `هتتشال «${word!.entry.lemma}» من مكتبتك مع كل تقدّمك فيها. متأكد؟`,
-      [
-        { text: "إلغاء", style: "cancel" },
-        {
-          text: "احذف",
-          style: "destructive",
-          onPress: async () => {
-            await remove.mutateAsync(word!.id);
-            router.back();
-          },
-        },
-      ],
-    );
-  }
-
-  function reportProblem() {
-    Alert.alert("إيه المشكلة؟", "هنراجعها ونصلّحها للجميع", [
-      { text: "إلغاء", style: "cancel" },
-      {
-        text: "الترجمة غلط",
-        onPress: () => {
-          report.mutate({ entryId: word!.entry.id, reason: "wrong_translation" });
-          setStatus("شكرًا، وصلنا البلاغ");
-        },
-      },
-      {
-        text: "المثال مش مظبوط",
-        onPress: () => {
-          report.mutate({ entryId: word!.entry.id, reason: "bad_example" });
-          setStatus("شكرًا، وصلنا البلاغ");
-        },
-      },
-    ]);
   }
 
   return (
@@ -109,61 +87,54 @@ export default function WordDetail() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <Screen scroll>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <AuthHeader title="" onBack={() => router.back()} />
-          <View style={{ flexDirection: "row", gap: spacing.sm }}>
-            <IconBtn
-              icon={word.is_favorite ? "star" : "star-outline"}
-              color={word.is_favorite ? colors.accent : colors.textMuted}
-              label={word.is_favorite ? "شيل من المفضلة" : "ضيف للمفضلة"}
-              onPress={() => update.mutate({ is_favorite: !word.is_favorite })}
-            />
-            <IconBtn
-              icon="flag-outline"
-              color={colors.textMuted}
-              label="بلّغ عن خطأ"
-              onPress={reportProblem}
-            />
-            <IconBtn
-              icon="trash-outline"
-              color={colors.danger}
-              label="احذف الكلمة"
-              onPress={confirmDelete}
-            />
-          </View>
-        </View>
+        <Header
+          onBack={() => router.back()}
+          language={false}
+          right={
+            <View style={{ flexDirection: "row", gap: spacing.sm }}>
+              <RoundBtn
+                icon={word.is_favorite ? "star" : "star-outline"}
+                color={word.is_favorite ? colors.accent : colors.textMuted}
+                label={t(word.is_favorite ? "word.unfavorite" : "word.favorite")}
+                onPress={() => update.mutate({ is_favorite: !word.is_favorite })}
+              />
+              <RoundBtn
+                icon="ellipsis-horizontal"
+                color={colors.textMuted}
+                label={t("sheet.wordActions")}
+                onPress={() => actions.current?.open()}
+              />
+            </View>
+          }
+        />
 
         <EntryBody entry={word.entry} />
 
-        {/* التقدّم */}
-        <Card>
+        {/* progress */}
+        <Surface tone="glass" radiusKey="xl">
           <View style={{ gap: spacing.md }}>
-            <Text variant="heading">تقدّمك</Text>
+            <Text variant="heading">{t("word.progress")}</Text>
 
-            <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}
+            >
               <StatusBadge status={word.status} />
               <Badge
-                label={formatDue(word.due_at)}
+                label={formatDue(word.due_at, t)}
                 tone="neutral"
                 icon="time-outline"
               />
             </View>
 
             <View style={{ flexDirection: "row", gap: spacing.md }}>
-              <Metric label="مراجعات" value={word.repetitions} />
-              <Metric label="نسيتها" value={word.lapses} />
+              <Metric label={t("word.reviews")} value={word.repetitions} />
+              <Metric label={t("word.lapses")} value={word.lapses} />
               <Metric
-                label="الفترة"
+                label={t("word.interval")}
                 value={
                   word.interval_days < 1
-                    ? "< يوم"
-                    : `${Math.round(word.interval_days)} يوم`
+                    ? t("due.lessThanDay")
+                    : t("due.daysShort", { count: Math.round(word.interval_days) })
                 }
               />
             </View>
@@ -177,45 +148,44 @@ export default function WordDetail() {
                 }}
               >
                 <Text variant="caption" tone="danger">
-                  الكلمة دي بتتنسي منك كتير. جرّب تكتب ملاحظة شخصية تربطها بحاجة
-                  تفتكرها — ده بيساعد جدًا.
+                  {t("word.leechHint")}
                 </Text>
               </View>
             ) : null}
           </View>
-        </Card>
+        </Surface>
 
-        {/* الملاحظة الشخصية */}
-        <Card>
+        {/* personal note */}
+        <Surface tone="glass" radiusKey="xl">
           <View style={{ gap: spacing.md }}>
             <Input
-              label="ملاحظتي"
+              label={t("word.myNote")}
               value={note}
               onChangeText={(v) => {
                 setNote(v);
-                setNoteDirty(true);
+                setDirty(true);
                 setStatus(null);
               }}
-              placeholder="أي حاجة تفكّرك بالكلمة"
+              placeholder={t("word.notePlaceholder")}
               multiline
               numberOfLines={3}
-              style={{ minHeight: 90, textAlignVertical: "top" }}
+              style={{ minHeight: 92, textAlignVertical: "top" }}
             />
-            {noteDirty ? (
+            {dirty ? (
               <Button
-                title="احفظ الملاحظة"
+                title={t("word.saveNote")}
                 variant="secondary"
                 fullWidth
                 loading={update.isPending}
                 onPress={async () => {
                   await update.mutateAsync({ personal_note: note.trim() || null });
-                  setNoteDirty(false);
-                  setStatus("اتحفظت");
+                  setDirty(false);
+                  setStatus(t("common.saved"));
                 }}
               />
             ) : null}
           </View>
-        </Card>
+        </Surface>
 
         {status ? (
           <Text variant="caption" tone="muted" center>
@@ -223,11 +193,84 @@ export default function WordDetail() {
           </Text>
         ) : null}
       </Screen>
+
+      {/* ── sheets ── */}
+      <Sheet ref={actions} title={t("sheet.wordActions")}>
+        <SheetAction
+          icon={word.is_favorite ? "star" : "star-outline"}
+          label={t(word.is_favorite ? "word.unfavorite" : "word.favorite")}
+          onPress={() => {
+            update.mutate({ is_favorite: !word.is_favorite });
+            actions.current?.close();
+          }}
+        />
+        <SheetAction
+          icon="flag-outline"
+          label={t("word.reportTitle")}
+          sublabel={t("word.reportSubtitle")}
+          onPress={() => {
+            actions.current?.close();
+            setTimeout(() => reportSheet.current?.open(), 260);
+          }}
+        />
+        <SheetAction
+          icon="trash-outline"
+          label={t("common.delete")}
+          danger
+          onPress={() => {
+            actions.current?.close();
+            setTimeout(() => deleteSheet.current?.open(), 260);
+          }}
+        />
+      </Sheet>
+
+      <Sheet ref={reportSheet} title={t("word.reportTitle")}>
+        <Text variant="caption" tone="muted">
+          {t("word.reportSubtitle")}
+        </Text>
+        <SheetAction
+          icon="language-outline"
+          label={t("word.reportTranslation")}
+          onPress={() => {
+            report.mutate({
+              entryId: word.entry.id,
+              reason: "wrong_translation",
+            });
+            reportSheet.current?.close();
+            setStatus(t("word.reportThanks"));
+          }}
+        />
+        <SheetAction
+          icon="chatbox-outline"
+          label={t("word.reportExample")}
+          onPress={() => {
+            report.mutate({ entryId: word.entry.id, reason: "bad_example" });
+            reportSheet.current?.close();
+            setStatus(t("word.reportThanks"));
+          }}
+        />
+      </Sheet>
+
+      <Sheet ref={deleteSheet}>
+        <ConfirmBody
+          title={t("sheet.deleteWordTitle")}
+          body={t("word.deleteBody", { word: word.entry.lemma })}
+          confirmLabel={t("common.delete")}
+          cancelLabel={t("common.cancel")}
+          loading={remove.isPending}
+          onCancel={() => deleteSheet.current?.close()}
+          onConfirm={async () => {
+            await remove.mutateAsync(word.id);
+            deleteSheet.current?.close();
+            router.back();
+          }}
+        />
+      </Sheet>
     </KeyboardAvoidingView>
   );
 }
 
-function IconBtn({
+function RoundBtn({
   icon,
   color,
   label,
@@ -240,24 +283,25 @@ function IconBtn({
 }) {
   const { colors, radius, minTouch } = useTheme();
   return (
-    <Ionicons
-      name={icon}
-      size={22}
-      color={color}
+    <Touchable
+      onPress={onPress}
+      haptic="select"
+      scaleTo={0.9}
       accessibilityRole="button"
       accessibilityLabel={label}
-      onPress={onPress}
-      suppressHighlighting
       style={{
-        width: minTouch,
-        height: minTouch,
-        lineHeight: minTouch,
-        textAlign: "center",
+        width: minTouch - 8,
+        height: minTouch - 8,
         borderRadius: radius.pill,
-        backgroundColor: colors.surfaceAlt,
-        overflow: "hidden",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: colors.glassStrong,
+        borderWidth: 1,
+        borderColor: colors.border,
       }}
-    />
+    >
+      <Ionicons name={icon} size={19} color={color} />
+    </Touchable>
   );
 }
 
@@ -270,13 +314,13 @@ function Metric({ label, value }: { label: string; value: number | string }) {
         alignItems: "center",
         gap: 2,
         paddingVertical: spacing.md,
-        backgroundColor: colors.surfaceAlt,
+        backgroundColor: colors.sunken,
         borderRadius: radius.md,
       }}
     >
       <Text variant="bodyStrong">{value}</Text>
-      <Text variant="caption" tone="faint">
-        {label}
+      <Text variant="micro" tone="faint" numberOfLines={1}>
+        {String(label).toUpperCase()}
       </Text>
     </View>
   );

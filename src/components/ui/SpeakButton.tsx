@@ -1,9 +1,10 @@
 import React from "react";
-import { Pressable } from "react-native";
-import * as Haptics from "expo-haptics";
+import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "@/theme/ThemeProvider";
 import { speak } from "@/features/tts";
+import { Touchable } from "./Touchable";
 
 export function SpeakButton({
   word,
@@ -14,35 +15,49 @@ export function SpeakButton({
   slow?: boolean;
   size?: "sm" | "md" | "lg";
 }) {
-  const { colors, radius, minTouch } = useTheme();
+  const { colors, radius, shadow, minTouch } = useTheme();
+  const { t } = useTranslation();
 
-  const dim = size === "lg" ? 60 : size === "sm" ? minTouch : 52;
-  const icon = size === "lg" ? 28 : size === "sm" ? 20 : 24;
+  const dim = size === "lg" ? 58 : size === "sm" ? minTouch - 8 : 50;
+  const icon = size === "lg" ? 26 : size === "sm" ? 18 : 22;
 
   return (
-    <Pressable
+    <Touchable
+      haptic="select"
       accessibilityRole="button"
-      accessibilityLabel={slow ? `اسمع ${word} ببطء` : `اسمع نطق ${word}`}
-      hitSlop={8}
-      onPress={() => {
-        void Haptics.selectionAsync();
-        speak(word, { slow });
-      }}
-      style={({ pressed }) => ({
-        width: dim,
-        height: dim,
-        borderRadius: radius.pill,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: slow ? colors.surfaceAlt : colors.brandSoft,
-        opacity: pressed ? 0.7 : 1,
-      })}
+      accessibilityLabel={
+        slow ? t("a11y.listenSlowTo", { word }) : t("a11y.listenTo", { word })
+      }
+      scaleTo={0.9}
+      onPress={() => speak(word, { slow })}
+      style={[
+        {
+          width: dim,
+          height: dim,
+          borderRadius: radius.pill,
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+          borderWidth: slow ? 1 : 0,
+          borderColor: colors.border,
+          backgroundColor: slow ? colors.glassStrong : undefined,
+        },
+        slow ? undefined : shadow.brand,
+      ]}
     >
+      {!slow ? (
+        <LinearGradient
+          colors={[colors.brand, colors.brandAlt]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ position: "absolute", inset: 0 }}
+        />
+      ) : null}
       <Ionicons
         name={slow ? "play-outline" : "volume-high"}
         size={icon}
-        color={slow ? colors.textMuted : colors.brand}
+        color={slow ? colors.textMuted : colors.onBrand}
       />
-    </Pressable>
+    </Touchable>
   );
 }

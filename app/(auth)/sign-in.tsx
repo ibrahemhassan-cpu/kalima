@@ -1,42 +1,45 @@
 import React, { useState } from "react";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { Button, Card, Input, Screen, Text } from "@/components/ui";
+import { useTranslation } from "react-i18next";
+
+import { Button, Header, Input, Screen, Surface, Text, Touchable } from "@/components/ui";
+import { FormError, RevealToggle } from "@/components/auth/AuthForm";
 import { useTheme } from "@/theme/ThemeProvider";
-import { supabase } from "@/lib/supabase";
-import { authErrorAr, validateEmail, validatePassword } from "@/features/auth/errors";
-import { AuthHeader } from "@/features/auth/AuthHeader";
+import { useSignIn } from "@/features/auth/actions";
+import {
+  authErrorKey,
+  validateEmail,
+  validatePassword,
+} from "@/features/auth/errors";
 
 export default function SignIn() {
-  const { colors, spacing } = useTheme();
+  const { spacing } = useTheme();
+  const { t } = useTranslation();
   const router = useRouter();
+  const signIn = useSignIn();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string | null>>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
 
   async function submit() {
     const next = {
-      email: validateEmail(email),
-      password: validatePassword(password),
+      email: validateEmail(email, t) ?? undefined,
+      password: validatePassword(password, t) ?? undefined,
     };
     setErrors(next);
     setFormError(null);
     if (next.email || next.password) return;
 
-    setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
-    setBusy(false);
-
-    if (error) setFormError(authErrorAr(error.message));
-    // النجاح: حارس التوجيه في _layout.tsx هينقلك لوحده
+    try {
+      await signIn.mutateAsync({ email, password });
+      // RouteGate handles navigation once the session lands.
+    } catch (e) {
+      setFormError(t(authErrorKey((e as Error).message)));
+    }
   }
 
   return (
@@ -45,106 +48,92 @@ export default function SignIn() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <Screen scroll>
-        <AuthHeader
-          title="تسجيل الدخول"
-          subtitle="أهلًا بيك تاني"
+        <Header
+          title={t("auth.signIn")}
+          subtitle={t("auth.signInSubtitle")}
           onBack={() => router.back()}
         />
 
-        <Card>
+        <Surface tone="glass" radiusKey="xl" elevation="md">
           <View style={{ gap: spacing.lg }}>
             <Input
-              label="الإيميل"
+              label={t("auth.email")}
               english
               value={email}
               onChangeText={setEmail}
-              error={errors.email ?? undefined}
+              error={errors.email}
               keyboardType="email-address"
               autoComplete="email"
+              textContentType="emailAddress"
               placeholder="you@example.com"
               returnKeyType="next"
             />
 
             <View>
               <Input
-                label="كلمة المرور"
+                label={t("auth.password")}
                 english
                 value={password}
                 onChangeText={setPassword}
-                error={errors.password ?? undefined}
+                error={errors.password}
                 secureTextEntry={!show}
                 autoComplete="current-password"
-                returnKeyType="done"
+                textContentType="password"
+                returnKeyType="go"
                 onSubmitEditing={submit}
               />
               <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
-                  marginTop: spacing.xs,
+                  marginTop: spacing.sm,
                 }}
               >
-                <Text
-                  variant="caption"
-                  tone="brand"
-                  accessibilityRole="button"
-                  onPress={() => setShow((v) => !v)}
-                >
-                  {show ? "إخفاء" : "إظهار"}
-                </Text>
-                <Text
-                  variant="caption"
-                  tone="brand"
-                  accessibilityRole="button"
+                <RevealToggle shown={show} onToggle={() => setShow((v) => !v)} />
+                <Touchable
+                  haptic="select"
+                  scaleTo={0.94}
                   onPress={() => router.push("/(auth)/forgot-password")}
                 >
-                  نسيت كلمة المرور؟
-                </Text>
+                  <Text variant="caption" tone="brand">
+                    {t("auth.forgot")}
+                  </Text>
+                </Touchable>
               </View>
             </View>
 
-            {formError ? (
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: spacing.sm,
-                  alignItems: "center",
-                  backgroundColor: colors.dangerSoft,
-                  padding: spacing.md,
-                  borderRadius: 12,
-                }}
-              >
-                <Ionicons name="alert-circle-outline" size={20} color={colors.danger} />
-                <Text variant="caption" tone="danger" style={{ flex: 1 }}>
-                  {formError}
-                </Text>
-              </View>
-            ) : null}
+            <FormError message={formError} />
 
             <Button
-              title="دخول"
+              title={t("auth.signIn")}
               size="lg"
               fullWidth
-              loading={busy}
+              loading={signIn.isPending}
               onPress={submit}
             />
           </View>
-        </Card>
+        </Surface>
 
         <View
-          style={{ flexDirection: "row", justifyContent: "center", gap: spacing.xs }}
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            gap: spacing.xs,
+            alignItems: "center",
+          }}
         >
           <Text variant="body" tone="muted">
-            معندكش حساب؟
+            {t("auth.noAccount")}
           </Text>
-          <Text
-            variant="bodyStrong"
-            tone="brand"
-            accessibilityRole="button"
+          <Touchable
+            haptic="select"
+            scaleTo={0.94}
             onPress={() => router.replace("/(auth)/sign-up")}
           >
-            اعمل واحد
-          </Text>
+            <Text variant="bodyStrong" tone="brand">
+              {t("auth.createOne")}
+            </Text>
+          </Touchable>
         </View>
       </Screen>
     </KeyboardAvoidingView>

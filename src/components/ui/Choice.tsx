@@ -50,7 +50,7 @@ export function ChoiceList<T extends string | number>({
               borderRadius: radius.md,
               borderWidth: active ? 2 : 1,
               borderColor: active ? colors.brand : colors.border,
-              backgroundColor: active ? colors.brandSoft : colors.surface,
+              backgroundColor: active ? colors.brandSoft : colors.glassStrong,
               opacity: pressed ? 0.85 : 1,
             })}
           >
