@@ -57,5 +57,8 @@
   "devDependencies": {
     "@bacons/apple-targets": "^5.0.0",
     "typescript": "~6.0.3"
+  },
+  "overrides": {
+    "@expo/require-utils": "^57.0.0"
   }
 }
