@@ -49,7 +49,10 @@
     "recent": "Recently added",
     "statWords": "Words",
     "statMastered": "Mastered",
-    "statLevel": "Level"
+    "statLevel": "Level",
+    "currentStreak": "Current streak",
+    "todayProgress": "Today's progress",
+    "wordsReviewed": "words reviewed"
   },
   "word": {
     "addTitle": "Add a word",
@@ -136,8 +139,30 @@
     "noResultsTitle": "Nothing found",
     "noResultsBody": "Try another word or change the filter"
   },
+  "packs": {
+    "title": "Ready-made packs",
+    "subtitle": "Words grouped by topic — add a whole set at once",
+    "discoverTitle": "Discover",
+    "discoverSubtitle": "Pick a topic that matters to you and start there",
+    "count_one": "{{count}} word",
+    "count_other": "{{count}} words",
+    "owned": "{{owned}} of {{total}} in your library",
+    "addAll": "Add the pack",
+    "addAllReady": "Add {{count}} ready words",
+    "allAdded": "The whole pack is in your library",
+    "added_one": "{{count}} word added",
+    "added_other": "{{count}} words added",
+    "pending_one": "{{count}} word is prepared when you open it",
+    "pending_other": "{{count}} words are prepared when you open them",
+    "notReady": "Prepared when you open it",
+    "empty": "No packs available yet",
+    "addFailed": "Couldn't add the pack. Check your connection"
+  },
   "review": {
     "title": "Review",
+    "queueTitle": "Waiting for you now",
+    "overview": "Overview",
+    "dueList": "Due words",
     "tapToReveal": "Tap to reveal",
     "progress": "{{current}} of {{total}}",
     "forgot": "Forgot",
@@ -210,7 +235,11 @@
     "autoplayAudio": "Autoplay pronunciation",
     "notifications": "Notifications",
     "dailyReminder": "Daily reminder",
-    "reminderTime": "Reminder time",
+    "reminderTime": "Reminder times",
+    "reminderTimesHint": "Pick the times that suit you. Tap any time to add or remove it.",
+    "chosenTimes": "Your times",
+    "remindersCount": "{{count}} of {{max}} times",
+    "remindersFull": "Limit reached: {{count}} times",
     "reminderHint": "One reminder a day — no more",
     "exportData": "Download my data",
     "exportHint": "Everything in one file",
@@ -373,7 +402,16 @@
     "fillBlank": "Complete the sentence",
     "typeWord": "Type the word",
     "correct": "Correct",
-    "wrong": "Close — the answer is {{answer}}"
+    "wrong": "Close — the answer is {{answer}}",
+    "testMe": "Test me on this word",
+    "seeResult": "See result",
+    "retry": "Take it again",
+    "scoreOf": "{{correct}} right out of {{total}}",
+    "mastery": "How well you know it",
+    "masteryHint": "Complete at 6 successful reviews and a 60-day interval",
+    "nextReview": "Next review",
+    "noQuestions": "No questions for this word yet",
+    "noQuestionsHint": "They're prepared automatically after the first review — come back later"
   },
   "notify": {
     "dailyTitle": "Time for your words",
@@ -387,6 +425,30 @@
     "enableCta": "Turn on reminders",
     "enableSkip": "Not now",
     "blocked": "Notifications are off in your phone settings"
+  },
+  "legal": {
+    "lastUpdated": "Last updated: {{date}}"
+  },
+  "overlay": {
+    "title": "Word card",
+    "subtitle": "A word from your library, surfacing every so often",
+    "enable": "Turn the card on",
+    "every": "How often?",
+    "minutes_one": "Every minute",
+    "minutes_other": "Every {{count}} minutes",
+    "permissionTitle": "One permission needed",
+    "permissionBody": "Android asks for \"display over other apps\" in system settings. Tap the button, enable Kalima, and come back.",
+    "grant": "Open settings",
+    "modeFloating": "Floating card",
+    "modeFloatingBody": "Appears over whatever app you're in, and fades on its own after a few seconds.",
+    "modeNotification": "Notifications",
+    "modeNotificationAndroid": "Grant the draw-over-apps permission above to get a floating card instead of a notification.",
+    "modeNotificationIos": "iOS does not let any app draw over another, so the word arrives as a notification instead — a different word each time.",
+    "quietNote": "Notifications are scheduled between 8am and 10pm only, and are topped up whenever you open the app. Leave it for a couple of days and they quietly stop.",
+    "cardFallbackBody": "Tap to review it",
+    "batteryNote": "The card runs as a background service, so Android shows a silent notification while it's on. Turn it off here any time.",
+    "serviceTitle": "Word card is on",
+    "serviceBody": "A word every so often, from your library"
   },
   "achievements": {
     "unlocked": "Unlocked",

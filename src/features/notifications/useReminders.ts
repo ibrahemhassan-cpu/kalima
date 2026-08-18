@@ -6,8 +6,29 @@ import { useTranslation } from "react-i18next";
 import { useProfile } from "@/api/profile";
 import { supabase } from "@/lib/supabase";
 import { flushQueue } from "@/lib/offline";
-import { syncReminders } from "./index";
+import { syncReminders, type ReminderTime } from "./index";
 import type { HomeSummary } from "@/lib/database.types";
+
+/**
+ * `reminder_times` arrives as Postgres `time` strings ("09:00:00").
+ * Falls back to the single pre-0008 column so a profile that predates the
+ * migration still gets its one reminder.
+ */
+export function parseReminderTimes(
+  times: string[] | null | undefined,
+  fallback: string | null | undefined,
+): ReminderTime[] {
+  const raw = times && times.length > 0 ? times : [fallback ?? "19:00:00"];
+
+  const parsed = raw
+    .map((t) => {
+      const [h, m] = String(t).split(":");
+      return { hour: Number(h), minute: Number(m ?? 0) };
+    })
+    .filter((t) => Number.isFinite(t.hour) && Number.isFinite(t.minute));
+
+  return parsed.length > 0 ? parsed : [{ hour: 19, minute: 0 }];
+}
 
 /**
  * Keeps scheduled reminders in step with the user's settings and progress,
@@ -25,12 +46,15 @@ export function useReminders(enabled: boolean) {
   useEffect(() => {
     if (!enabled || !profile) return;
 
-    const hour = Number((profile.reminder_time ?? "19:00:00").slice(0, 2));
+    const times = parseReminderTimes(
+      profile.reminder_times,
+      profile.reminder_time,
+    );
     const summary = qc.getQueryData<HomeSummary>(["home-summary"]);
 
     const key = [
       profile.reminder_enabled,
-      hour,
+      times.map((t) => `${t.hour}:${t.minute}`).join(","),
       summary?.current_streak ?? 0,
       summary?.goal_met ?? false,
       i18n.language,
@@ -41,7 +65,7 @@ export function useReminders(enabled: boolean) {
 
     void syncReminders({
       enabled: profile.reminder_enabled,
-      hour,
+      times,
       streak: summary?.current_streak ?? 0,
       goalMet: summary?.goal_met ?? false,
     });

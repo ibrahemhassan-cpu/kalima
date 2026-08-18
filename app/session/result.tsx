@@ -23,6 +23,7 @@ import {
   requestPermission,
   syncReminders,
 } from "@/features/notifications";
+import { parseReminderTimes } from "@/features/notifications/useReminders";
 
 export default function SessionResult() {
   const { colors, spacing, radius, shadow } = useTheme();
@@ -70,7 +71,7 @@ export default function SessionResult() {
     if (!granted) return;
     await syncReminders({
       enabled: true,
-      hour: Number((profile?.reminder_time ?? "19:00:00").slice(0, 2)),
+      times: parseReminderTimes(profile?.reminder_times, profile?.reminder_time),
       streak,
       goalMet,
     });

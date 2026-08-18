@@ -34,6 +34,16 @@ const LIMIT = flag("limit", Infinity);
 const DELAY_MS = flag("delay", 7000);
 const PROGRESS_FILE = ".seed-progress.json";
 
+/** How long to wait each time Gemini throttles us, in order. */
+const BACKOFF = [60_000, 150_000, 300_000];
+/** After this many throttles on one word, give up on it and move on. */
+const MAX_WAITS = BACKOFF.length;
+/**
+ * If this many words in a row are throttled to death, the quota is gone for
+ * the day — keep waiting and you'll burn hours for nothing. Stop and say so.
+ */
+const QUOTA_GIVE_UP = 3;
+
 loadEnvFile(".env.seed");
 
 const URL_BASE = process.env.SUPABASE_URL;
@@ -125,45 +135,86 @@ let token = await signIn();
 let cached = 0;
 let generated = 0;
 let failed = 0;
+/** words in a row that ran out of backoff — the signal that the quota is gone */
+let throttledInARow = 0;
+/** raised whenever Gemini throttles, so the whole run eases off, not just one word */
+let pace = DELAY_MS;
+let stoppedEarly = false;
 const startedAt = Date.now();
 
 for (const [i, word] of todo.entries()) {
-  let attempt = 0;
+  let attempt = 0; // real errors
+  let waits = 0; // Gemini throttles
   let ok = false;
+  let wasCached = false;
+  let quotaGone = false;
 
-  while (attempt < 3 && !ok) {
-    attempt += 1;
+  while (!ok && attempt < 3 && waits < MAX_WAITS) {
     const { status, body } = await enrich(token, word);
 
     if (status === 401) {
       token = await signIn(); // token expired mid-run
       continue;
     }
+
     if (status === 429) {
-      const wait = 65_000;
-      console.log(`  rate limited — waiting ${wait / 1000}s`);
+      /**
+       * Two very different things arrive as 429:
+       *   rate_limited → our own AI_DAILY_LIMIT. Waiting can't help.
+       *   ai_busy      → Gemini is throttling. Waiting is exactly right.
+       */
+      if (body?.error === "rate_limited") {
+        console.log(`\n  ✗ ${body.message_ar ?? "daily limit reached"}`);
+        console.log(
+          "  ارفع AI_DAILY_LIMIT وأعد نشر enrich-word، ثم شغّل السكربت تاني.",
+        );
+        quotaGone = true;
+        break;
+      }
+
+      waits += 1;
+      const wait = BACKOFF[Math.min(waits - 1, BACKOFF.length - 1)];
+      console.log(
+        `  ${word} — Gemini throttled (${waits}/${MAX_WAITS}) · waiting ${wait / 1000}s`,
+      );
       await sleep(wait);
+      pace = Math.min(pace + 3000, 30_000); // slow the whole run down
       continue;
     }
+
     if (status === 404) {
       console.log(`  ✗ ${word} — not a word`);
       done.add(word);
       ok = true;
       break;
     }
+
     if (status >= 200 && status < 300) {
-      if (body.cached) cached += 1;
+      wasCached = !!body.cached;
+      if (wasCached) cached += 1;
       else generated += 1;
       done.add(word);
       ok = true;
       break;
     }
 
+    attempt += 1;
     console.log(`  ! ${word} — ${status} ${body?.error ?? ""} (try ${attempt}/3)`);
     await sleep(3000);
   }
 
-  if (!ok) failed += 1;
+  if (!ok) {
+    failed += 1;
+    // only throttling counts toward "the quota is gone"; a bad word doesn't
+    throttledInARow = waits >= MAX_WAITS || quotaGone ? throttledInARow + 1 : 0;
+
+    if (quotaGone || throttledInARow >= QUOTA_GIVE_UP) {
+      stoppedEarly = true;
+      break;
+    }
+  } else {
+    throttledInARow = 0;
+  }
 
   const n = i + 1;
   if (n % 10 === 0 || n === todo.length) {
@@ -176,11 +227,24 @@ for (const [i, word] of todo.entries()) {
     saveProgress(done);
   }
 
-  // Cached hits cost nothing, so don't sleep on them.
-  await sleep(cached > 0 && generated === 0 ? 200 : DELAY_MS);
+  // A cache hit cost nothing, so there's nothing to pace.
+  await sleep(wasCached ? 200 : pace);
 }
 
 saveProgress(done);
+
+if (stoppedEarly) {
+  console.log(
+    `\nوقفت بدري — Gemini رافضة الطلبات باستمرار.\n` +
+      `غالبًا حصتك اليومية خلصت (الطبقة المجانية محدودة بعدد طلبات في اليوم).\n\n` +
+      `اتأكد من السبب الحقيقي هنا:\n` +
+      `  Supabase Dashboard → Edge Functions → enrich-word → Logs\n` +
+      `  دوّر على سطر "gemini failed: gemini 429" — الرسالة جوّاه بتفرّق\n` +
+      `  بين PerMinute (استنى شوية) و PerDay (استنى بكرة).\n\n` +
+      `اللي اتعمل لحد دلوقتي محفوظ. شغّل نفس الأمر تاني وهيكمّل من مكانه.`,
+  );
+}
+
 console.log(
   `\nDone. generated ${generated} · cached ${cached} · failed ${failed}\n` +
     `Progress saved to ${path.resolve(PROGRESS_FILE)} — rerun any time to continue.`,

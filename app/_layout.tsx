@@ -15,6 +15,7 @@ import { AuthProvider, useAuth } from "@/features/auth/AuthProvider";
 import { useDeepLinkAuth } from "@/features/auth/useDeepLinkAuth";
 import { useProfile } from "@/api/profile";
 import { useReminders } from "@/features/notifications/useReminders";
+import { useWordOverlay } from "@/features/overlay/useWordOverlay";
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -64,6 +65,7 @@ function RouteGate() {
 
   useDeepLinkAuth();
   useReminders(!!session);
+  useWordOverlay(!!session);
 
   const waitingForProfile = !!session && loadingProfile;
   const ready = !initializing && hydrated && !waitingForProfile;
@@ -110,6 +112,8 @@ function RouteGate() {
         options={{ presentation: "modal", animation: "slide_from_bottom" }}
       />
       <Stack.Screen name="word/[id]" />
+      <Stack.Screen name="pack/[id]" />
+      <Stack.Screen name="quiz/[id]" />
       <Stack.Screen name="session" options={{ animation: "fade" }} />
       <Stack.Screen name="achievements" />
       <Stack.Screen name="settings" options={{ presentation: "card" }} />

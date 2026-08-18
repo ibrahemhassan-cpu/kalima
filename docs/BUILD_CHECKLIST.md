@@ -17,25 +17,64 @@ npm install @gorhom/bottom-sheet
 
 ## 2. قاعدة البيانات
 
-في **SQL Editor**، شغّل `supabase/migrations/0006_questions.sql`.
+في **SQL Editor**، شغّل `0006_questions.sql` ثم `0007_packs.sql` ثم
+`0008_quiz_and_reminders.sql` — بالترتيب ده بالظبط.
 
 ```sql
 -- تحقّق
 select routine_name from information_schema.routines
 where routine_schema='public'
   and routine_name in ('get_session_items','submit_quiz_answer',
-                       'entries_missing_questions','lookup_words','last_modes');
--- المتوقع: 5 صفوف
+                       'entries_missing_questions','lookup_words','last_modes',
+                       'list_topic_packs','get_pack_words','add_pack_words',
+                       'get_word_quiz','check_quiz_answer','finish_word_quiz');
+-- المتوقع: 11 صف
+
+-- عمود مواعيد التذكير المتعددة
+select column_name from information_schema.columns
+where table_name = 'profiles' and column_name = 'reminder_times';
+
+-- الحزم الستة و144 كلمة
+select p.slug, count(*) from public.pack_words pw
+join public.topic_packs p on p.id = pw.pack_id
+group by p.slug order by p.slug;
 ```
+
+> بعد الميجريشن، ابذر كلمات الحزم عشان «أضِف الحزمة» تشتغل فورًا بدون AI:
+> `node scripts/seed-dictionary.mjs scripts/words-packs.txt`
+> (التفاصيل في [`scripts/README.md`](../scripts/README.md))
 
 ## 3. الـ Edge Functions
 
-`enrich-word` **اتغيّرت** (بقت تولّد بنك الأسئلة)، و`generate-questions` **جديدة**:
+`enrich-word` **اتغيّرت تاني** — التعليمات بقت تطلب أسئلة بالاختيار بس (بدون
+كتابة). `generate-questions` بتشارك نفس الملف فبتتغيّر معاها:
 
 ```powershell
 npx supabase functions deploy enrich-word
+```
+
+```powershell
 npx supabase functions deploy generate-questions
 ```
+
+> الأسئلة القديمة من نوع «كتابة» بتفضل في قاعدة البيانات لكن المُنسّق ما
+> بيختارهاش خالص، فمش محتاج تمسح حاجة.
+
+## 3-ب. الموديول النيتف (للبطاقة العائمة)
+
+`modules/word-overlay/` فيه كود Kotlin — **ده معناه إن الـ Development Build
+القديم مش هيشوف الميزة دي**. لازم بناء جديد:
+
+```powershell
+npm run build:dev
+```
+
+**البناء ده مش شرط.** من غيره «بطاقة الكلمة» بتشتغل بالإشعارات على الجهازين
+(الموديول بيرجّع `isSupported() = false` فالتطبيق بيروح للإشعارات تلقائيًّا).
+البناء الجديد بيضيف الشكل العائم على أندرويد بس.
+
+> على iOS الموديول مش متبني أصلًا بقرار — مفيش API في iOS يسمح لتطبيق
+> يرسم فوق تطبيق تاني، فالإشعارات هي السقف اللي النظام بيسمح بيه.
 
 ## 4. الفحص السريع ⭐
 

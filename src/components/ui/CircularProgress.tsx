@@ -13,21 +13,26 @@ export type CircularProgressProps = {
   total: number;
   size?: number;
   strokeWidth?: number;
+  /** caption above the numbers — pass it translated */
+  title?: string;
+  /** caption below the numbers — pass it translated */
   label?: string;
   style?: ViewStyle;
 };
 
 /**
  * Animated Circular Progress Widget.
- * Matches screen 4 in design system:
- * Today's Progress: 16 / 20 (words reviewed)
+ *
+ * Both captions are props rather than literals: this component renders inside
+ * an Arabic-first UI, so anything it prints has to come from the caller's `t()`.
  */
 export function CircularProgress({
   current,
   total,
   size = 170,
   strokeWidth = 12,
-  label = "words reviewed",
+  title,
+  label,
   style,
 }: CircularProgressProps) {
   const { colors, spring } = useTheme();
@@ -101,9 +106,11 @@ export function CircularProgress({
 
       {/* Center Label Display */}
       <View style={{ alignItems: "center", justifyContent: "center", gap: 2 }}>
-        <Text variant="caption" tone="muted" style={{ fontSize: 12 }}>
-          Today's Progress
-        </Text>
+        {title ? (
+          <Text variant="caption" tone="muted" center style={{ fontSize: 12 }}>
+            {title}
+          </Text>
+        ) : null}
         <Text variant="display" style={{ fontSize: 32, fontWeight: "700" }}>
           {current}{" "}
           <Text variant="title" tone="muted" style={{ fontSize: 20 }}>

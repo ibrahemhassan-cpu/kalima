@@ -9,6 +9,7 @@ import {
   Button,
   Header,
   Input,
+  ProgressBar,
   Screen,
   StatusBadge,
   Surface,
@@ -26,6 +27,7 @@ import {
   useUpdateWord,
   useWordDetail,
 } from "@/api/words";
+import { masteryOf } from "@/api/quiz";
 
 export default function WordDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -139,6 +141,32 @@ export default function WordDetail() {
               />
             </View>
 
+            {/* how far this one word has actually got */}
+            <View style={{ gap: spacing.sm }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text variant="label" tone="muted">
+                  {t("quiz.mastery")}
+                </Text>
+                <Text variant="bodyStrong" tone="brand">
+                  {Math.round(masteryOf(word) * 100)}%
+                </Text>
+              </View>
+              <ProgressBar
+                value={masteryOf(word)}
+                tone={masteryOf(word) >= 1 ? "success" : "brand"}
+                label={t("quiz.mastery")}
+              />
+              <Text variant="micro" tone="faint">
+                {t("quiz.masteryHint")}
+              </Text>
+            </View>
+
             {word.status === "leech" ? (
               <View
                 style={{
@@ -152,6 +180,14 @@ export default function WordDetail() {
                 </Text>
               </View>
             ) : null}
+
+            <Button
+              title={t("quiz.testMe")}
+              variant="secondary"
+              fullWidth
+              icon="help-circle-outline"
+              onPress={() => router.push(`/quiz/${word.id}`)}
+            />
           </View>
         </Surface>
 

@@ -13,6 +13,10 @@ type SettingsState = {
   /** وضع مبسّط: كروت أكبر، خيارات أقل، بدون إحصائيات متقدمة */
   simpleMode: boolean;
   autoplayAudio: boolean;
+  /** بطاقة الكلمة فوق التطبيقات — أندرويد فقط */
+  overlayEnabled: boolean;
+  /** كل كام دقيقة تظهر البطاقة */
+  overlayInterval: number;
   hydrated: boolean;
 
   setTheme: (v: ThemePref) => void;
@@ -20,6 +24,8 @@ type SettingsState = {
   setFontScale: (v: FontScaleName) => void;
   setSimpleMode: (v: boolean) => void;
   setAutoplayAudio: (v: boolean) => void;
+  setOverlayEnabled: (v: boolean) => void;
+  setOverlayInterval: (v: number) => void;
 };
 
 export const useSettings = create<SettingsState>()(
@@ -30,6 +36,8 @@ export const useSettings = create<SettingsState>()(
       fontScale: "md",
       simpleMode: false,
       autoplayAudio: true,
+      overlayEnabled: false,
+      overlayInterval: 30,
       hydrated: false,
 
       setTheme: (theme) => set({ theme }),
@@ -37,16 +45,28 @@ export const useSettings = create<SettingsState>()(
       setFontScale: (fontScale) => set({ fontScale }),
       setSimpleMode: (simpleMode) => set({ simpleMode }),
       setAutoplayAudio: (autoplayAudio) => set({ autoplayAudio }),
+      setOverlayEnabled: (overlayEnabled) => set({ overlayEnabled }),
+      setOverlayInterval: (overlayInterval) => set({ overlayInterval }),
     }),
     {
       name: "kalima-settings",
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: ({ theme, language, fontScale, simpleMode, autoplayAudio }) => ({
+      partialize: ({
         theme,
         language,
         fontScale,
         simpleMode,
         autoplayAudio,
+        overlayEnabled,
+        overlayInterval,
+      }) => ({
+        theme,
+        language,
+        fontScale,
+        simpleMode,
+        autoplayAudio,
+        overlayEnabled,
+        overlayInterval,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setTheme(state.theme);

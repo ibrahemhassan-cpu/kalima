@@ -13,6 +13,10 @@ const IDS = {
   comeback: "kalima-comeback",
 } as const;
 
+/** The user may pick several times a day; each gets its own identifier. */
+export const MAX_REMINDERS = 6;
+const dailyId = (i: number) => `${IDS.daily}-${i}`;
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowBanner: true,
@@ -58,28 +62,48 @@ async function cancel(id: string) {
   }
 }
 
-export async function cancelAll() {
-  await Promise.all(Object.values(IDS).map(cancel));
+async function cancelDailies() {
+  // the pre-0008 single reminder plus every slot we might have used
+  await cancel(IDS.daily);
+  await Promise.all(
+    Array.from({ length: MAX_REMINDERS }, (_, i) => cancel(dailyId(i))),
+  );
 }
 
-/** Daily nudge at the hour the user picked. */
-export async function scheduleDaily(hour: number, minute = 0) {
-  await cancel(IDS.daily);
+export async function cancelAll() {
+  await cancelDailies();
+  await Promise.all([cancel(IDS.streak), cancel(IDS.comeback)]);
+}
+
+export type ReminderTime = { hour: number; minute: number };
+
+/**
+ * Daily nudges at every time the user picked.
+ *
+ * Rescheduling always clears the whole set first: a removed time must actually
+ * stop firing, and expo keeps a notification alive until its id is cancelled.
+ */
+export async function scheduleDailyTimes(times: ReminderTime[]) {
+  await cancelDailies();
   if (!(await hasPermission())) return;
 
-  await Notifications.scheduleNotificationAsync({
-    identifier: IDS.daily,
-    content: {
-      title: i18n.t("notify.dailyTitle"),
-      body: i18n.t("notify.dailyBody"),
-      ...(Platform.OS === "android" ? { channelId: "reminders" } : {}),
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.DAILY,
-      hour,
-      minute,
-    },
-  });
+  const slots = times.slice(0, MAX_REMINDERS);
+
+  for (const [i, at] of slots.entries()) {
+    await Notifications.scheduleNotificationAsync({
+      identifier: dailyId(i),
+      content: {
+        title: i18n.t("notify.dailyTitle"),
+        body: i18n.t("notify.dailyBody"),
+        ...(Platform.OS === "android" ? { channelId: "reminders" } : {}),
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour: at.hour,
+        minute: at.minute,
+      },
+    });
+  }
 }
 
 /**
@@ -136,7 +160,7 @@ export async function scheduleComeback() {
  */
 export async function syncReminders(opts: {
   enabled: boolean;
-  hour: number;
+  times: ReminderTime[];
   streak: number;
   goalMet: boolean;
 }) {
@@ -147,7 +171,7 @@ export async function syncReminders(opts: {
     return;
   }
 
-  await scheduleDaily(opts.hour);
+  await scheduleDailyTimes(opts.times);
   await scheduleComeback();
 
   if (opts.goalMet) await clearStreakRisk();

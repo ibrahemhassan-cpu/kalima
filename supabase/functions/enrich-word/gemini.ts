@@ -4,13 +4,30 @@ export const MODEL = "gemini-2.5-flash";
 const ENDPOINT =
   `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
-// ── الأنواع التي يعرفها التطبيق ─────────────────────────────
+/**
+ * كل ما يعرفه المخطط. `typing` باقٍ هنا للتسامح فقط: لو أرسله النموذج
+ * لا نريد أن يسقط التحقق من الكلمة كلها — بل يُسقَط السؤال وحده في
+ * sanitizeQuestions.
+ */
 export const QUESTION_KINDS = [
   "mcq_en_ar",
   "mcq_ar_en",
   "listening",
   "fill_blank",
   "typing",
+] as const;
+
+/**
+ * ما نطلبه فعلًا وما نقبل تخزينه.
+ *
+ * كل سؤال يُجاب بالضغط على الإجابة الصحيحة — لا كتابة إطلاقًا.
+ * التنوّع في **صيغة السؤال** لا في طريقة الإجابة.
+ */
+export const CHOICE_KINDS = [
+  "mcq_en_ar",
+  "mcq_ar_en",
+  "listening",
+  "fill_blank",
 ] as const;
 
 // ── مخطط الاستجابة المفروض على النموذج ──────────────────────
@@ -158,7 +175,11 @@ function systemInstruction(level: string) {
 
 ── بنك الأسئلة ──
 ولّد 5 إلى 8 أسئلة **متنوّعة الأنواع والصعوبة** لنفس الكلمة.
-النوع (kind) واحد من: mcq_en_ar · mcq_ar_en · listening · fill_blank · typing
+النوع (kind) واحد من أربعة فقط: mcq_en_ar · mcq_ar_en · listening · fill_blank
+
+**كل سؤال يُجاب باختيار الإجابة الصحيحة من بين خيارات.** لا تولّد أي
+سؤال يتطلب من المستخدم كتابة إجابة. لكل سؤال 3 مشتّتات إلزاميًّا.
+وزّع الأسئلة على الأنواع الأربعة قدر الإمكان — لا تجعلها كلها نوعًا واحدًا.
 
 قواعد لكل نوع:
 • mcq_en_ar  → prompt = الكلمة الإنجليزية. answer = الترجمة العربية الصحيحة.
@@ -173,8 +194,6 @@ function systemInstruction(level: string) {
                واكتب الفراغ بالضبط هكذا: ____ (أربع شرطات سفلية).
                answer = الكلمة. distractors = 3 كلمات تلائم الجملة نحويًّا
                لكنها خاطئة دلاليًّا. prompt_hint = ترجمة الجملة بالعربية.
-• typing     → prompt = التعريف الإنجليزي أو الترجمة العربية.
-               answer = الكلمة. distractors = [] (لا خيارات).
 
 توزيع الصعوبة (difficulty): اجعل واحدًا على الأقل بـ 1، وواحدًا بـ 3،
 والباقي 2. الصعوبة 1 = تمييز واضح، 3 = مشتّتات شديدة التقارب.
@@ -265,26 +284,26 @@ export function sanitizeQuestions(
   lemma: string,
 ): GeneratedQuestion[] {
   const seen = new Set<string>();
+  const allowed = new Set<string>(CHOICE_KINDS);
 
   return qs.filter((q) => {
+    // every question is answered by choosing; a typed one is dropped outright
+    if (!allowed.has(q.kind)) return false;
+
     const answer = q.answer.trim();
     if (!answer) return false;
 
     if (q.kind === "fill_blank" && !q.prompt.includes("____")) return false;
 
-    if (q.kind === "typing") {
-      q.distractors = [];
-    } else {
-      const uniq = Array.from(
-        new Set(
-          q.distractors
-            .map((d) => d.trim())
-            .filter((d) => d && d.toLowerCase() !== answer.toLowerCase()),
-        ),
-      );
-      if (uniq.length < 2) return false; // an MCQ needs real choices
-      q.distractors = uniq.slice(0, 3);
-    }
+    const uniq = Array.from(
+      new Set(
+        q.distractors
+          .map((d) => d.trim())
+          .filter((d) => d && d.toLowerCase() !== answer.toLowerCase()),
+      ),
+    );
+    if (uniq.length < 2) return false; // a choice question needs real choices
+    q.distractors = uniq.slice(0, 3);
 
     // fill-blank must not spell the answer out in the sentence
     if (

@@ -8,7 +8,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { useTheme } from "@/theme/ThemeProvider";
-import { useSettings } from "@/store/settings";
 import { TAB_BAR_HEIGHT } from "@/theme/spacing";
 import { Touchable } from "@/components/ui/Touchable";
 import { Text } from "@/components/ui/Text";
@@ -19,7 +18,6 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
   const { colors, radius, shadow, isDark } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
-  const simple = useSettings((s) => s.simpleMode);
   const insets = useSafeAreaInsets();
 
   // Design system tab configuration matching mockup
@@ -30,10 +28,19 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
     profile: { outline: "person-outline", filled: "person" },
   };
 
-  // Split tabs: index, words on left; center elevated +; review, profile on right
-  const leftRoutes = state.routes.filter((r: { name: string }) => r.name === "index" || r.name === "words");
+  /**
+   * Split tabs: index, words on left; center elevated +; review, profile right.
+   *
+   * Every one of the four is a destination you can't get to any other way —
+   * Settings, and with it the switch back out of simple mode, lives behind
+   * Profile. So simple mode trims the *contents* of screens (see Screen and the
+   * home packs strip), never the bar itself. Discover is already off the bar.
+   */
+  const leftRoutes = state.routes.filter(
+    (r: { name: string }) => r.name === "index" || r.name === "words",
+  );
   const rightRoutes = state.routes.filter(
-    (r: { name: string }) => r.name === "review" || (r.name === "profile" && !simple)
+    (r: { name: string }) => r.name === "review" || r.name === "profile",
   );
 
   return (

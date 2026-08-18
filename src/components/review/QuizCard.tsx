@@ -25,6 +25,22 @@ export type AnswerState = {
 } | null;
 
 /**
+ * Everything a question needs to be rendered — no SRS state.
+ * Both the review session and the single-word quiz satisfy this.
+ */
+export type QuizCardItem = Pick<
+  SessionItem,
+  | "mode"
+  | "question_id"
+  | "lemma"
+  | "ipa"
+  | "prompt"
+  | "prompt_hint"
+  | "difficulty"
+  | "options"
+>;
+
+/**
  * One question, whatever its kind. The prompt changes shape per mode but the
  * answer surface stays consistent so the interaction never feels unfamiliar.
  */
@@ -34,7 +50,7 @@ export function QuizCard({
   onAnswer,
   disabled,
 }: {
-  item: SessionItem;
+  item: QuizCardItem;
   answered: AnswerState;
   onAnswer: (value: string) => void;
   disabled?: boolean;
@@ -120,7 +136,7 @@ export function QuizCard({
 }
 
 // ── prompt ────────────────────────────────────────────────
-function PromptBody({ item }: { item: SessionItem }) {
+function PromptBody({ item }: { item: QuizCardItem }) {
   const { colors, spacing, radius } = useTheme();
 
   if (item.mode === "listening") {

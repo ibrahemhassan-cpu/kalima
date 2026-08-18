@@ -1,5 +1,5 @@
 import React from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
@@ -20,8 +20,11 @@ import {
   usePulse,
 } from "@/components/ui";
 import { WordCard } from "@/components/word/WordCard";
+import { PackChip } from "@/components/packs/PackCard";
 import { useTheme } from "@/theme/ThemeProvider";
+import { useSettings } from "@/store/settings";
 import { useProfile } from "@/api/profile";
+import { useTopicPacks } from "@/api/packs";
 import { useMyWords } from "@/api/words";
 import { supabase } from "@/lib/supabase";
 import type { HomeSummary } from "@/lib/database.types";
@@ -30,6 +33,7 @@ export default function Home() {
   const { colors, spacing, radius, shadow } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const simpleMode = useSettings((s) => s.simpleMode);
   const { data: profile } = useProfile();
 
   const { data: summary } = useQuery({
@@ -42,6 +46,7 @@ export default function Home() {
   });
 
   const { data: recent } = useMyWords({ filter: "all", search: "", sort: "recent" });
+  const { data: packs } = useTopicPacks();
 
   const goal = summary?.daily_goal ?? profile?.daily_goal ?? 10;
   const done = summary?.today_reviews ?? 0;
@@ -83,14 +88,12 @@ export default function Home() {
         <Surface tone="glass" elevation="md" radiusKey="xl" padded={spacing.lg}>
           <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
             <View style={{ gap: 4 }}>
-              <Text variant="micro" tone="muted" style={{ textTransform: "uppercase", letterSpacing: 0.5 }}>
-                Current Streak
+              {/* no letterSpacing / uppercase here: both mangle Arabic script */}
+              <Text variant="micro" tone="muted">
+                {t("home.currentStreak")}
               </Text>
               <Text variant="display" style={{ fontSize: 32, fontWeight: "800" }}>
-                {streakShown}{" "}
-                <Text variant="heading" tone="muted">
-                  days
-                </Text>
+                {t("home.streak", { count: streakShown })}
               </Text>
             </View>
 
@@ -163,12 +166,14 @@ export default function Home() {
               </View>
 
               <View style={{ flex: 1, gap: 2 }}>
-                <Text variant="micro" tone="muted" style={{ letterSpacing: 0.5 }}>
-                  Today's Progress
+                <Text variant="micro" tone="muted">
+                  {t("home.todayProgress")}
                 </Text>
                 <Text variant="title" style={{ fontSize: 24, fontWeight: "700" }}>
                   {done} <Text variant="heading" tone="muted">/ {goal}</Text>{" "}
-                  <Text variant="caption" tone="faint">words reviewed</Text>
+                  <Text variant="caption" tone="faint">
+                    {t("home.wordsReviewed")}
+                  </Text>
                 </Text>
               </View>
             </View>
@@ -247,8 +252,50 @@ export default function Home() {
         </Enter>
       ) : null}
 
+      {/* topic packs — the way into Discover; simple mode hides it by design */}
+      {!simpleMode && packs && packs.length > 0 ? (
+        <Enter index={5}>
+          <View style={{ gap: spacing.md }}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Text variant="label" tone="muted">
+                {t("packs.title")}
+              </Text>
+              <Touchable
+                onPress={() => router.push("/(tabs)/discover")}
+                haptic="select"
+                scaleTo={0.94}
+              >
+                <Text variant="label" tone="brand">
+                  {t("common.seeAll")}
+                </Text>
+              </Touchable>
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: spacing.sm, paddingEnd: spacing.lg }}
+            >
+              {packs.slice(0, 6).map((p) => (
+                <PackChip
+                  key={p.pack_id}
+                  pack={p}
+                  onPress={() => router.push(`/pack/${p.pack_id}`)}
+                />
+              ))}
+            </ScrollView>
+          </View>
+        </Enter>
+      ) : null}
+
       {/* quick add word button */}
-      <Enter index={5}>
+      <Enter index={6}>
         <Touchable
           accessibilityRole="button"
           accessibilityLabel={t("a11y.addWord")}
@@ -291,7 +338,7 @@ function Stat({
       <View style={{ alignItems: "center", gap: spacing.xs, backgroundColor: "transparent" }}>
         <Ionicons name={icon} size={19} color={colors.textFaint} />
         <Text variant="heading">{shown}</Text>
-        <Text variant="micro" tone="faint" numberOfLines={1} style={{ textTransform: "uppercase" }}>
+        <Text variant="micro" tone="faint" numberOfLines={1}>
           {label}
         </Text>
       </View>

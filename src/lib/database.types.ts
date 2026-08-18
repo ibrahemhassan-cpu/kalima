@@ -67,7 +67,10 @@ export type Profile = {
   native_language: string;
   cefr_level: CefrLevel;
   daily_goal: number;
+  /** kept in step with the earliest entry of `reminder_times` by a trigger */
   reminder_time: string;
+  /** every time of day the user wants a nudge, "HH:MM:SS" */
+  reminder_times: string[];
   reminder_enabled: boolean;
   timezone: string;
   theme: "light" | "dark" | "system";

@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, View } from "react-native";
+import {
+  ActivityIndicator,
+  I18nManager,
+  KeyboardAvoidingView,
+  Platform,
+  View,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
@@ -26,6 +32,7 @@ import {
   type EnrichResponse,
   useAddWord,
   useDictionarySearch,
+  useMyWords,
 } from "@/api/words";
 
 type Phase = "input" | "loading" | "result";
@@ -55,6 +62,11 @@ export default function AddWord() {
   const { data: suggestions } = useDictionarySearch(
     phase === "input" ? debounced : "",
   );
+  const { data: recent } = useMyWords({
+    filter: "all",
+    search: "",
+    sort: "recent",
+  });
 
   async function lookup(word: string) {
     setError(null);
@@ -256,33 +268,28 @@ export default function AddWord() {
           onPress={() => lookup(term)}
         />
 
-        {/* Recent Words List matching Screen 2 in Design System */}
-        {(!suggestions || suggestions.length === 0) ? (
+        {/* the user's own last few words — a shortcut back into them */}
+        {(!suggestions || suggestions.length === 0) && recent && recent.length > 0 ? (
           <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
-            <Text variant="micro" tone="muted" style={{ textTransform: "uppercase", letterSpacing: 0.5 }}>
-              Recent
+            <Text variant="micro" tone="muted">
+              {t("home.recent")}
             </Text>
-            {[
-              { word: "Serendipity", pos: "Noun" },
-              { word: "Eloquent", pos: "Adjective" },
-              { word: "Meticulous", pos: "Adjective" },
-              { word: "Ineffable", pos: "Adjective" },
-            ].map((item, i) => (
+            {recent.slice(0, 4).map((item, i) => (
               <Animated.View
-                key={item.word}
+                key={item.user_word_id}
                 entering={FadeInDown.delay(i * 50).duration(260)}
               >
                 <Touchable
                   haptic="select"
                   scaleTo={0.98}
-                  onPress={() => {
-                    setTerm(item.word);
-                    void lookup(item.word);
-                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${item.lemma}, ${item.ar_preview}`}
+                  onPress={() => router.push(`/word/${item.user_word_id}`)}
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
                     justifyContent: "space-between",
+                    minHeight: minTouch,
                     paddingVertical: spacing.md,
                     paddingHorizontal: spacing.lg,
                     borderRadius: radius.md,
@@ -291,15 +298,22 @@ export default function AddWord() {
                     borderColor: colors.border,
                   }}
                 >
-                  <View style={{ gap: 2 }}>
+                  <View style={{ gap: 2, flex: 1 }}>
                     <Text variant="bodyStrong" ltr style={{ fontWeight: "600" }}>
-                      {item.word}
+                      {item.lemma}
                     </Text>
-                    <Text variant="caption" tone="muted">
-                      {item.pos}
+                    <Text variant="caption" tone="muted" numberOfLines={1}>
+                      {item.ar_preview}
                     </Text>
                   </View>
-                  <Ionicons name="bookmark-outline" size={19} color={colors.textFaint} />
+                  <Ionicons
+                    name="chevron-forward"
+                    size={19}
+                    color={colors.textFaint}
+                    style={{
+                      transform: [{ scaleX: I18nManager.isRTL ? -1 : 1 }],
+                    }}
+                  />
                 </Touchable>
               </Animated.View>
             ))}

@@ -105,6 +105,9 @@ export function useAddWord() {
       void qc.invalidateQueries({ queryKey: ["my-words"] });
       void qc.invalidateQueries({ queryKey: ["home-summary"] });
       void qc.invalidateQueries({ queryKey: ["dict-search"] });
+      // a word can be added from inside a pack, so its progress moves too
+      void qc.invalidateQueries({ queryKey: ["topic-packs"] });
+      void qc.invalidateQueries({ queryKey: ["pack-words"] });
     },
   });
 }

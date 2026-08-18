@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 
 import {
+  Badge,
   Button,
   CircularProgress,
   Enter,
@@ -16,38 +18,53 @@ import {
 import { useTheme } from "@/theme/ThemeProvider";
 import { useDueWords } from "@/api/review";
 import { formatDue } from "@/api/words";
+import { supabase } from "@/lib/supabase";
+import type { HomeSummary } from "@/lib/database.types";
 
 export default function ReviewTab() {
-  const { colors, spacing, radius } = useTheme();
+  const { colors, spacing } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
 
   const { data: due, isLoading } = useDueWords(40);
+  const { data: summary } = useQuery({
+    queryKey: ["home-summary"],
+    queryFn: async (): Promise<HomeSummary> => {
+      const { data, error } = await supabase.rpc("get_home_summary");
+      if (error) throw error;
+      return data as unknown as HomeSummary;
+    },
+  });
+
   const count = due?.length ?? 0;
-  const doneCount = 16;
-  const totalCount = 20;
+  const doneCount = summary?.today_reviews ?? 0;
+  const totalCount = summary?.daily_goal ?? 10;
+  const streak = summary?.current_streak ?? 0;
+
+  /** What's actually in the queue right now — the three numbers add up to it. */
+  const queue = useMemo(() => {
+    const list = due ?? [];
+    return {
+      fresh: list.filter((w) => w.status === "new").length,
+      review: list.filter((w) =>
+        ["learning", "review", "mastered"].includes(w.status),
+      ).length,
+      hard: list.filter((w) => w.status === "leech").length,
+    };
+  }, [due]);
 
   return (
     <Screen scroll tabBar>
       <Header
         title={t("review.title")}
         right={
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 4,
-              backgroundColor: colors.accentSoft,
-              paddingHorizontal: spacing.md,
-              paddingVertical: 6,
-              borderRadius: radius.pill,
-            }}
-          >
-            <Ionicons name="flame" size={16} color={colors.accent} />
-            <Text variant="bodyStrong" style={{ color: colors.warning }}>
-              12
-            </Text>
-          </View>
+          streak > 0 ? (
+            <Badge
+              label={t("home.streak", { count: streak })}
+              tone="accent"
+              icon="flame"
+            />
+          ) : null
         }
       />
 
@@ -57,7 +74,7 @@ export default function ReviewTab() {
         </View>
       ) : (
         <>
-          {/* Circular Progress Widget - Screen 4 */}
+          {/* today against the daily goal */}
           <Enter>
             <Surface tone="glass" elevation="lg" radiusKey="xxl" padded={spacing.xl}>
               <View style={{ alignItems: "center", gap: spacing.lg }}>
@@ -66,45 +83,9 @@ export default function ReviewTab() {
                   total={totalCount}
                   size={180}
                   strokeWidth={14}
-                  label="words reviewed"
+                  title={t("home.todayProgress")}
+                  label={t("home.wordsReviewed")}
                 />
-
-                {/* Breakdown Stats Grid: New / Review / Learned */}
-                <View
-                  style={{
-                    flexDirection: "row",
-                    width: "100%",
-                    justifyContent: "space-around",
-                    paddingTop: spacing.sm,
-                  }}
-                >
-                  <View style={{ alignItems: "center", gap: 2 }}>
-                    <Text variant="micro" tone="muted">
-                      New
-                    </Text>
-                    <Text variant="heading" style={{ fontSize: 20, fontWeight: "700" }}>
-                      8
-                    </Text>
-                  </View>
-                  <View style={{ width: 1, backgroundColor: colors.border }} />
-                  <View style={{ alignItems: "center", gap: 2 }}>
-                    <Text variant="micro" tone="muted">
-                      Review
-                    </Text>
-                    <Text variant="heading" style={{ fontSize: 20, fontWeight: "700" }}>
-                      12
-                    </Text>
-                  </View>
-                  <View style={{ width: 1, backgroundColor: colors.border }} />
-                  <View style={{ alignItems: "center", gap: 2 }}>
-                    <Text variant="micro" tone="muted">
-                      Learned
-                    </Text>
-                    <Text variant="heading" style={{ fontSize: 20, fontWeight: "700" }}>
-                      24
-                    </Text>
-                  </View>
-                </View>
 
                 <Button
                   title={count > 0 ? t("home.startReview") : t("home.addWord")}
@@ -119,18 +100,65 @@ export default function ReviewTab() {
             </Surface>
           </Enter>
 
-          {/* Today's Plan List */}
+          {/* what the queue is actually made of — the three add up to `count` */}
           <Enter index={1}>
             <Surface tone="glass" radiusKey="xl">
               <View style={{ gap: spacing.md }}>
                 <Text variant="label" tone="muted">
-                  Today's Plan
+                  {t("review.queueTitle")}
                 </Text>
 
                 <View style={{ gap: spacing.sm }}>
-                  <PlanRow icon="sparkles-outline" label="New words" val={8} color={colors.brand} />
-                  <PlanRow icon="repeat-outline" label="Review" val={12} color={colors.accent} />
-                  <PlanRow icon="flame-outline" label="Difficult" val={5} color={colors.danger} />
+                  <PlanRow
+                    icon="sparkles-outline"
+                    label={t("status.new")}
+                    val={queue.fresh}
+                    color={colors.brand}
+                  />
+                  <PlanRow
+                    icon="repeat-outline"
+                    label={t("review.title")}
+                    val={queue.review}
+                    color={colors.accent}
+                  />
+                  <PlanRow
+                    icon="flame-outline"
+                    label={t("status.leech")}
+                    val={queue.hard}
+                    color={colors.danger}
+                  />
+                </View>
+              </View>
+            </Surface>
+          </Enter>
+
+          {/* lifetime numbers, so the queue card stays about today */}
+          <Enter index={2}>
+            <Surface tone="glass" radiusKey="xl">
+              <View style={{ gap: spacing.md }}>
+                <Text variant="label" tone="muted">
+                  {t("review.overview")}
+                </Text>
+
+                <View style={{ gap: spacing.sm }}>
+                  <PlanRow
+                    icon="library-outline"
+                    label={t("home.statWords")}
+                    val={summary?.total_words ?? 0}
+                    color={colors.brand}
+                  />
+                  <PlanRow
+                    icon="ribbon-outline"
+                    label={t("home.statMastered")}
+                    val={summary?.mastered_words ?? 0}
+                    color={colors.success}
+                  />
+                  <PlanRow
+                    icon="flame-outline"
+                    label={t("profile.statStreak")}
+                    val={summary?.longest_streak ?? 0}
+                    color={colors.accent}
+                  />
                 </View>
               </View>
             </Surface>
@@ -138,11 +166,11 @@ export default function ReviewTab() {
 
           {/* Due Words Preview List */}
           {due && due.length > 0 ? (
-            <Enter index={2}>
+            <Enter index={3}>
               <Surface tone="glass" radiusKey="xl">
                 <View style={{ gap: spacing.md }}>
                   <Text variant="label" tone="muted">
-                    {t("home.recent")}
+                    {t("review.dueList")}
                   </Text>
                   {due.slice(0, 5).map((w) => (
                     <View

@@ -40,7 +40,8 @@ export default function ReminderStep() {
         cefr_level: level ?? "A2",
         daily_goal: dailyGoal ?? 10,
         reminder_enabled: reminderEnabled,
-        reminder_time: `${String(reminderHour ?? 19).padStart(2, "0")}:00:00`,
+        // one to start with; more can be added from Settings later
+        reminder_times: [`${String(reminderHour ?? 19).padStart(2, "0")}:00:00`],
         timezone: deviceTimezone(),
         onboarded_at: new Date().toISOString(),
         accepted_terms_at: new Date().toISOString(),

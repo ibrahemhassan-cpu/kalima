@@ -8,6 +8,7 @@ import { useSettings } from "@/store/settings";
 import { useProfile, useUpdateProfile } from "@/api/profile";
 import { formatHour } from "@/features/onboarding/store";
 import { requestPermission, syncReminders } from "@/features/notifications";
+import { parseReminderTimes } from "@/features/notifications/useReminders";
 
 export default function Settings() {
   const { spacing } = useTheme();
@@ -17,7 +18,13 @@ export default function Settings() {
   const { data: profile } = useProfile();
   const update = useUpdateProfile();
 
-  const reminderHour = Number((profile?.reminder_time ?? "19:00:00").slice(0, 2));
+  const reminderTimes = parseReminderTimes(
+    profile?.reminder_times,
+    profile?.reminder_time,
+  );
+  const reminderLabel = reminderTimes
+    .map((r) => formatHour(r.hour, i18n.language))
+    .join(" · ");
   const level = profile?.cefr_level ?? "A2";
 
   return (
@@ -84,7 +91,7 @@ export default function Settings() {
               update.mutate({ reminder_enabled: v });
               await syncReminders({
                 enabled: v,
-                hour: reminderHour,
+                times: reminderTimes,
                 streak: 0,
                 goalMet: false,
               });
@@ -94,8 +101,19 @@ export default function Settings() {
         <ListRow
           icon="time-outline"
           title={t("settings.reminderTime")}
-          value={formatHour(reminderHour, i18n.language)}
+          value={reminderLabel}
           onPress={() => router.push("/settings/reminder")}
+        />
+        {/* floating card on Android, scheduled notifications everywhere else */}
+        <ListRow
+          icon="albums-outline"
+          title={t("overlay.title")}
+          value={
+            s.overlayEnabled
+              ? t("overlay.minutes", { count: s.overlayInterval })
+              : t("onboarding.turnOff")
+          }
+          onPress={() => router.push("/settings/overlay")}
           last
         />
       </ListGroup>
