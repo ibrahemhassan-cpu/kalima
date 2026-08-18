@@ -2,10 +2,20 @@ import React from "react";
 import { View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Header, ListGroup, ListRow, Screen, Text } from "@/components/ui";
+import {
+  Button,
+  Header,
+  Input,
+  ListGroup,
+  ListRow,
+  Screen,
+  Text,
+} from "@/components/ui";
+import { Sheet, type SheetRef } from "@/components/ui/Sheet";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useSettings } from "@/store/settings";
 import { useProfile, useUpdateProfile } from "@/api/profile";
+import { useAuth } from "@/features/auth/AuthProvider";
 import { formatHour } from "@/features/onboarding/store";
 import { requestPermission, syncReminders } from "@/features/notifications";
 import { parseReminderTimes } from "@/features/notifications/useReminders";
@@ -21,6 +31,7 @@ export default function Settings() {
   const router = useRouter();
   const s = useSettings();
   const { data: profile } = useProfile();
+  const { user } = useAuth();
   const update = useUpdateProfile();
 
   const reminderTimes = parseReminderTimes(
@@ -31,6 +42,34 @@ export default function Settings() {
     .map((r) => formatHour(r.hour, i18n.language))
     .join(" · ");
   const level = profile?.cefr_level ?? "A2";
+
+  const quickSheet = React.useRef<SheetRef>(null);
+  const [password, setPassword] = React.useState("");
+  const [pwError, setPwError] = React.useState<string | null>(null);
+  const [pwBusy, setPwBusy] = React.useState(false);
+
+  async function confirmQuickLogin() {
+    const email = user?.email;
+    if (!email) return;
+    setPwBusy(true);
+    setPwError(null);
+    try {
+      const res = await enableQuickLogin(
+        { email, password },
+        t("auth.quickPrompt_fingerprint"),
+      );
+      if (res.ok) {
+        quickSheet.current?.close();
+        setPassword("");
+        return;
+      }
+      setPwError(
+        t(res.reason === "password" ? "errors.wrongCredentials" : "auth.quickFailed"),
+      );
+    } finally {
+      setPwBusy(false);
+    }
+  }
 
   // hidden entirely on a device with no enrolled fingerprint or face
   const [canQuick, setCanQuick] = React.useState(false);
@@ -148,10 +187,11 @@ export default function Settings() {
                   await clearQuickLogin();
                   return;
                 }
-                // only flips on if the scan actually succeeds
-                if (await enableQuickLogin(t("auth.quickPrompt_fingerprint"))) {
-                  s.setQuickLogin(true);
-                }
+                // Turning it on needs the password — it's what gets stored, and
+                // asking for it here doubles as proof it's really you.
+                setPwError(null);
+                setPassword("");
+                quickSheet.current?.open();
               },
             }}
           />
@@ -180,6 +220,37 @@ export default function Settings() {
       <Text variant="caption" tone="faint" center>
         {t("app.version", { v: "0.1.0" })}
       </Text>
+
+      <Sheet ref={quickSheet} title={t("settings.quickLogin")}>
+        <View style={{ gap: spacing.lg }}>
+          <Text variant="body" tone="muted">
+            {t("settings.quickLoginConfirm")}
+          </Text>
+
+          <Input
+            label={t("auth.password")}
+            english
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoComplete="current-password"
+            textContentType="password"
+            error={pwError ?? undefined}
+            returnKeyType="go"
+            onSubmitEditing={confirmQuickLogin}
+          />
+
+          <Button
+            title={t("common.confirm")}
+            size="lg"
+            fullWidth
+            icon="finger-print-outline"
+            disabled={password.length < 8}
+            loading={pwBusy}
+            onPress={confirmQuickLogin}
+          />
+        </View>
+      </Sheet>
     </Screen>
   );
 }

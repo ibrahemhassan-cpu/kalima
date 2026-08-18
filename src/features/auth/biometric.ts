@@ -6,31 +6,18 @@ import { useSettings } from "@/store/settings";
 /**
  * Quick sign-in with a fingerprint.
  *
- * A fingerprint proves nothing to a server — it only unlocks the device. So the
- * flow is: the user signs in with a password once, we keep that session's
- * **refresh token**, and tapping the fingerprint exchanges it for a fresh
- * session. The password itself is never stored: a stored password can be read
- * back, a refresh token can be revoked server-side.
- */
-const KEY = "kalima-quick-token";
-
-/**
- * Stored without SecureStore's `requireAuthentication`, deliberately.
+ * A fingerprint proves nothing to a server — it only unlocks the device. So we
+ * keep the credentials in the OS keychain (Keychain on iOS, Keystore on
+ * Android) and the fingerprint guards using them: scan, read, sign in.
  *
- * On Android that flag gates *writing* too — expo-secure-store authenticates
- * the cipher before encrypting — so every background session refresh would pop
- * a fingerprint prompt out of nowhere. And it would buy nothing: the live
- * session, refresh token included, already sits in this same keychain
- * unprotected. So the keychain holds the token and `LocalAuthentication` guards
- * the act of using it, which is exactly the app's existing security model.
+ * The trade-off, stated plainly: a stored password cannot be revoked
+ * server-side the way a token can. What it buys is that it never expires — a
+ * refresh token rotates on every use and dies on sign-out, which made quick
+ * sign-in fail exactly when the user needed it.
  */
-export async function saveToken(token: string): Promise<void> {
-  try {
-    await SecureStore.setItemAsync(KEY, token);
-  } catch {
-    // storage full or keychain locked — quick sign-in simply won't be offered
-  }
-}
+const KEY = "kalima-quick-creds";
+
+type Credentials = { email: string; password: string };
 
 /** Does this device have a fingerprint (or face) actually enrolled? */
 export async function biometricAvailable(): Promise<boolean> {
@@ -59,25 +46,44 @@ export async function biometricLabel(): Promise<"face" | "fingerprint"> {
   }
 }
 
+/** Is there anything stored to sign in with on this device? */
+export async function hasStoredCredentials(): Promise<boolean> {
+  try {
+    return (await SecureStore.getItemAsync(KEY)) != null;
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Turns it on: prove the biometric works first, then keep the token. Asking up
- * front means a user who can't complete the scan never ends up with quick
- * sign-in switched on but broken.
+ * Turns it on.
+ *
+ * The password is checked against the server before it is kept — storing one
+ * that turns out to be wrong would leave the user with a fingerprint button
+ * that fails forever with no way to tell why.
  */
-export async function enableQuickLogin(prompt: string): Promise<boolean> {
-  if (!(await biometricAvailable())) return false;
+export async function enableQuickLogin(
+  creds: Credentials,
+  prompt: string,
+): Promise<{ ok: true } | { ok: false; reason: "biometric" | "password" }> {
+  if (!(await biometricAvailable())) return { ok: false, reason: "biometric" };
 
   const check = await LocalAuthentication.authenticateAsync({
     promptMessage: prompt,
   });
-  if (!check.success) return false;
+  if (!check.success) return { ok: false, reason: "biometric" };
 
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.refresh_token;
-  if (!token) return false;
+  const { error } = await supabase.auth.signInWithPassword(creds);
+  if (error) return { ok: false, reason: "password" };
 
-  await saveToken(token);
-  return true;
+  try {
+    await SecureStore.setItemAsync(KEY, JSON.stringify(creds));
+  } catch {
+    return { ok: false, reason: "biometric" };
+  }
+
+  useSettings.getState().setQuickLogin(true);
+  return { ok: true };
 }
 
 export type QuickResult =
@@ -86,25 +92,30 @@ export type QuickResult =
   | { ok: false; reason: "cancelled" }
   /** nothing stored on this device */
   | { ok: false; reason: "missing" }
-  /** revoked or expired — only a password gets them back in */
-  | { ok: false; reason: "expired" };
+  /** the password changed elsewhere — only a fresh one gets them back in */
+  | { ok: false; reason: "invalid" };
 
 export async function quickSignIn(prompt: string): Promise<QuickResult> {
   const check = await LocalAuthentication.authenticateAsync({
     promptMessage: prompt,
+    // let the user fall back to the device PIN if the sensor keeps refusing
+    disableDeviceFallback: false,
   });
   if (!check.success) return { ok: false, reason: "cancelled" };
 
-  const token = await SecureStore.getItemAsync(KEY).catch(() => null);
-  if (!token) return { ok: false, reason: "missing" };
+  const raw = await SecureStore.getItemAsync(KEY).catch(() => null);
+  if (!raw) return { ok: false, reason: "missing" };
 
-  const { data, error } = await supabase.auth.refreshSession({
-    refresh_token: token,
-  });
-  if (error || !data.session) return { ok: false, reason: "expired" };
+  let creds: Credentials;
+  try {
+    creds = JSON.parse(raw) as Credentials;
+  } catch {
+    return { ok: false, reason: "missing" };
+  }
 
-  // Supabase rotates on use, so the token we just spent is already dead.
-  await saveToken(data.session.refresh_token);
+  const { error } = await supabase.auth.signInWithPassword(creds);
+  if (error) return { ok: false, reason: "invalid" };
+
   return { ok: true };
 }
 

@@ -256,7 +256,8 @@
     "deleteMismatch": "Type DELETE exactly to confirm",
     "deleteFailed": "Couldn't delete the account. Please contact us",
     "quickLogin": "Quick sign-in",
-    "quickLoginHint": "Use your fingerprint instead of typing email and password"
+    "quickLoginHint": "Use your fingerprint instead of typing email and password",
+    "quickLoginConfirm": "Enter your password once. We'll keep it in the device's secure store and you won't type it again — only your fingerprint unlocks it."
   },
   "auth": {
     "welcomeCta": "Get started",
@@ -312,7 +313,8 @@
     "quickPrompt_fingerprint": "Touch the sensor to sign in to Kalima",
     "quickPrompt_face": "Look at the camera to sign in to Kalima",
     "orPassword": "or with email and password",
-    "quickExpired": "Quick sign-in expired. Sign in with your password once and it'll come back."
+    "quickExpired": "The saved password no longer works. Sign in with your current one and turn it back on.",
+    "quickFailed": "Couldn't turn on quick sign-in. Try again"
   },
   "sheet": {
     "wordActions": "Word options",

@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { KeyboardAvoidingView, Platform, View } from "react-native";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  View,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
@@ -18,9 +23,9 @@ import {
   biometricAvailable,
   biometricLabel,
   clearQuickLogin,
+  hasStoredCredentials,
   quickSignIn,
 } from "@/features/auth/biometric";
-import { useSettings } from "@/store/settings";
 
 export default function SignIn() {
   const { colors, spacing } = useTheme();
@@ -34,29 +39,28 @@ export default function SignIn() {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Offered only when the device can do it *and* a token was left here by a
-  // previous sign-in — otherwise the button would promise something it can't do.
-  const quickLogin = useSettings((st) => st.quickLogin);
+  // Offered only when the device can scan *and* something was stored here by a
+  // previous sign-in — otherwise the button would promise what it can't deliver.
   const [canQuick, setCanQuick] = useState(false);
   const [kind, setKind] = useState<"face" | "fingerprint">("fingerprint");
   const [quickBusy, setQuickBusy] = useState(false);
 
   useEffect(() => {
-    if (!quickLogin) return;
     let alive = true;
     void (async () => {
-      const [ok, label] = await Promise.all([
+      const [ok, stored, label] = await Promise.all([
         biometricAvailable(),
+        hasStoredCredentials(),
         biometricLabel(),
       ]);
       if (!alive) return;
-      setCanQuick(ok);
+      setCanQuick(ok && stored);
       setKind(label);
     })();
     return () => {
       alive = false;
     };
-  }, [quickLogin]);
+  }, []);
 
   async function quick() {
     setFormError(null);
@@ -65,8 +69,9 @@ export default function SignIn() {
       const res = await quickSignIn(t(`auth.quickPrompt_${kind}`));
       if (res.ok) return; // RouteGate takes it from here
 
-      if (res.reason === "expired" || res.reason === "missing") {
-        // the stored token is no good any more — stop offering it
+      // A cancelled scan says nothing and leaves the button ready to tap again.
+      if (res.reason === "invalid" || res.reason === "missing") {
+        // the stored password no longer works — stop offering it
         await clearQuickLogin();
         setCanQuick(false);
         setFormError(t("auth.quickExpired"));
@@ -105,12 +110,47 @@ export default function SignIn() {
           onBack={() => router.back()}
         />
 
-        {quickLogin && canQuick ? (
-          <View style={{ gap: spacing.md }}>
+        {canQuick ? (
+          <View style={{ gap: spacing.md, alignItems: "center" }}>
+            {/*
+              A big round target rather than only a bar: if the system prompt
+              never appears, or the user dismisses it by accident, this stays on
+              screen and re-opens it on every tap.
+            */}
+            <Touchable
+              onPress={quick}
+              disabled={quickBusy}
+              haptic="medium"
+              scaleTo={0.92}
+              accessibilityRole="button"
+              accessibilityLabel={t(`auth.quickSignIn_${kind}`)}
+              style={{
+                width: 84,
+                height: 84,
+                borderRadius: 42,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: colors.brandSoft,
+                borderWidth: 2,
+                borderColor: colors.brandBorder,
+              }}
+            >
+              {quickBusy ? (
+                <ActivityIndicator color={colors.brand} />
+              ) : (
+                <Ionicons
+                  name={kind === "face" ? "scan-outline" : "finger-print"}
+                  size={42}
+                  color={colors.brand}
+                />
+              )}
+            </Touchable>
+
             <Button
               title={t(`auth.quickSignIn_${kind}`)}
               size="lg"
               fullWidth
+              variant="secondary"
               icon={kind === "face" ? "scan-outline" : "finger-print-outline"}
               loading={quickBusy}
               onPress={quick}
