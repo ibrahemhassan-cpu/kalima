@@ -39,7 +39,12 @@
     "plugins": [
       "expo-router",
       "expo-localization",
-      "expo-secure-store",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "كلمة تستخدم بصمتك للدخول السريع بدل كتابة كلمة المرور."
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -67,7 +72,13 @@
         }
       ],
       "expo-sqlite",
-      "@bacons/apple-targets"
+      "@bacons/apple-targets",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "كلمة تستخدم بصمتك للدخول السريع بدل كتابة كلمة المرور."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

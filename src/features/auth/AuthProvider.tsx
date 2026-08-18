@@ -7,6 +7,8 @@ import React, {
 } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { useSettings } from "@/store/settings";
+import { saveToken } from "./biometric";
 
 type AuthState = {
   session: Session | null;
@@ -39,6 +41,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, next) => {
+      /**
+       * Supabase rotates the refresh token on every use, so the copy behind the
+       * fingerprint goes stale as soon as the app refreshes in the background.
+       * Overwriting it here keeps quick sign-in working indefinitely.
+       */
+      if (next?.refresh_token && useSettings.getState().quickLogin) {
+        void saveToken(next.refresh_token);
+      }
+
       setSession(next);
     });
 

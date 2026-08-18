@@ -9,6 +9,11 @@ import { useProfile, useUpdateProfile } from "@/api/profile";
 import { formatHour } from "@/features/onboarding/store";
 import { requestPermission, syncReminders } from "@/features/notifications";
 import { parseReminderTimes } from "@/features/notifications/useReminders";
+import {
+  biometricAvailable,
+  clearQuickLogin,
+  enableQuickLogin,
+} from "@/features/auth/biometric";
 
 export default function Settings() {
   const { spacing } = useTheme();
@@ -26,6 +31,18 @@ export default function Settings() {
     .map((r) => formatHour(r.hour, i18n.language))
     .join(" · ");
   const level = profile?.cefr_level ?? "A2";
+
+  // hidden entirely on a device with no enrolled fingerprint or face
+  const [canQuick, setCanQuick] = React.useState(false);
+  React.useEffect(() => {
+    let alive = true;
+    void biometricAvailable().then((ok) => {
+      if (alive) setCanQuick(ok);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   return (
     <Screen scroll>
@@ -119,6 +136,26 @@ export default function Settings() {
       </ListGroup>
 
       <ListGroup title={t("profile.account")}>
+        {canQuick ? (
+          <ListRow
+            icon="finger-print-outline"
+            title={t("settings.quickLogin")}
+            subtitle={t("settings.quickLoginHint")}
+            toggle={{
+              value: s.quickLogin,
+              onChange: async (v) => {
+                if (!v) {
+                  await clearQuickLogin();
+                  return;
+                }
+                // only flips on if the scan actually succeeds
+                if (await enableQuickLogin(t("auth.quickPrompt_fingerprint"))) {
+                  s.setQuickLogin(true);
+                }
+              },
+            }}
+          />
+        ) : null}
         <ListRow
           icon="person-outline"
           title={t("profile.editProfile")}

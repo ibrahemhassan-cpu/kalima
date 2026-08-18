@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { useSettings } from "@/store/settings";
 import { authErrorAr } from "./errors";
 
 /**
@@ -81,7 +82,17 @@ export function useSignOut() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      await supabase.auth.signOut();
+      /**
+       * A global sign-out revokes the refresh token server-side, which would
+       * kill quick sign-in the moment it's used. With it enabled we sign out
+       * locally instead: the device forgets the session, the token stays
+       * valid, and the fingerprint can trade it for a new one.
+       *
+       * Turning quick sign-in off (Settings) clears the token and any later
+       * sign-out is global again.
+       */
+      const quick = useSettings.getState().quickLogin;
+      await supabase.auth.signOut(quick ? { scope: "local" } : undefined);
     },
     onSettled: () => {
       // Wipe every cached query — otherwise the next account briefly sees

@@ -254,7 +254,9 @@
     "deleteConfirmWord": "DELETE",
     "deleteButton": "Delete my account permanently",
     "deleteMismatch": "Type DELETE exactly to confirm",
-    "deleteFailed": "Couldn't delete the account. Please contact us"
+    "deleteFailed": "Couldn't delete the account. Please contact us",
+    "quickLogin": "Quick sign-in",
+    "quickLoginHint": "Use your fingerprint instead of typing email and password"
   },
   "auth": {
     "welcomeCta": "Get started",
@@ -304,7 +306,13 @@
     "linkExpired": "This link has expired",
     "linkExpiredBody": "Reset links are valid for one hour. Request a new one.",
     "passwordsDiffer": "The two passwords don't match",
-    "verifying": "Signing you in"
+    "verifying": "Signing you in",
+    "quickSignIn_fingerprint": "Sign in with fingerprint",
+    "quickSignIn_face": "Sign in with Face ID",
+    "quickPrompt_fingerprint": "Touch the sensor to sign in to Kalima",
+    "quickPrompt_face": "Look at the camera to sign in to Kalima",
+    "orPassword": "or with email and password",
+    "quickExpired": "Quick sign-in expired. Sign in with your password once and it'll come back."
   },
   "sheet": {
     "wordActions": "Word options",

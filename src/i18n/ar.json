@@ -275,7 +275,9 @@
     "deleteConfirmWord": "حذف",
     "deleteButton": "احذف حسابي نهائيًّا",
     "deleteMismatch": "اكتب «حذف» بالضبط للتأكيد",
-    "deleteFailed": "تعذّر حذف الحساب. تواصل معنا من فضلك"
+    "deleteFailed": "تعذّر حذف الحساب. تواصل معنا من فضلك",
+    "quickLogin": "الدخول السريع بالبصمة",
+    "quickLoginHint": "ادخل ببصمتك بدل كتابة بريدك وكلمة مرورك"
   },
   "auth": {
     "welcomeCta": "لنبدأ",
@@ -325,7 +327,13 @@
     "linkExpired": "انتهت صلاحية هذا الرابط",
     "linkExpiredBody": "روابط الاستعادة صالحة لساعة واحدة. اطلب رابطًا جديدًا.",
     "passwordsDiffer": "كلمتا المرور غير متطابقتين",
-    "verifying": "جارٍ تسجيل دخولك"
+    "verifying": "جارٍ تسجيل دخولك",
+    "quickSignIn_fingerprint": "دخول بالبصمة",
+    "quickSignIn_face": "دخول ببصمة الوجه",
+    "quickPrompt_fingerprint": "ضع إصبعك للدخول إلى كلمة",
+    "quickPrompt_face": "انظر إلى الكاميرا للدخول إلى كلمة",
+    "orPassword": "أو بالبريد وكلمة المرور",
+    "quickExpired": "انتهت صلاحية الدخول السريع. سجّل بكلمة المرور مرة واحدة وسيعود."
   },
   "sheet": {
     "wordActions": "خيارات الكلمة",

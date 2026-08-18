@@ -13,6 +13,8 @@ type SettingsState = {
   /** وضع مبسّط: كروت أكبر، خيارات أقل، بدون إحصائيات متقدمة */
   simpleMode: boolean;
   autoplayAudio: boolean;
+  /** الدخول السريع بالبصمة مفعّل — التوكن نفسه في SecureStore خلف البصمة */
+  quickLogin: boolean;
   /** بطاقة الكلمة فوق التطبيقات — أندرويد فقط */
   overlayEnabled: boolean;
   /** كل كام دقيقة تظهر البطاقة */
@@ -24,6 +26,7 @@ type SettingsState = {
   setFontScale: (v: FontScaleName) => void;
   setSimpleMode: (v: boolean) => void;
   setAutoplayAudio: (v: boolean) => void;
+  setQuickLogin: (v: boolean) => void;
   setOverlayEnabled: (v: boolean) => void;
   setOverlayInterval: (v: number) => void;
 };
@@ -36,6 +39,7 @@ export const useSettings = create<SettingsState>()(
       fontScale: "md",
       simpleMode: false,
       autoplayAudio: true,
+      quickLogin: false,
       overlayEnabled: false,
       overlayInterval: 30,
       hydrated: false,
@@ -45,6 +49,7 @@ export const useSettings = create<SettingsState>()(
       setFontScale: (fontScale) => set({ fontScale }),
       setSimpleMode: (simpleMode) => set({ simpleMode }),
       setAutoplayAudio: (autoplayAudio) => set({ autoplayAudio }),
+      setQuickLogin: (quickLogin) => set({ quickLogin }),
       setOverlayEnabled: (overlayEnabled) => set({ overlayEnabled }),
       setOverlayInterval: (overlayInterval) => set({ overlayInterval }),
     }),
@@ -57,6 +62,7 @@ export const useSettings = create<SettingsState>()(
         fontScale,
         simpleMode,
         autoplayAudio,
+        quickLogin,
         overlayEnabled,
         overlayInterval,
       }) => ({
@@ -65,6 +71,7 @@ export const useSettings = create<SettingsState>()(
         fontScale,
         simpleMode,
         autoplayAudio,
+        quickLogin,
         overlayEnabled,
         overlayInterval,
       }),
