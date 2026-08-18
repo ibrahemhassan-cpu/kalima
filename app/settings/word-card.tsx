@@ -61,11 +61,13 @@ export default function WordCardSetting() {
         onBack={() => router.back()}
       />
 
-      {/* exactly what lands on the home screen */}
+{/*
+        A preview of the style, not a pixel mock. No IPA here because the widget
+        drops it — at widget size it reads as noise.
+      */}
       <WordGlassCard
         compact
         lemma={sample?.lemma ?? "serenity"}
-        ipa={sample?.ipa ?? "/səˈren.ə.ti/"}
         translation={sample?.ar_preview ?? t("card.sampleMeaning")}
         onSpeak={() => speak(sample?.lemma ?? "serenity")}
       />

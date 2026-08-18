@@ -8,11 +8,14 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import android.widget.RemoteViews
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * The home-screen card.
@@ -31,6 +34,34 @@ class WordWidgetProvider : AppWidgetProvider() {
     const val ACTION_NEXT = "expo.modules.wordwidget.NEXT"
     const val ACTION_SPEAK = "expo.modules.wordwidget.SPEAK"
 
+    private const val UTTERANCE_ID = "kalima-widget"
+
+    /** Longest the spinner may stay up if the voice engine never answers. */
+    private const val WATCHDOG_MS = 10_000L
+
+    private val main = Handler(Looper.getMainLooper())
+
+    /**
+     * Held for the life of the process so only the first tap waits for the
+     * system voice service to bind — that bind is what made every tap feel
+     * like nothing happened.
+     */
+    @Volatile
+    private var engine: TextToSpeech? = null
+
+    @Volatile
+    private var engineReady = false
+
+    /** Drives which icon the speak button shows. */
+    @Volatile
+    private var speaking = false
+
+    private fun setSpeaking(context: Context, value: Boolean) {
+      if (speaking == value) return
+      speaking = value
+      renderAll(context)
+    }
+
     /** Re-renders every placed widget. Safe to call from anywhere. */
     fun renderAll(context: Context) {
       val manager = AppWidgetManager.getInstance(context)
@@ -46,16 +77,23 @@ class WordWidgetProvider : AppWidgetProvider() {
 
       if (current == null) {
         views.setTextViewText(R.id.kalima_word, "—")
-        views.setTextViewText(R.id.kalima_ipa, "")
         views.setTextViewText(
           R.id.kalima_meaning,
           context.getString(R.string.kalima_widget_empty),
         )
       } else {
+        // no IPA on the widget: at a glance it reads as noise, and the space
+        // is worth more to the word and its meaning when the card is small
         views.setTextViewText(R.id.kalima_word, current.word)
-        views.setTextViewText(R.id.kalima_ipa, current.ipa)
         views.setTextViewText(R.id.kalima_meaning, current.translation)
       }
+
+      // an hourglass while the voice engine warms up, so a slow first tap
+      // reads as "loading" rather than "nothing happened"
+      views.setImageViewResource(
+        R.id.kalima_speak,
+        if (speaking) R.drawable.kalima_ic_loading else R.drawable.kalima_ic_speak,
+      )
 
       views.setOnClickPendingIntent(R.id.kalima_next, broadcast(context, ACTION_NEXT))
       views.setOnClickPendingIntent(R.id.kalima_speak, broadcast(context, ACTION_SPEAK))
@@ -129,37 +167,64 @@ class WordWidgetProvider : AppWidgetProvider() {
    * background service from a broadcast, and a foreground service would mean a
    * permanent notification for one second of audio. A receiver gets about ten
    * seconds of leeway, which is far more than one word needs.
+   *
+   * The engine is kept alive between taps. Building a TextToSpeech binds to the
+   * system voice service and takes a second or more; doing that on every tap
+   * made every tap feel broken. Now only the first one pays.
    */
   private fun speak(context: Context) {
     val word = WidgetStore.current(context)?.word ?: return
-    val pending = goAsync()
     val app = context.applicationContext
+    val pending = goAsync()
 
-    var tts: TextToSpeech? = null
-    tts = TextToSpeech(app) { status ->
+    setSpeaking(app, true)
+
+    // Exactly one path may finish the broadcast and clear the spinner.
+    val finished = AtomicBoolean(false)
+    val finish = {
+      if (finished.compareAndSet(false, true)) {
+        setSpeaking(app, false)
+        try {
+          pending.finish()
+        } catch (_: Exception) {
+          // already finished
+        }
+      }
+    }
+
+    // If the engine never calls back, the button must not stay an hourglass.
+    main.postDelayed({ finish() }, WATCHDOG_MS)
+
+    val warm = engine
+    if (warm != null && engineReady) {
+      warm.setOnUtteranceProgressListener(listener(finish))
+      warm.speak(word, TextToSpeech.QUEUE_FLUSH, null, UTTERANCE_ID)
+      return
+    }
+
+    // `local` is captured by the callback, which fires after this assignment.
+    var local: TextToSpeech? = null
+    local = TextToSpeech(app) { status ->
       if (status != TextToSpeech.SUCCESS) {
-        tts?.shutdown()
-        pending.finish()
+        engineReady = false
+        finish()
         return@TextToSpeech
       }
 
-      tts?.language = Locale.US
-      tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-        override fun onStart(utteranceId: String?) {}
-
-        override fun onDone(utteranceId: String?) {
-          tts?.shutdown()
-          pending.finish()
-        }
-
-        @Deprecated("required by the base class")
-        override fun onError(utteranceId: String?) {
-          tts?.shutdown()
-          pending.finish()
-        }
-      })
-
-      tts?.speak(word, TextToSpeech.QUEUE_FLUSH, null, "kalima-widget")
+      engineReady = true
+      local?.language = Locale.US
+      local?.setOnUtteranceProgressListener(listener(finish))
+      local?.speak(word, TextToSpeech.QUEUE_FLUSH, null, UTTERANCE_ID)
     }
+    engine = local
+  }
+
+  private fun listener(finish: () -> Unit) = object : UtteranceProgressListener() {
+    override fun onStart(utteranceId: String?) {}
+
+    override fun onDone(utteranceId: String?) = finish()
+
+    @Deprecated("required by the base class")
+    override fun onError(utteranceId: String?) = finish()
   }
 }

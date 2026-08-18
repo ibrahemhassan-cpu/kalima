@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  minResize* is what the user can actually drag down to; minWidth/minHeight are
+  only the size it lands at when first placed. Keeping them apart lets the card
+  start comfortable and still shrink to a two-by-one.
+-->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-  android:minWidth="250dp"
+  android:minWidth="180dp"
   android:minHeight="110dp"
-  android:targetCellWidth="4"
+  android:minResizeWidth="110dp"
+  android:minResizeHeight="80dp"
+  android:maxResizeWidth="420dp"
+  android:maxResizeHeight="320dp"
+  android:targetCellWidth="3"
   android:targetCellHeight="2"
   android:resizeMode="horizontal|vertical"
   android:widgetCategory="home_screen"

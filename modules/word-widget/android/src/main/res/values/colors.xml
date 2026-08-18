@@ -7,9 +7,21 @@
   <color name="kalima_brand">#5B5BF5</color>
   <color name="kalima_brand_alt">#8B5CF6</color>
 
-  <!-- the glass pane over the gradient, and its rim light -->
+  <!--
+    The card body, deliberately NOT opaque. A widget can never blur the
+    wallpaper — no Android API exposes it — so the closest thing to real glass
+    is letting the wallpaper tint through. 90% keeps white text readable even
+    over a busy photo.
+  -->
+  <color name="kalima_glass_top">#E65B5BF5</color>
+  <color name="kalima_glass_bottom">#E68B5CF6</color>
+
+  <!-- light raking across the top-left corner, as on a real pane -->
+  <color name="kalima_sheen">#40FFFFFF</color>
+  <color name="kalima_sheen_fade">#00FFFFFF</color>
+
   <color name="kalima_glass_pane">#24FFFFFF</color>
-  <color name="kalima_glass_rim">#61FFFFFF</color>
+  <color name="kalima_glass_rim">#6BFFFFFF</color>
 
   <color name="kalima_on_brand">#FFFFFFFF</color>
   <color name="kalima_on_brand_muted">#C2FFFFFF</color>
