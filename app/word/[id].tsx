@@ -19,6 +19,7 @@ import {
 import { Sheet, type SheetRef } from "@/components/ui/Sheet";
 import { ConfirmBody, SheetAction } from "@/components/ui/SheetAction";
 import { EntryBody } from "@/components/word/EntryBody";
+import { WordGlassCard } from "@/components/word/WordGlassCard";
 import { useTheme } from "@/theme/ThemeProvider";
 import {
   formatDue,
@@ -28,6 +29,7 @@ import {
   useWordDetail,
 } from "@/api/words";
 import { masteryOf } from "@/api/quiz";
+import { speak } from "@/features/tts";
 
 export default function WordDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -108,6 +110,17 @@ export default function WordDetail() {
               />
             </View>
           }
+        />
+
+        <WordGlassCard
+          lemma={word.entry.lemma}
+          ipa={word.entry.ipa}
+          translation={word.entry.senses[0]?.ar_translations.join(" · ") ?? ""}
+          isFavorite={word.is_favorite}
+          onToggleFavorite={() =>
+            update.mutate({ is_favorite: !word.is_favorite })
+          }
+          onSpeak={() => speak(word.entry.lemma)}
         />
 
         <EntryBody entry={word.entry} />

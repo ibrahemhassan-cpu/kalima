@@ -15,7 +15,7 @@ import { AuthProvider, useAuth } from "@/features/auth/AuthProvider";
 import { useDeepLinkAuth } from "@/features/auth/useDeepLinkAuth";
 import { useProfile } from "@/api/profile";
 import { useReminders } from "@/features/notifications/useReminders";
-import { useWordOverlay } from "@/features/overlay/useWordOverlay";
+import { useWordWidget } from "@/features/widget/useWordWidget";
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -65,7 +65,7 @@ function RouteGate() {
 
   useDeepLinkAuth();
   useReminders(!!session);
-  useWordOverlay(!!session);
+  useWordWidget(!!session);
 
   const waitingForProfile = !!session && loadingProfile;
   const ready = !initializing && hydrated && !waitingForProfile;

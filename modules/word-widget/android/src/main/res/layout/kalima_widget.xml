@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Only views RemoteViews supports are used here: LinearLayout, TextView,
+  ImageButton, View. No custom views, no gradients in code — the glass look
+  comes entirely from kalima_widget_bg.xml.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/kalima_root"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical"
+  android:background="@drawable/kalima_widget_bg"
+  android:padding="16dp"
+  android:gravity="center">
+
+  <!-- the word -->
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/kalima_widget_word"
+    android:textSize="11sp"
+    android:textColor="@color/kalima_on_brand_faint" />
+
+  <TextView
+    android:id="@+id/kalima_word"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="2dp"
+    android:gravity="center"
+    android:maxLines="1"
+    android:ellipsize="end"
+    android:textSize="26sp"
+    android:textStyle="bold"
+    android:textDirection="ltr"
+    android:textColor="@color/kalima_on_brand"
+    android:text="Serenity" />
+
+  <TextView
+    android:id="@+id/kalima_ipa"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:maxLines="1"
+    android:ellipsize="end"
+    android:textSize="13sp"
+    android:textDirection="ltr"
+    android:textColor="@color/kalima_on_brand_muted"
+    android:text="" />
+
+  <!-- divider -->
+  <View
+    android:layout_width="match_parent"
+    android:layout_height="1dp"
+    android:layout_marginTop="12dp"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/kalima_divider" />
+
+  <!-- the meaning -->
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/kalima_widget_meaning"
+    android:textSize="11sp"
+    android:textColor="@color/kalima_on_brand_faint" />
+
+  <TextView
+    android:id="@+id/kalima_meaning"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="2dp"
+    android:gravity="center"
+    android:maxLines="2"
+    android:ellipsize="end"
+    android:textSize="17sp"
+    android:textColor="@color/kalima_on_brand"
+    android:text="@string/kalima_widget_empty" />
+
+  <!-- controls -->
+  <LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="12dp"
+    android:orientation="horizontal"
+    android:gravity="center">
+
+    <ImageButton
+      android:id="@+id/kalima_speak"
+      android:layout_width="40dp"
+      android:layout_height="40dp"
+      android:layout_marginEnd="12dp"
+      android:padding="9dp"
+      android:background="@drawable/kalima_pill"
+      android:src="@drawable/kalima_ic_speak"
+      android:scaleType="fitCenter"
+      android:contentDescription="@string/kalima_widget_speak" />
+
+    <ImageButton
+      android:id="@+id/kalima_next"
+      android:layout_width="40dp"
+      android:layout_height="40dp"
+      android:padding="9dp"
+      android:background="@drawable/kalima_pill"
+      android:src="@drawable/kalima_ic_next"
+      android:scaleType="fitCenter"
+      android:contentDescription="@string/kalima_widget_next" />
+  </LinearLayout>
+
+</LinearLayout>

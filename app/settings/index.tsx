@@ -104,16 +104,16 @@ export default function Settings() {
           value={reminderLabel}
           onPress={() => router.push("/settings/reminder")}
         />
-        {/* floating card on Android, scheduled notifications everywhere else */}
+        {/* home-screen widget, plus the optional word notifications */}
         <ListRow
           icon="albums-outline"
-          title={t("overlay.title")}
+          title={t("card.settingsTitle")}
           value={
             s.overlayEnabled
               ? t("overlay.minutes", { count: s.overlayInterval })
               : t("onboarding.turnOff")
           }
-          onPress={() => router.push("/settings/overlay")}
+          onPress={() => router.push("/settings/word-card")}
           last
         />
       </ListGroup>

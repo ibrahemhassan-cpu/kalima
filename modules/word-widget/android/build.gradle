@@ -1,10 +1,10 @@
 apply plugin: 'expo-module-gradle-plugin'
 
-group = 'expo.modules.wordoverlay'
+group = 'expo.modules.wordwidget'
 version = '0.1.0'
 
 android {
-  namespace "expo.modules.wordoverlay"
+  namespace "expo.modules.wordwidget"
   defaultConfig {
     versionCode 1
     versionName "0.1.0"

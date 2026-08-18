@@ -426,29 +426,32 @@
     "enableSkip": "Not now",
     "blocked": "Notifications are off in your phone settings"
   },
+  "card": {
+    "word": "word",
+    "meaning": "means",
+    "flip": "Flip the card",
+    "settingsTitle": "Word card",
+    "settingsSubtitle": "A word from your library, on your home screen",
+    "sampleMeaning": "calm and peace of mind",
+    "widgetHowTitle": "Add it to your home screen",
+    "widgetHowBody": "Long-press an empty spot on your home screen → Widgets → find Kalima and drag it where you like.",
+    "widgetPlaced_one": "{{count}} widget placed",
+    "widgetPlaced_other": "{{count}} widgets placed",
+    "widgetTapHint": "🔄 changes the word · 🔊 speaks it · tapping the card opens the word in the app. It also rotates on its own every half hour.",
+    "widgetUnavailable": "The widget is Android-only for now. An iOS version is on the way.",
+    "notifyGroup": "On top of that",
+    "notifyEnable": "Word notifications",
+    "notifyHint": "The widget waits for you to look; a notification comes to you"
+  },
   "legal": {
     "lastUpdated": "Last updated: {{date}}"
   },
   "overlay": {
-    "title": "Word card",
-    "subtitle": "A word from your library, surfacing every so often",
-    "enable": "Turn the card on",
     "every": "How often?",
     "minutes_one": "Every minute",
     "minutes_other": "Every {{count}} minutes",
-    "permissionTitle": "One permission needed",
-    "permissionBody": "Android asks for \"display over other apps\" in system settings. Tap the button, enable Kalima, and come back.",
-    "grant": "Open settings",
-    "modeFloating": "Floating card",
-    "modeFloatingBody": "Appears over whatever app you're in, and fades on its own after a few seconds.",
-    "modeNotification": "Notifications",
-    "modeNotificationAndroid": "Grant the draw-over-apps permission above to get a floating card instead of a notification.",
-    "modeNotificationIos": "iOS does not let any app draw over another, so the word arrives as a notification instead — a different word each time.",
     "quietNote": "Notifications are scheduled between 8am and 10pm only, and are topped up whenever you open the app. Leave it for a couple of days and they quietly stop.",
-    "cardFallbackBody": "Tap to review it",
-    "batteryNote": "The card runs as a background service, so Android shows a silent notification while it's on. Turn it off here any time.",
-    "serviceTitle": "Word card is on",
-    "serviceBody": "A word every so often, from your library"
+    "cardFallbackBody": "Tap to review it"
   },
   "achievements": {
     "unlocked": "Unlocked",

@@ -1,0 +1,18 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <application>
+    <receiver
+      android:name="expo.modules.wordwidget.WordWidgetProvider"
+      android:exported="false">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        <action android:name="expo.modules.wordwidget.NEXT" />
+        <action android:name="expo.modules.wordwidget.SPEAK" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/kalima_widget_info" />
+    </receiver>
+  </application>
+
+</manifest>

@@ -35,6 +35,12 @@ export type Colors = {
   brandSoft: string;
   brandBorder: string;
   onBrand: string;
+  /** text on top of a brand gradient — the glass card lives there */
+  onBrandMuted: string;
+  onBrandFaint: string;
+  /** the translucent pane itself, and its rim light */
+  glassPane: string;
+  glassRim: string;
 
   // semantic
   accent: string;
@@ -92,6 +98,10 @@ export const light: Colors = {
   brandSoft: "rgba(91,91,245,0.10)",
   brandBorder: "rgba(91,91,245,0.22)",
   onBrand: "#FFFFFF",
+  onBrandMuted: "rgba(255,255,255,0.76)",
+  onBrandFaint: "rgba(255,255,255,0.56)",
+  glassPane: "rgba(255,255,255,0.14)",
+  glassRim: "rgba(255,255,255,0.38)",
 
   accent: "#FF8A3D",
   accentSoft: "rgba(255,138,61,0.12)",
@@ -149,6 +159,10 @@ export const dark: Colors = {
   brandSoft: "rgba(128,128,255,0.18)",
   brandBorder: "rgba(128,128,255,0.32)",
   onBrand: "#FFFFFF",
+  onBrandMuted: "rgba(255,255,255,0.72)",
+  onBrandFaint: "rgba(255,255,255,0.5)",
+  glassPane: "rgba(255,255,255,0.10)",
+  glassRim: "rgba(255,255,255,0.28)",
 
   accent: "#FF9F5A",
   accentSoft: "rgba(255,159,90,0.16)",
