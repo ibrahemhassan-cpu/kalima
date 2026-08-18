@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Only views RemoteViews supports are used here: LinearLayout, TextView,
-  ImageButton, View. No custom views, no gradients in code — the glass look
-  comes entirely from kalima_widget_bg.xml.
+  Every class here is one RemoteViews accepts: LinearLayout, TextView,
+  ImageView, ImageButton. Nothing else may appear — plain View included.
+  The glass look comes entirely from kalima_widget_bg.xml.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:id="@+id/kalima_root"
@@ -47,12 +47,17 @@
     android:textColor="@color/kalima_on_brand_muted"
     android:text="" />
 
-  <!-- divider -->
-  <View
+  <!--
+    divider — an ImageView, not a View. RemoteViews only inflates classes
+    annotated @RemoteView, and plain View is not one of them: using it throws
+    at inflation time and the launcher shows "error loading widget".
+  -->
+  <ImageView
     android:layout_width="match_parent"
     android:layout_height="1dp"
     android:layout_marginTop="12dp"
     android:layout_marginBottom="10dp"
+    android:contentDescription="@null"
     android:background="@drawable/kalima_divider" />
 
   <!-- the meaning -->

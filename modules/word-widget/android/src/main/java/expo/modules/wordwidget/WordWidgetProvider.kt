@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import android.util.Log
 import android.widget.RemoteViews
 import java.util.Locale
 
@@ -60,7 +61,14 @@ class WordWidgetProvider : AppWidgetProvider() {
       views.setOnClickPendingIntent(R.id.kalima_speak, broadcast(context, ACTION_SPEAK))
       views.setOnClickPendingIntent(R.id.kalima_root, openApp(context, current?.id))
 
-      manager.updateAppWidget(widgetId, views)
+      // A throw here would leave the launcher showing "error loading widget"
+      // with no way back except removing the widget. Keeping the last good
+      // render on screen is a far better failure than that.
+      try {
+        manager.updateAppWidget(widgetId, views)
+      } catch (e: Exception) {
+        Log.w("KalimaWidget", "update failed", e)
+      }
     }
 
     private fun flags(): Int =

@@ -240,10 +240,16 @@ group by p.slug order by p.slug;
 > ليه إشعار لكل كلمة بدل واحد متكرّر؟ لأن المتكرّر محتواه ثابت — هتشوف نفس
 > الكلمة للأبد. و iOS بيسمح بـ ٦٤ إشعار مجدول للتطبيق كله، فبناخد ٤٨.
 
-> **iOS:** الأداة لسه مش متعملة. ويدجت iOS بتحتاج WidgetKit extension بـ Swift،
-> وده محتاج حساب Apple Developer عشان يتبني أصلًا. الإشعارات شغّالة على iOS دلوقتي.
-> ولمّا تتعمل: تبديل الكلمة هيشتغل على iOS 17+، لكن **النطق هيفتح التطبيق**
-> لأن iOS ما بيسمحش لأي ويدجت تشغّل صوت.
+**الأداة على iOS** موجودة كمان (`targets/widget/` بـ SwiftUI + WidgetKit):
+
+| | أندرويد | iOS |
+|---|---|---|
+| تبديل الكلمة | ✅ في مكانها | ✅ iOS 17+ · مخفي على 16 |
+| النطق | ✅ في مكانها | ⚠️ **بيفتح التطبيق وينطق جوّاه** — iOS ما بيسمحش لأداة تشغّل صوت |
+| التبديل التلقائي | كل نص ساعة | كل نص ساعة (جدول ٦ ساعات مرسوم مقدمًا) |
+
+> تقدر تجرّب أداة iOS على **محاكي الماك مجانًا** — من غير حساب Apple Developer.
+> الخطوات في [`docs/MAC_SIMULATOR.md`](docs/MAC_SIMULATOR.md).
 
 ### 5. كلماتي وتفاصيل الكلمة
 
@@ -346,7 +352,9 @@ kalima/
 │   ├── store/              إعدادات المستخدم (zustand + AsyncStorage)
 │   └── theme/              الألوان · الخطوط · المسافات · ThemeProvider
 ├── modules/
-│   └── word-widget/        موديول نيتف (Kotlin) لأداة الشاشة الرئيسية — أندرويد
+│   └── word-widget/        موديول نيتف يغذّي الأداة (Kotlin + Swift)
+├── targets/
+│   └── widget/             أداة iOS نفسها (SwiftUI · WidgetKit)
 ├── supabase/
 │   ├── migrations/         0001 → 0008
 │   ├── functions/          enrich-word · generate-questions · delete-account

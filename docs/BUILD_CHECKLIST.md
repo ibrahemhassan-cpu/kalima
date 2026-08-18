@@ -76,6 +76,11 @@ npm run build:dev
 > `npm run build:dev` أو `npm run build:preview` — الاتنين بيجمّعوا الكود
 > النيتف. `preview` أنسب لو هتجرّب أو تبعت لحد، لأنه مستقل عن الكمبيوتر.
 
+**أداة iOS** في `targets/widget/` وبتتربط بإضافة `@bacons/apple-targets`.
+لبنائها محتاج ماك بـ Xcode 16 — والمحاكي مجاني بدون حساب Apple:
+[`docs/MAC_SIMULATOR.md`](MAC_SIMULATOR.md). ولمّا تشترك، ضيف
+`ios.appleTeamId` في `app.json` وإلا الإضافة هتحذّرك في كل بناء.
+
 ## 4. الفحص السريع ⭐
 
 **دي أهم خطوة.** كل بناء بياخد 15 دقيقة — خطأ نوع واحد يضيّعهم كلهم.

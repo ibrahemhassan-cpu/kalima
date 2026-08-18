@@ -32,7 +32,10 @@ import { masteryOf } from "@/api/quiz";
 import { speak } from "@/features/tts";
 
 export default function WordDetail() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, speak: speakParam } = useLocalSearchParams<{
+    id: string;
+    speak?: string;
+  }>();
   const { colors, spacing, radius, minTouch } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
@@ -53,6 +56,18 @@ export default function WordDetail() {
   useEffect(() => {
     if (word && !dirty) setNote(word.personal_note ?? "");
   }, [word, dirty]);
+
+  /**
+   * The iOS widget's speaker button lands here with ?speak=1.
+   * iOS forbids a widget from playing audio itself, so the widget opens the
+   * app and the app does the speaking. Guarded so it fires once per arrival.
+   */
+  const spoken = useRef(false);
+  useEffect(() => {
+    if (speakParam !== "1" || !word || spoken.current) return;
+    spoken.current = true;
+    speak(word.entry.lemma);
+  }, [speakParam, word]);
 
   if (isLoading) {
     return (

@@ -17,17 +17,28 @@ type WordWidgetNative = {
 };
 
 /**
- * Optional on purpose. The module has no iOS side yet, and a build made before
- * it existed has no native side at all — in both cases every call below is a
- * no-op instead of a crash, so screens can call them unguarded.
+ * Optional on purpose: a build made before this module existed has no native
+ * side at all, and then every call below is a no-op instead of a crash — so
+ * screens can call them unguarded.
  */
 const native = requireOptionalNativeModule<WordWidgetNative>("WordWidget");
 
 export function isWidgetSupported(): boolean {
-  return Platform.OS === "android" && native != null;
+  if (Platform.OS !== "android" && Platform.OS !== "ios") return false;
+  if (native == null) return false;
+  try {
+    return native.isSupported();
+  } catch {
+    return false;
+  }
 }
 
-/** How many widgets the user has placed on their home screen. */
+/**
+ * How many widgets the user has placed on their home screen.
+ *
+ * Android can answer exactly. iOS only answers asynchronously, so it reports 0
+ * — treat that as "unknown", never as "none placed".
+ */
 export function widgetsPlaced(): number {
   if (!isWidgetSupported()) return 0;
   try {

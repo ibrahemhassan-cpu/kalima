@@ -434,11 +434,11 @@
     "settingsSubtitle": "A word from your library, on your home screen",
     "sampleMeaning": "calm and peace of mind",
     "widgetHowTitle": "Add it to your home screen",
-    "widgetHowBody": "Long-press an empty spot on your home screen → Widgets → find Kalima and drag it where you like.",
+    "widgetHowBody": "Android: long-press an empty spot on the home screen → Widgets → Kalima.\niOS: long-press the home screen → the ＋ button → search for Kalima.",
     "widgetPlaced_one": "{{count}} widget placed",
     "widgetPlaced_other": "{{count}} widgets placed",
     "widgetTapHint": "🔄 changes the word · 🔊 speaks it · tapping the card opens the word in the app. It also rotates on its own every half hour.",
-    "widgetUnavailable": "The widget is Android-only for now. An iOS version is on the way.",
+    "widgetUnavailable": "The widget needs a fresh build of the app. After that you'll find it in your device's widget list.",
     "notifyGroup": "On top of that",
     "notifyEnable": "Word notifications",
     "notifyHint": "The widget waits for you to look; a notification comes to you"

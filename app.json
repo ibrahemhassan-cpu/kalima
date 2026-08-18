@@ -22,6 +22,11 @@
       "infoPlist": {
         "CFBundleAllowMixedLocalizations": true,
         "ITSAppUsesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.app.kalima.vocab"
+        ]
       }
     },
     "android": {
@@ -29,8 +34,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#3B5BFF"
-      },
-      "edgeToEdgeEnabled": true
+      }
     },
     "plugins": [
       "expo-router",
@@ -62,7 +66,8 @@
           "defaultChannel": "reminders"
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      "@bacons/apple-targets"
     ],
     "experiments": {
       "typedRoutes": true
