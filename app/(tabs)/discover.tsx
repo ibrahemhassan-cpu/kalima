@@ -1,10 +1,16 @@
 import React from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 
-import { Enter, Header, Screen, Surface, Text } from "@/components/ui";
+import {
+  EmptyState,
+  Header,
+  Screen,
+  SkeletonCard,
+  Text,
+} from "@/components/ui";
 import { PackCard } from "@/components/packs/PackCard";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useTopicPacks } from "@/api/packs";
@@ -25,44 +31,22 @@ export default function Discover() {
 
       {isLoading ? (
         <View style={{ paddingVertical: spacing.xxxl, alignItems: "center" }}>
-          <ActivityIndicator size="large" color={colors.brand} />
+          <SkeletonCard lines={2} />
         </View>
       ) : !packs || packs.length === 0 ? (
-        <View
-          style={{
-            alignItems: "center",
-            justifyContent: "center",
-            gap: spacing.lg,
-            paddingVertical: spacing.xxxl,
-          }}
-        >
-          <View
-            style={{
-              width: 84,
-              height: 84,
-              borderRadius: radius.xl,
-              backgroundColor: colors.sunken,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Ionicons name="compass-outline" size={40} color={colors.textFaint} />
-          </View>
-          <Surface tone="glass" radiusKey="xl">
-            <Text variant="body" tone="muted" center>
-              {t("packs.empty")}
-            </Text>
-          </Surface>
-        </View>
+        <EmptyState
+          icon="compass-outline"
+          title={t("packs.empty")}
+          body={t("packs.discoverSubtitle")}
+        />
       ) : (
         <View style={{ gap: spacing.md }}>
-          {packs.map((pack, i) => (
-            <Enter key={pack.pack_id} index={i}>
-              <PackCard
-                pack={pack}
-                onPress={() => router.push(`/pack/${pack.pack_id}`)}
-              />
-            </Enter>
+          {packs.map((pack) => (
+            <PackCard
+              key={pack.pack_id}
+              pack={pack}
+              onPress={() => router.push(`/pack/${pack.pack_id}`)}
+            />
           ))}
         </View>
       )}

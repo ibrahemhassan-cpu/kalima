@@ -79,7 +79,6 @@ export default function ReminderStep() {
             <Touchable
               haptic="select"
               onPress={() => setReminder(reminderHour, !reminderEnabled)}
-              scaleTo={0.94}
             >
               <Text variant="label" tone="brand">
                 {reminderEnabled ? t("onboarding.turnOff") : t("onboarding.turnOn")}

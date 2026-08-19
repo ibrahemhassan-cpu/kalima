@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from "react";
 import * as SQLite from "expo-sqlite";
 import { supabase } from "./supabase";
 import type { ReviewMode } from "./database.types";
@@ -58,6 +59,8 @@ export async function queueReview(r: PendingReview) {
     r.ms_taken,
     r.reviewed_at,
   );
+  // the caller already knows this added exactly one — no COUNT round trip
+  bumpPendingCount(1);
 }
 
 export async function pendingCount(): Promise<number> {
@@ -102,6 +105,8 @@ export async function flushQueue(): Promise<{ applied: number; skipped: number }
   const ids = rows.map((r) => `'${r.client_id.replace(/'/g, "''")}'`).join(",");
   await d.execAsync(`delete from pending_reviews where client_id in (${ids})`);
 
+  await refreshPendingCount();
+
   const res = data as unknown as { applied: number; skipped: number } | null;
   return { applied: res?.applied ?? rows.length, skipped: res?.skipped ?? 0 };
 }
@@ -109,4 +114,47 @@ export async function flushQueue(): Promise<{ applied: number; skipped: number }
 export async function clearQueue() {
   const d = await db();
   await d.execAsync("delete from pending_reviews");
+  await refreshPendingCount();
+}
+
+// ── live view of the queue, for the offline bar ──────────────
+
+/**
+ * Mirrors src/lib/network.ts: one external store, read through
+ * useSyncExternalStore. Reading a mutable module variable during render is
+ * not safe once React renders concurrently — two components in the same
+ * commit can see different counts.
+ */
+type Listener = () => void;
+const listeners = new Set<Listener>();
+let cachedCount = 0;
+
+function emit(next: number) {
+  if (next === cachedCount) return;
+  cachedCount = next;
+  for (const l of listeners) l();
+}
+
+/** Adjust by a known delta, without asking the database. */
+export function bumpPendingCount(delta: number) {
+  emit(Math.max(0, cachedCount + delta));
+}
+
+export function usePendingReviews(): number {
+  return useSyncExternalStore(
+    (cb) => {
+      listeners.add(cb);
+      return () => listeners.delete(cb);
+    },
+    () => cachedCount,
+    () => 0,
+  );
+}
+
+/**
+ * Reads the real number from disk. Called once at startup and after a flush —
+ * not on every screen mount, which is what the OfflineBar used to do.
+ */
+export async function refreshPendingCount() {
+  emit(await pendingCount());
 }

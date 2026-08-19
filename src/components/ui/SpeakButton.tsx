@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "@/theme/ThemeProvider";
+import { PRESS_SCALE_SMALL } from "@/theme/motion";
 import { speak } from "@/features/tts";
 import { Touchable } from "./Touchable";
 
@@ -28,7 +29,7 @@ export function SpeakButton({
       accessibilityLabel={
         slow ? t("a11y.listenSlowTo", { word }) : t("a11y.listenTo", { word })
       }
-      scaleTo={0.9}
+      scaleTo={PRESS_SCALE_SMALL}
       onPress={() => speak(word, { slow })}
       style={[
         {

@@ -11,14 +11,14 @@
 ## 1. الحزم الجديدة
 
 ```powershell
-npx expo install expo-blur expo-linear-gradient expo-notifications expo-sqlite
-npm install @gorhom/bottom-sheet
+npx expo install expo-blur expo-linear-gradient expo-notifications expo-sqlite expo-network expo-local-authentication
+npm install @gorhom/bottom-sheet @tanstack/react-query-persist-client @tanstack/query-async-storage-persister
 ```
 
 ## 2. قاعدة البيانات
 
 في **SQL Editor**، شغّل `0006_questions.sql` ثم `0007_packs.sql` ثم
-`0008_quiz_and_reminders.sql` — بالترتيب ده بالظبط.
+`0008_quiz_and_reminders.sql` ثم `0009_smart_quiz_and_packs.sql` — بالترتيب ده بالظبط.
 
 ```sql
 -- تحقّق
@@ -27,8 +27,9 @@ where routine_schema='public'
   and routine_name in ('get_session_items','submit_quiz_answer',
                        'entries_missing_questions','lookup_words','last_modes',
                        'list_topic_packs','get_pack_words','add_pack_words',
-                       'get_word_quiz','check_quiz_answer','finish_word_quiz');
--- المتوقع: 11 صف
+                       'get_word_quiz','check_quiz_answer','finish_word_quiz',
+                       'smart_distractors');
+-- المتوقع: 12 صف
 
 -- عمود مواعيد التذكير المتعددة
 select column_name from information_schema.columns

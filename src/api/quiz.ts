@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { CACHE_MAX_AGE } from "@/lib/queryCache";
 import type { Example, ReviewMode, ReviewResult, Sense } from "@/lib/database.types";
 
 /**
@@ -30,8 +31,9 @@ export function useWordQuiz(userWordId?: string, limit = 6) {
   return useQuery({
     queryKey: ["word-quiz", userWordId, limit],
     enabled: !!userWordId,
+    // same reasoning as the session: refetch when we can, but keep it offline
     staleTime: 0,
-    gcTime: 0,
+    gcTime: CACHE_MAX_AGE,
     queryFn: async (): Promise<QuizQuestion[]> => {
       const { data, error } = await supabase.rpc("get_word_quiz", {
         p_user_word_id: userWordId!,

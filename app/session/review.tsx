@@ -13,6 +13,7 @@ import { FlipCard } from "@/components/review/FlipCard";
 import { RatingBar } from "@/components/review/RatingBar";
 import { QuizCard, type AnswerState } from "@/components/review/QuizCard";
 import { useTheme } from "@/theme/ThemeProvider";
+import { PRESS_SCALE_SMALL } from "@/theme/motion";
 import { useSettings } from "@/store/settings";
 import { useSubmitReview } from "@/api/review";
 import {
@@ -239,7 +240,7 @@ export default function ReviewSession() {
       <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.md }}>
         <Touchable
           onPress={confirmExit}
-          scaleTo={0.9}
+      scaleTo={PRESS_SCALE_SMALL}
           accessibilityRole="button"
           accessibilityLabel={t("review.endSession")}
           style={{

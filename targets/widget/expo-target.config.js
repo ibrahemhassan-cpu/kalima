@@ -10,7 +10,7 @@
 module.exports = (config) => ({
   type: "widget",
   name: "KalimaWidget",
-  displayName: "كلمة",
+  displayName: "Kalima",
 
   // 16.0 so it installs broadly; the interactive button is gated to 17 in Swift
   deploymentTarget: "16.0",

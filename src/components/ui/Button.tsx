@@ -60,12 +60,25 @@ export function Button({
 
   const label = (
     <View
-      style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: spacing.sm,
+        // the row may not exceed the button it sits in
+        flexShrink: 1,
+      }}
     >
       {icon ? <Ionicons name={icon} size={19} color={fg} /> : null}
+      {/*
+        flexShrink + two lines, because the shell clips: a long Arabic title at
+        a large text size used to be trimmed at both ends with no ellipsis and
+        no way to tell what the button did.
+      */}
       <Text
         variant={size === "lg" ? "heading" : "bodyStrong"}
-        style={{ color: fg }}
+        numberOfLines={2}
+        style={{ color: fg, flexShrink: 1, textAlign: "center" }}
       >
         {title}
       </Text>

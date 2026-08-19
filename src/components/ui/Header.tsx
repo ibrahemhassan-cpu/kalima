@@ -3,6 +3,7 @@ import { I18nManager, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/theme/ThemeProvider";
+import { PRESS_SCALE_SMALL } from "@/theme/motion";
 import { Text } from "./Text";
 import { Touchable } from "./Touchable";
 import { LanguageToggle } from "./LanguageToggle";
@@ -41,7 +42,7 @@ export function Header({
             onPress={onBack}
             accessibilityRole="button"
             accessibilityLabel={t("a11y.back")}
-            scaleTo={0.9}
+      scaleTo={PRESS_SCALE_SMALL}
             style={{
               width: minTouch - 8,
               height: minTouch - 8,

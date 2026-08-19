@@ -17,7 +17,6 @@ export function Card({ onPress, accessibilityLabel, style, ...rest }: CardProps)
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      scaleTo={0.985}
       style={style as ViewStyle}
     >
       <Surface {...rest} />

@@ -78,7 +78,6 @@ export function FlipCard({
     <Touchable
       onPress={onFlip}
       haptic="medium"
-      scaleTo={0.99}
       accessibilityRole="button"
       accessibilityLabel={t("a11y.flipCard")}
       style={{ flex: 1, minHeight: 340 }}

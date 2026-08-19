@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/theme/ThemeProvider";
+import { PRESS_SCALE_SMALL } from "@/theme/motion";
 import { Badge, SpeakButton, Surface, Text, Touchable } from "@/components/ui";
 import {
   RelatedWordSheet,
@@ -80,7 +81,7 @@ export function EntryBody({ entry }: { entry: DictionaryEntry }) {
               <Ionicons name="bulb" size={20} color={colors.accent} />
             </View>
             <View style={{ flex: 1, gap: 2 }}>
-              <Text variant="micro" tone="faint" style={{ textTransform: "uppercase" }}>
+              <Text variant="micro" tone="faint">
                 {t("word.memoryTip")}
               </Text>
               <Text variant="body" style={{ color: colors.text }}>
@@ -118,7 +119,7 @@ export function EntryBody({ entry }: { entry: DictionaryEntry }) {
                   </Text>
                   <Touchable
                     haptic="select"
-                    scaleTo={0.88}
+      scaleTo={PRESS_SCALE_SMALL}
                     hitSlop={8}
                     onPress={() => speak(ex.en)}
                     accessibilityRole="button"
@@ -216,7 +217,7 @@ function Section({
     <Surface tone="glass" radiusKey="xl">
       <View style={{ gap: spacing.md }}>
         <Text variant="micro" tone="faint">
-          {title.toUpperCase()}
+          {title}
         </Text>
         {children}
       </View>
@@ -254,7 +255,6 @@ function Chips({
           <Touchable
             key={w}
             haptic="select"
-            scaleTo={0.94}
             onLongPress={() => speak(w)}
             onPress={() => onWord(w)}
             accessibilityRole="button"

@@ -1,48 +1,73 @@
 import React, { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import * as SplashScreen from "expo-splash-screen";
 
 import "@/i18n";
 import { ensureRTLAllowed } from "@/i18n/rtl";
-import { ThemeProvider, useTheme } from "@/theme/ThemeProvider";
+import { ThemeProvider } from "@/theme/ThemeProvider";
 import { useSettings } from "@/store/settings";
 import { AuthProvider, useAuth } from "@/features/auth/AuthProvider";
 import { useDeepLinkAuth } from "@/features/auth/useDeepLinkAuth";
 import { useProfile } from "@/api/profile";
 import { useReminders } from "@/features/notifications/useReminders";
 import { useWordWidget } from "@/features/widget/useWordWidget";
+import {
+  CACHE_MAX_AGE,
+  persister,
+  queryClient,
+  shouldPersist,
+} from "@/lib/queryCache";
+import { startNetworkWatch, useOnline } from "@/lib/network";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { SplashGate } from "@/components/brand/SplashGate";
 
 void SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { staleTime: 60_000, retry: 2, refetchOnWindowFocus: false },
-  },
-});
+
 
 export default function RootLayout() {
   useEffect(() => {
     ensureRTLAllowed();
   }, []);
 
+  // feeds the device's connection into React Query's online manager
+  useEffect(() => startNetworkWatch(), []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
+        <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={{
+            persister,
+            maxAge: CACHE_MAX_AGE,
+            // settled, successful, and not one of the unbounded search keys
+            dehydrateOptions: {
+              shouldDehydrateQuery: (q) =>
+                q.state.status === "success" && shouldPersist(q.queryKey),
+            },
+          }}
+        >
           <AuthProvider>
             <ThemeProvider>
               {/* portals every bottom sheet above the whole app */}
               <BottomSheetModalProvider>
-                <RouteGate />
+                {/*
+                  Inside ThemeProvider and i18n so the fallback screen can be
+                  themed and translated — a crash screen in the wrong language
+                  on a white background is barely better than the white screen.
+                */}
+                <ErrorBoundary>
+                  <RouteGate />
+                </ErrorBoundary>
               </BottomSheetModalProvider>
             </ThemeProvider>
           </AuthProvider>
-        </QueryClientProvider>
+        </PersistQueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
@@ -60,6 +85,7 @@ function RouteGate() {
   const hydrated = useSettings((s) => s.hydrated);
   const { data: profile, isLoading: loadingProfile } = useProfile();
 
+  const online = useOnline();
   const segments = useSegments();
   const router = useRouter();
 
@@ -67,12 +93,13 @@ function RouteGate() {
   useReminders(!!session);
   useWordWidget(!!session);
 
-  const waitingForProfile = !!session && loadingProfile;
+  /**
+   * Offline with nothing cached, the profile query pauses rather than fails —
+   * and waiting on a paused query would hold the splash screen open forever.
+   * Offline we route on what we already know and let the profile arrive later.
+   */
+  const waitingForProfile = !!session && loadingProfile && online;
   const ready = !initializing && hydrated && !waitingForProfile;
-
-  useEffect(() => {
-    if (ready) void SplashScreen.hideAsync();
-  }, [ready]);
 
   useEffect(() => {
     if (!ready) return;
@@ -100,9 +127,8 @@ function RouteGate() {
     if (inAuth || inOnboarding) router.replace("/(tabs)");
   }, [ready, session, profile, segments, router]);
 
-  if (!ready) return <Booting />;
-
   return (
+    <SplashGate ready={ready}>
     <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(onboarding)" />
@@ -123,21 +149,7 @@ function RouteGate() {
         options={{ presentation: "modal", animation: "slide_from_bottom" }}
       />
     </Stack>
+    </SplashGate>
   );
 }
 
-function Booting() {
-  const { colors } = useTheme();
-  return (
-    <View
-      style={{
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: colors.bg,
-      }}
-    >
-      <ActivityIndicator size="large" color={colors.brand} />
-    </View>
-  );
-}

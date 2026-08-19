@@ -90,6 +90,9 @@
       android:maxLines="2"
       android:ellipsize="end"
       android:textSize="16sp"
+      android:autoSizeTextType="uniform"
+      android:autoSizeMinTextSize="11sp"
+      android:autoSizeMaxTextSize="16sp"
       android:textColor="@color/kalima_on_brand"
       android:text="@string/kalima_widget_empty" />
   </LinearLayout>

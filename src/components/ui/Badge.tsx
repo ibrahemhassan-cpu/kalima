@@ -54,10 +54,15 @@ export function Badge({
         paddingHorizontal: spacing.md,
         paddingVertical: 5,
         alignSelf: "flex-start",
+        flexShrink: 1,
       }}
     >
       {icon ? <Ionicons name={icon} size={13} color={c.fg} /> : null}
-      <Text variant="caption" style={{ color: c.fg, fontWeight: "600" }}>
+      <Text
+        variant="caption"
+        numberOfLines={1}
+        style={{ color: c.fg, fontWeight: "600", flexShrink: 1 }}
+      >
         {label}
       </Text>
     </View>

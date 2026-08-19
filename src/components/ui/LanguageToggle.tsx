@@ -36,7 +36,6 @@ export function LanguageToggle({ compact }: { compact?: boolean }) {
     <Touchable
       onPress={toggle}
       haptic="select"
-      scaleTo={0.95}
       accessibilityRole="button"
       accessibilityLabel={t("a11y.switchLanguage")}
       accessibilityValue={{ text: current === "ar" ? "العربية" : "English" }}

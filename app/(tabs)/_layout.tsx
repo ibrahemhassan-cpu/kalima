@@ -8,6 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { useTheme } from "@/theme/ThemeProvider";
+import { PRESS_SCALE_SMALL } from "@/theme/motion";
 import { TAB_BAR_HEIGHT } from "@/theme/spacing";
 import { Touchable } from "@/components/ui/Touchable";
 import { Text } from "@/components/ui/Text";
@@ -86,7 +87,7 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
               <Touchable
                 key={route.key}
                 onPress={onPress}
-                scaleTo={0.92}
+      scaleTo={PRESS_SCALE_SMALL}
                 haptic="select"
                 style={styles.tabButton}
                 accessibilityRole="button"
@@ -115,7 +116,7 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
           <View style={styles.centerButtonWrapper}>
             <Touchable
               onPress={() => router.push("/add-word")}
-              scaleTo={0.88}
+      scaleTo={PRESS_SCALE_SMALL}
               haptic="medium"
               style={[styles.plusButton, shadow.brand]}
               accessibilityRole="button"
@@ -153,7 +154,7 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
               <Touchable
                 key={route.key}
                 onPress={onPress}
-                scaleTo={0.92}
+      scaleTo={PRESS_SCALE_SMALL}
                 haptic="select"
                 style={styles.tabButton}
                 accessibilityRole="button"

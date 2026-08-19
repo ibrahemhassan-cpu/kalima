@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "@/theme/ThemeProvider";
 import { TAB_BAR_HEIGHT } from "@/theme/spacing";
+import { OfflineBar } from "./OfflineBar";
 
 export type ScreenProps = {
   children: React.ReactNode;
@@ -82,10 +83,14 @@ export function Screen({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          <OfflineBar />
           {children}
         </ScrollView>
       ) : (
-        <View style={[{ flex: 1 }, inner]}>{children}</View>
+        <View style={[{ flex: 1 }, inner]}>
+          <OfflineBar />
+          {children}
+        </View>
       )}
     </View>
   );

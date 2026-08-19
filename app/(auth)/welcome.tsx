@@ -4,10 +4,11 @@ import { Link, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import Animated, { FadeInDown, ZoomIn } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown, ZoomIn } from "react-native-reanimated";
 
 import { Button, LanguageToggle, ProgressDots, Screen, Surface, Text } from "@/components/ui";
 import { useTheme } from "@/theme/ThemeProvider";
+import { duration } from "@/theme/motion";
 
 export default function Welcome() {
   const { colors, spacing, radius, shadow } = useTheme();
@@ -55,7 +56,7 @@ export default function Welcome() {
           entering={FadeInDown.delay(120).duration(420).springify()}
           style={{ alignItems: "center", gap: spacing.xs }}
         >
-          <Text variant="display" style={{ fontSize: 34, fontWeight: "700" }}>
+          <Text variant="display" style={{ fontWeight: "700" }}>
             {t("app.name")}
           </Text>
           <Text variant="body" tone="muted" center style={{ maxWidth: 260 }}>
@@ -72,9 +73,7 @@ export default function Welcome() {
         {features.map((f, i) => (
           <Animated.View
             key={f.key}
-            entering={FadeInDown.delay(220 + i * 90)
-              .duration(400)
-              .springify()}
+            entering={FadeIn.duration(duration.normal)}
           >
             <Surface tone="glass" radiusKey="lg" elevation="sm">
               <View

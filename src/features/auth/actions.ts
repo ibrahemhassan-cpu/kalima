@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { purgeCache } from "@/lib/queryCache";
 import { authErrorAr } from "./errors";
 
 /**
@@ -83,10 +84,13 @@ export function useSignOut() {
     mutationFn: async () => {
       await supabase.auth.signOut();
     },
-    onSettled: () => {
-      // Wipe every cached query — otherwise the next account briefly sees
-      // the previous user's words.
-      qc.clear();
+    onSettled: async () => {
+      /**
+       * Wipe the cache in memory *and* on disk. Clearing only the live client
+       * would leave the previous account's words in AsyncStorage for whoever
+       * signs in on this phone next.
+       */
+      await purgeCache();
     },
   });
 }

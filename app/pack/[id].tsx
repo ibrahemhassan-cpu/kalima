@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
@@ -8,10 +8,10 @@ import * as Haptics from "expo-haptics";
 import {
   Badge,
   Button,
-  Enter,
   Header,
   ProgressBar,
   Screen,
+  SkeletonList,
   Surface,
   Text,
   Touchable,
@@ -83,171 +83,166 @@ export default function PackDetail() {
       />
 
       {/* progress + bulk add */}
-      <Enter>
-        <Surface tone="glass" elevation="md" radiusKey="xxl" padded={spacing.xl}>
-          <View style={{ gap: spacing.lg }}>
+      <Surface tone="glass" elevation="md" radiusKey="xxl" padded={spacing.xl}>
+        <View style={{ gap: spacing.lg }}>
+          <View
+            style={{ flexDirection: "row", alignItems: "center", gap: spacing.md }}
+          >
             <View
-              style={{ flexDirection: "row", alignItems: "center", gap: spacing.md }}
+              style={{
+                width: 54,
+                height: 54,
+                borderRadius: radius.lg,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: tone.bg,
+              }}
             >
-              <View
-                style={{
-                  width: 54,
-                  height: 54,
-                  borderRadius: radius.lg,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: tone.bg,
-                }}
-              >
-                <Ionicons
-                  name={
-                    (pack?.icon ?? "albums") as keyof typeof Ionicons.glyphMap
-                  }
-                  size={26}
-                  color={tone.fg}
-                />
-              </View>
-
-              <View style={{ flex: 1, gap: 4 }}>
-                <Text variant="bodyStrong">
-                  {t("packs.count", { count: total })}
-                </Text>
-                <Text variant="caption" tone="muted">
-                  {t("packs.owned", { owned: mine, total })}
-                </Text>
-              </View>
-
-              {pack?.cefr_level ? (
-                <Badge label={pack.cefr_level} tone="neutral" />
-              ) : null}
+              <Ionicons
+                name={
+                  (pack?.icon ?? "albums") as keyof typeof Ionicons.glyphMap
+                }
+                size={26}
+                color={tone.fg}
+              />
             </View>
 
-            <ProgressBar
-              value={total > 0 ? mine / total : 0}
-              tone={complete ? "success" : "brand"}
-              label={t("packs.owned", { owned: mine, total })}
-            />
-
-            {complete ? (
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: spacing.sm,
-                  paddingVertical: spacing.sm,
-                }}
-              >
-                <Ionicons name="checkmark-circle" size={20} color={colors.success} />
-                <Text variant="bodyStrong" style={{ color: colors.success }}>
-                  {t("packs.allAdded")}
-                </Text>
-              </View>
-            ) : (
-              <Button
-                title={
-                  ready > 0
-                    ? t("packs.addAllReady", { count: ready })
-                    : t("packs.addAll")
-                }
-                size="lg"
-                fullWidth
-                icon="add"
-                disabled={ready === 0}
-                loading={addPack.isPending}
-                onPress={addAll}
-              />
-            )}
-
-            {addedCount !== null ? (
-              <Text variant="caption" tone="brand" center>
-                {t("packs.added", { count: addedCount })}
+            <View style={{ flex: 1, gap: 4 }}>
+              <Text variant="bodyStrong">
+                {t("packs.count", { count: total })}
               </Text>
-            ) : null}
-
-            {error ? (
-              <Text variant="caption" tone="danger" center>
-                {error}
+              <Text variant="caption" tone="muted">
+                {t("packs.owned", { owned: mine, total })}
               </Text>
-            ) : null}
+            </View>
 
-            {pending > 0 ? (
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: spacing.sm,
-                  alignItems: "center",
-                }}
-              >
-                <Ionicons
-                  name="sparkles-outline"
-                  size={16}
-                  color={colors.textFaint}
-                />
-                <Text variant="micro" tone="faint" style={{ flex: 1 }}>
-                  {t("packs.pending", { count: pending })}
-                </Text>
-              </View>
+            {pack?.cefr_level ? (
+              <Badge label={pack.cefr_level} tone="neutral" />
             ) : null}
           </View>
-        </Surface>
-      </Enter>
+
+          <ProgressBar
+            value={total > 0 ? mine / total : 0}
+            tone={complete ? "success" : "brand"}
+            label={t("packs.owned", { owned: mine, total })}
+          />
+
+          {complete ? (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: spacing.sm,
+                paddingVertical: spacing.sm,
+              }}
+            >
+              <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+              <Text variant="bodyStrong" style={{ color: colors.success }}>
+                {t("packs.allAdded")}
+              </Text>
+            </View>
+          ) : (
+            <Button
+              title={
+                ready > 0
+                  ? t("packs.addAllReady", { count: ready })
+                  : t("packs.addAll")
+              }
+              size="lg"
+              fullWidth
+              icon="add"
+              disabled={ready === 0}
+              loading={addPack.isPending}
+              onPress={addAll}
+            />
+          )}
+
+          {addedCount !== null ? (
+            <Text variant="caption" tone="brand" center>
+              {t("packs.added", { count: addedCount })}
+            </Text>
+          ) : null}
+
+          {error ? (
+            <Text variant="caption" tone="danger" center>
+              {error}
+            </Text>
+          ) : null}
+
+          {pending > 0 ? (
+            <View
+              style={{
+                flexDirection: "row",
+                gap: spacing.sm,
+                alignItems: "center",
+              }}
+            >
+              <Ionicons
+                name="sparkles-outline"
+                size={16}
+                color={colors.textFaint}
+              />
+              <Text variant="micro" tone="faint" style={{ flex: 1 }}>
+                {t("packs.pending", { count: pending })}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      </Surface>
 
       {/* the words themselves */}
       {isLoading ? (
         <View style={{ paddingVertical: spacing.xxxl, alignItems: "center" }}>
-          <ActivityIndicator size="large" color={colors.brand} />
+          <SkeletonList count={6} />
         </View>
       ) : (
-        <Enter index={1}>
-          <View style={{ gap: spacing.sm }}>
-            {(words ?? []).map((w) => (
-              <Touchable
-                key={w.lemma}
-                haptic="select"
-                scaleTo={0.985}
-                accessibilityRole="button"
-                accessibilityLabel={t("a11y.addRelated", { word: w.lemma })}
-                onPress={() => sheet.current?.open(w.lemma)}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: spacing.md,
-                  minHeight: minTouch,
-                  paddingVertical: spacing.md,
-                  paddingHorizontal: spacing.lg,
-                  borderRadius: radius.md,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  backgroundColor: colors.glassStrong,
-                }}
-              >
-                <View style={{ flex: 1, gap: 2 }}>
-                  <Text variant="bodyStrong" ltr>
-                    {w.lemma}
-                  </Text>
-                  <Text variant="caption" tone="muted" numberOfLines={1}>
-                    {w.ar_preview || t("packs.notReady")}
-                  </Text>
-                </View>
+        <View style={{ gap: spacing.sm }}>
+          {(words ?? []).map((w) => (
+            <Touchable
+              key={w.lemma}
+              haptic="select"
+              accessibilityRole="button"
+              accessibilityLabel={t("a11y.addRelated", { word: w.lemma })}
+              onPress={() => sheet.current?.open(w.lemma)}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: spacing.md,
+                minHeight: minTouch,
+                paddingVertical: spacing.md,
+                paddingHorizontal: spacing.lg,
+                borderRadius: radius.md,
+                borderWidth: 1,
+                borderColor: colors.border,
+                backgroundColor: colors.glassStrong,
+              }}
+            >
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text variant="bodyStrong" ltr>
+                  {w.lemma}
+                </Text>
+                <Text variant="caption" tone="muted" numberOfLines={1}>
+                  {w.ar_preview || t("packs.notReady")}
+                </Text>
+              </View>
 
-                {w.already_mine ? (
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={22}
-                    color={colors.success}
-                  />
-                ) : (
-                  <Ionicons
-                    name={w.entry_id ? "add-circle-outline" : "sparkles-outline"}
-                    size={22}
-                    color={w.entry_id ? colors.brand : colors.textFaint}
-                  />
-                )}
-              </Touchable>
-            ))}
-          </View>
-        </Enter>
+              {w.already_mine ? (
+                <Ionicons
+                  name="checkmark-circle"
+                  size={22}
+                  color={colors.success}
+                />
+              ) : (
+                <Ionicons
+                  name={w.entry_id ? "add-circle-outline" : "sparkles-outline"}
+                  size={22}
+                  color={w.entry_id ? colors.brand : colors.textFaint}
+                />
+              )}
+            </Touchable>
+          ))}
+        </View>
       )}
 
       <RelatedWordSheet ref={sheet} />

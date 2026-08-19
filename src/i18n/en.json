@@ -52,7 +52,13 @@
     "statLevel": "Level",
     "currentStreak": "Current streak",
     "todayProgress": "Today's progress",
-    "wordsReviewed": "words reviewed"
+    "wordsReviewed": "words reviewed",
+    "emptyTitle": "Start with your first word",
+    "emptyBody": "Add a word you met today, or pick a ready-made pack — we'll handle reminding you.",
+    "emptyPacks": "Browse packs",
+    "shieldsHint_one": "{{count}} shield protects your streak if you miss a day",
+    "shieldsHint_other": "{{count}} shields protect your streak if you miss a day",
+    "shieldsA11y": "{{count}} streak shields"
   },
   "word": {
     "addTitle": "Add a word",
@@ -156,7 +162,8 @@
     "pending_other": "{{count}} words are prepared when you open them",
     "notReady": "Prepared when you open it",
     "empty": "No packs available yet",
-    "addFailed": "Couldn't add the pack. Check your connection"
+    "addFailed": "Couldn't add the pack. Check your connection",
+    "aboveLevel": "Above your level"
   },
   "review": {
     "title": "Review",
@@ -186,7 +193,11 @@
     "nothingDueTitle": "Nothing due right now",
     "nothingDueBody": "Your next review is {{when}}",
     "nothingAtAll": "Add some words first",
-    "masteredNow": "Mastered"
+    "masteredNow": "Mastered",
+    "emptyTitle": "No words yet",
+    "emptyBody": "Reviewing starts with the first word you add.",
+    "correctCount": "Correct",
+    "wrongCount": "Wrong"
   },
   "profile": {
     "level": "Level {{level}}",
@@ -388,7 +399,12 @@
     "aiBusy": "The service is busy right now. Try again in a minute",
     "aiFailed": "We couldn't fetch that word. Try again",
     "notFound": "We couldn't find that word",
-    "signInFirst": "Sign in first"
+    "signInFirst": "Sign in first",
+    "crashTitle": "Something went wrong",
+    "crashBody": "Your words and progress are safe. Try again, and if it keeps happening reopen the app.",
+    "offlineTitle": "No connection",
+    "offlineBody": "This step needs the internet. Everything already saved works as usual.",
+    "offlineAdd": "Adding a new word needs the internet — its explanation is generated on the server. Review your saved words now and add later."
   },
   "a11y": {
     "back": "Back",
@@ -471,6 +487,7 @@
     "queued_one": "{{count}} review waiting to sync",
     "queued_other": "{{count}} reviews waiting to sync",
     "synced": "Everything synced",
-    "working": "Working offline — your progress is saved"
+    "working": "Working offline — your progress is saved",
+    "cachedNote": "Showing a copy saved on your device"
   }
 }

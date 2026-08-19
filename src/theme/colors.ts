@@ -196,5 +196,14 @@ export const dark: Colors = {
   shadowColor: "#000000",
 };
 
+/**
+ * The launch background, in both themes.
+ *
+ * Kept as its own token because it has to match `expo.splash.backgroundColor`
+ * in app.json byte for byte — the native still image and the animated one hand
+ * over to each other, and any difference shows as a flash. Change both together.
+ */
+export const SPLASH_BACKGROUND = "#5B5BF5";
+
 export const themes = { light, dark } as const;
 export type ThemeName = keyof typeof themes;

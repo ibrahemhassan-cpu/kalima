@@ -7,6 +7,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import { Text, Touchable } from "@/components/ui";
 import { useTheme } from "@/theme/ThemeProvider";
+import { PRESS_SCALE_SMALL } from "@/theme/motion";
 
 /**
  * The word, as one glass panel.
@@ -41,8 +42,13 @@ export function WordGlassCard({
   const { t } = useTranslation();
 
   const pad = compact ? spacing.lg : spacing.xl;
-  const wordSize = compact ? 32 : 42;
-  const arSize = compact ? 20 : 26;
+  /**
+   * Variants, not pixels. This card is the app's identity and the model both
+   * widgets copy — hardcoding its type meant the word and its meaning were the
+   * only things on the screen that ignored the reader's text-size setting.
+   */
+  const wordVariant = compact ? "title" : "word";
+  const arVariant = compact ? "heading" : "title";
 
   return (
     <View style={[{ borderRadius: radius.xxl, overflow: "hidden" }, shadow.lg]}>
@@ -90,12 +96,12 @@ export function WordGlassCard({
               {t("card.word")}
             </Text>
             <Text
-              variant="word"
+              variant={wordVariant}
               center
               ltr
               numberOfLines={1}
               adjustsFontSizeToFit
-              style={{ color: colors.onBrand, fontSize: wordSize, fontWeight: "700" }}
+              style={{ color: colors.onBrand, fontWeight: "700" }}
             >
               {lemma}
             </Text>
@@ -136,10 +142,10 @@ export function WordGlassCard({
               {t("card.meaning")}
             </Text>
             <Text
-              variant="title"
+              variant={arVariant}
               center
               numberOfLines={2}
-              style={{ color: colors.onBrand, fontSize: arSize, fontWeight: "600" }}
+              style={{ color: colors.onBrand, fontWeight: "600" }}
             >
               {translation || "—"}
             </Text>
@@ -194,7 +200,7 @@ function RimButton({
       onPress={onPress}
       disabled={!onPress}
       haptic="select"
-      scaleTo={0.9}
+      scaleTo={PRESS_SCALE_SMALL}
       accessibilityRole="button"
       accessibilityLabel={label}
       style={{

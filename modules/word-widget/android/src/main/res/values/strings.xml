@@ -2,7 +2,7 @@
 <!-- Shown in the system widget picker only. -->
 <resources>
   <string name="kalima_widget_description">كلمة من مكتبتك، بترجمتها ونطقها</string>
-  <string name="kalima_widget_label">كلمة</string>
+  <string name="kalima_widget_label">Kalima</string>
   <string name="kalima_widget_speak">استمع</string>
   <string name="kalima_widget_next">كلمة أخرى</string>
   <string name="kalima_widget_word">كلمة</string>

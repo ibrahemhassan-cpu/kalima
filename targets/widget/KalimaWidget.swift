@@ -182,7 +182,7 @@ struct KalimaWidget: Widget {
     StaticConfiguration(kind: kind, provider: WordProvider()) { entry in
       KalimaWidgetView(entry: entry)
     }
-    .configurationDisplayName("كلمة")
+    .configurationDisplayName("Kalima")
     .description("كلمة من مكتبتك، بترجمتها ونطقها")
     .supportedFamilies([.systemSmall, .systemMedium])
   }

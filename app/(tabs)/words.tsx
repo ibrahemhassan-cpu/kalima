@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   RefreshControl,
   View,
@@ -13,11 +12,13 @@ import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeIn } from "react-native-reanimated";
 
-import { Input, Text, Touchable } from "@/components/ui";
+import { Input, SkeletonList, Text, Touchable } from "@/components/ui";
 import { Sheet, type SheetRef } from "@/components/ui/Sheet";
 import { SheetAction } from "@/components/ui/SheetAction";
 import { WordCard } from "@/components/word/WordCard";
 import { useTheme } from "@/theme/ThemeProvider";
+import { useOnline } from "@/lib/network";
+import { duration } from "@/theme/motion";
 import { useSettings } from "@/store/settings";
 import { useMyWords, type WordFilter, type WordSort } from "@/api/words";
 import { TAB_BAR_HEIGHT } from "@/theme/spacing";
@@ -153,7 +154,7 @@ export default function Words() {
         <>
           {header}
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-            <ActivityIndicator size="large" color={colors.brand} />
+            <SkeletonList count={6} />
           </View>
         </>
       ) : (
@@ -177,7 +178,7 @@ export default function Words() {
             />
           }
           renderItem={({ item, index }) => (
-            <Animated.View entering={FadeIn.delay(Math.min(index, 8) * 30)}>
+            <Animated.View entering={FadeIn.duration(duration.normal)}>
               <WordCard
                 row={item}
                 onPress={() => router.push(`/word/${item.user_word_id}`)}
@@ -236,6 +237,7 @@ export default function Words() {
 }
 
 function Empty({ filtered, onAdd }: { filtered: boolean; onAdd: () => void }) {
+  const offline = !useOnline();
   const { colors, spacing, radius } = useTheme();
   const { t } = useTranslation();
 
@@ -260,18 +262,32 @@ function Empty({ filtered, onAdd }: { filtered: boolean; onAdd: () => void }) {
         }}
       >
         <Ionicons
-          name={filtered ? "search-outline" : "library-outline"}
+          name={
+            offline
+              ? "cloud-offline-outline"
+              : filtered
+                ? "search-outline"
+                : "library-outline"
+          }
           size={38}
           color={colors.textFaint}
         />
       </View>
       <Text variant="heading" center>
-        {filtered ? t("words.noResultsTitle") : t("words.emptyTitle")}
+        {offline
+          ? t("errors.offlineTitle")
+          : filtered
+            ? t("words.noResultsTitle")
+            : t("words.emptyTitle")}
       </Text>
       <Text variant="body" tone="muted" center>
-        {filtered ? t("words.noResultsBody") : t("words.emptyBody")}
+        {offline
+          ? t("errors.offlineBody")
+          : filtered
+            ? t("words.noResultsBody")
+            : t("words.emptyBody")}
       </Text>
-      {!filtered ? (
+      {!filtered && !offline ? (
         <Touchable onPress={onAdd} style={{ paddingVertical: spacing.md }}>
           <Text variant="bodyStrong" tone="brand">
             {t("words.emptyAction")}

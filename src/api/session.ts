@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase, SUPABASE_URL } from "@/lib/supabase";
+import { CACHE_MAX_AGE } from "@/lib/queryCache";
 import type {
   CefrLevel,
   Example,
@@ -37,8 +38,14 @@ export type SessionItem = {
 export function useSessionItems(limit = 20) {
   return useQuery({
     queryKey: ["session-items", limit],
+    /**
+     * Always refetch when online — the due list moves every few minutes.
+     * But it must survive on disk: with gcTime 0 this was never persisted,
+     * so "start review" on the metro opened an empty session, which is the
+     * one thing the offline work exists to prevent.
+     */
     staleTime: 0,
-    gcTime: 0,
+    gcTime: CACHE_MAX_AGE,
     queryFn: async (): Promise<SessionItem[]> => {
       const { data, error } = await supabase.rpc("get_session_items", {
         p_limit: limit,

@@ -23,7 +23,14 @@ export type TopicPack = {
   /** how many of them already exist in the shared dictionary */
   ready_count: number;
   owned_count: number;
+  /** 0 = exactly their level · positive = harder · negative = easier */
+  level_gap: number;
 };
+
+/** Two steps above their level is where a pack stops being encouraging. */
+export function isTooHard(pack: TopicPack): boolean {
+  return pack.level_gap >= 2;
+}
 
 export type PackWord = {
   lemma: string;

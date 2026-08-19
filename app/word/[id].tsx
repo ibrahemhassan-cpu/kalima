@@ -11,6 +11,7 @@ import {
   Input,
   ProgressBar,
   Screen,
+  SkeletonCard,
   StatusBadge,
   Surface,
   Text,
@@ -21,6 +22,7 @@ import { ConfirmBody, SheetAction } from "@/components/ui/SheetAction";
 import { EntryBody } from "@/components/word/EntryBody";
 import { WordGlassCard } from "@/components/word/WordGlassCard";
 import { useTheme } from "@/theme/ThemeProvider";
+import { PRESS_SCALE_SMALL } from "@/theme/motion";
 import {
   formatDue,
   useDeleteWord,
@@ -71,10 +73,10 @@ export default function WordDetail() {
 
   if (isLoading) {
     return (
-      <Screen>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator size="large" color={colors.brand} />
-        </View>
+      <Screen scroll>
+        <Header onBack={() => router.back()} language={false} />
+        <SkeletonCard lines={2} />
+        <SkeletonCard lines={4} />
       </Screen>
     );
   }
@@ -268,21 +270,27 @@ export default function WordDetail() {
         >
           <View style={{ flex: 1 }}>
             <Button
-              title="Edit"
+              title={t("sheet.wordActions")}
               variant="secondary"
               size="lg"
               fullWidth
+              icon="ellipsis-horizontal"
               onPress={() => actions.current?.open()}
             />
           </View>
           <View style={{ flex: 1 }}>
+            {/*
+              This used to say "Practice" and start a whole review session of
+              other words. On a screen about one word, that's the wrong verb
+              and the wrong destination — it quizzes *this* word now.
+            */}
             <Button
-              title="Practice"
+              title={t("quiz.testMe")}
               variant="primary"
               size="lg"
               fullWidth
-              icon="play"
-              onPress={() => router.push("/session/review")}
+              icon="help-circle-outline"
+              onPress={() => router.push(`/quiz/${word.id}`)}
             />
           </View>
         </View>
@@ -380,7 +388,7 @@ function RoundBtn({
     <Touchable
       onPress={onPress}
       haptic="select"
-      scaleTo={0.9}
+      scaleTo={PRESS_SCALE_SMALL}
       accessibilityRole="button"
       accessibilityLabel={label}
       style={{
@@ -413,7 +421,7 @@ function Metric({ label, value }: { label: string; value: number | string }) {
       }}
     >
       <Text variant="bodyStrong">{value}</Text>
-      <Text variant="micro" tone="faint" numberOfLines={1} style={{ textTransform: "uppercase" }}>
+      <Text variant="micro" tone="faint" numberOfLines={1}>
         {label}
       </Text>
     </View>

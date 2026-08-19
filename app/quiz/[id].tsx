@@ -12,6 +12,7 @@ import {
   Header,
   ProgressBar,
   Screen,
+  SkeletonCard,
   Surface,
   Text,
   useCountUp,
@@ -129,9 +130,7 @@ export default function WordQuiz() {
     return (
       <Screen>
         <Header onBack={() => router.back()} language={false} />
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator size="large" color={colors.brand} />
-        </View>
+        <SkeletonCard lines={4} />
       </Screen>
     );
   }
@@ -255,7 +254,7 @@ function QuizResult({
               {lemma}
             </Text>
 
-            <Text variant="display" style={{ fontSize: 46, color: tone }}>
+            <Text variant="display" style={{ color: tone }}>
               {shown}%
             </Text>
 

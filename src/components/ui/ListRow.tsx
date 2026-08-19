@@ -66,7 +66,13 @@ export function ListRow({
       ) : (
         <>
           {value ? (
-            <Text variant="body" tone="muted">
+            // never take more than half the row from the title beside it
+            <Text
+              variant="body"
+              tone="muted"
+              numberOfLines={1}
+              style={{ flexShrink: 1, maxWidth: "55%" }}
+            >
               {value}
             </Text>
           ) : null}

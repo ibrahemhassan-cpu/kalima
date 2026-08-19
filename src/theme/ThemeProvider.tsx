@@ -20,6 +20,8 @@ export type Theme = {
   isDark: boolean;
   simpleMode: boolean;
   minTouch: number;
+  /** the multiplier behind `type` — for anything sized around text */
+  textScale: number;
 };
 
 const ThemeContext = createContext<Theme | null>(null);
@@ -56,6 +58,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       isDark,
       simpleMode,
       minTouch: MIN_TOUCH,
+      textScale: scale,
     };
   }, [isDark, fontScale, simpleMode]);
 

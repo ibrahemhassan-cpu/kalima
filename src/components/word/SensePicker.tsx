@@ -49,7 +49,6 @@ export function SensePicker({
                 <Touchable
                   key={i}
                   haptic="select"
-                  scaleTo={0.985}
                   onPress={() => onSelect(i)}
                   accessibilityRole="radio"
                   accessibilityState={{ selected: active }}
@@ -128,7 +127,6 @@ export function DidYouMean({
               <Touchable
                 key={s}
                 haptic="select"
-                scaleTo={0.95}
                 onPress={() => onPick(s)}
                 accessibilityRole="button"
                 accessibilityLabel={s}

@@ -28,7 +28,7 @@ export default function FontSetting() {
       <Surface tone="glass" radiusKey="xl">
         <View style={{ gap: spacing.sm }}>
           <Text variant="micro" tone="faint">
-            {t("settings.preview").toUpperCase()}
+            {t("settings.preview")}
           </Text>
           <Text variant="word" ltr>
             resilient

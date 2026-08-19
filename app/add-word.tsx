@@ -26,6 +26,8 @@ import {
 import { EntryBody } from "@/components/word/EntryBody";
 import { DidYouMean, SensePicker } from "@/components/word/SensePicker";
 import { useTheme } from "@/theme/ThemeProvider";
+import { duration } from "@/theme/motion";
+import { useOnline } from "@/lib/network";
 import {
   type EnrichError,
   enrichWord,
@@ -62,6 +64,7 @@ export default function AddWord() {
   const { data: suggestions } = useDictionarySearch(
     phase === "input" ? debounced : "",
   );
+  const online = useOnline();
   const { data: recent } = useMyWords({
     filter: "all",
     search: "",
@@ -228,6 +231,24 @@ export default function AddWord() {
           onBack={() => router.back()}
         />
 
+        {!online ? (
+          <Surface tone="glass" radiusKey="lg">
+            <View style={{ flexDirection: "row", gap: spacing.md }}>
+              <Ionicons
+                name="cloud-offline-outline"
+                size={20}
+                color={colors.warning}
+              />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text variant="bodyStrong">{t("errors.offlineTitle")}</Text>
+                <Text variant="caption" tone="muted">
+                  {t("errors.offlineAdd")}
+                </Text>
+              </View>
+            </View>
+          </Surface>
+        ) : null}
+
         <Input
           english
           size="lg"
@@ -264,7 +285,7 @@ export default function AddWord() {
           size="lg"
           fullWidth
           icon="bookmark-outline"
-          disabled={term.trim().length < 2}
+          disabled={!online || term.trim().length < 2}
           onPress={() => lookup(term)}
         />
 
@@ -277,11 +298,10 @@ export default function AddWord() {
             {recent.slice(0, 4).map((item, i) => (
               <Animated.View
                 key={item.user_word_id}
-                entering={FadeInDown.delay(i * 50).duration(260)}
+                entering={FadeIn.duration(duration.normal)}
               >
                 <Touchable
                   haptic="select"
-                  scaleTo={0.98}
                   accessibilityRole="button"
                   accessibilityLabel={`${item.lemma}, ${item.ar_preview}`}
                   onPress={() => router.push(`/word/${item.user_word_id}`)}
@@ -323,16 +343,15 @@ export default function AddWord() {
         {suggestions && suggestions.length > 0 ? (
           <View style={{ gap: spacing.sm }}>
             <Text variant="micro" tone="faint">
-              {t("word.inDictionary").toUpperCase()}
+              {t("word.inDictionary")}
             </Text>
             {suggestions.map((s, i) => (
               <Animated.View
                 key={s.entry_id}
-                entering={FadeInDown.delay(i * 40).duration(280)}
+                entering={FadeIn.duration(duration.normal)}
               >
                 <Touchable
                   haptic="select"
-                  scaleTo={0.985}
                   accessibilityRole="button"
                   accessibilityLabel={`${s.lemma}, ${s.ar_preview}`}
                   onPress={() => {

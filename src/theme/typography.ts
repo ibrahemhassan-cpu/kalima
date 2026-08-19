@@ -16,19 +16,29 @@ export type TypeScale = {
   micro: TextStyle;
 };
 
+/**
+ * No `letterSpacing` anywhere, on purpose.
+ *
+ * Arabic is a joined script: negative tracking pulls connected glyphs into
+ * each other and positive tracking breaks the joins outright. Tight tracking
+ * is a Latin-display convention, and this interface is Arabic first — README
+ * rule 9 forbids it, and the rule has to hold here or every screen inherits
+ * the violation from the scale itself.
+ *
+ * Weight and size carry the hierarchy instead.
+ */
 export function makeTypography(scale: number): TypeScale {
   const s = (n: number) => Math.round(n * scale);
   return {
-    // Tight tracking on large type is the modern tell.
-    display: { fontSize: s(36), lineHeight: s(42), fontWeight: "700", letterSpacing: -1 },
-    word: { fontSize: s(34), lineHeight: s(40), fontWeight: "700", letterSpacing: -0.8 },
-    title: { fontSize: s(26), lineHeight: s(32), fontWeight: "700", letterSpacing: -0.5 },
-    heading: { fontSize: s(19), lineHeight: s(26), fontWeight: "600", letterSpacing: -0.2 },
+    display: { fontSize: s(36), lineHeight: s(44), fontWeight: "700" },
+    word: { fontSize: s(34), lineHeight: s(42), fontWeight: "700" },
+    title: { fontSize: s(26), lineHeight: s(34), fontWeight: "700" },
+    heading: { fontSize: s(19), lineHeight: s(27), fontWeight: "600" },
     body: { fontSize: s(16), lineHeight: s(25), fontWeight: "400" },
     bodyStrong: { fontSize: s(16), lineHeight: s(25), fontWeight: "600" },
-    label: { fontSize: s(14), lineHeight: s(20), fontWeight: "600" },
-    caption: { fontSize: s(13), lineHeight: s(19), fontWeight: "400" },
-    micro: { fontSize: s(11), lineHeight: s(15), fontWeight: "600", letterSpacing: 0.6 },
+    label: { fontSize: s(14), lineHeight: s(21), fontWeight: "600" },
+    caption: { fontSize: s(13), lineHeight: s(20), fontWeight: "400" },
+    micro: { fontSize: s(11), lineHeight: s(16), fontWeight: "600" },
   };
 }
 

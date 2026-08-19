@@ -18,6 +18,7 @@ import {
 import { Sheet, type SheetRef } from "@/components/ui/Sheet";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useProfile } from "@/api/profile";
+import { useDueWords } from "@/api/review";
 import {
   hasPermission,
   requestPermission,
@@ -43,6 +44,9 @@ export default function SessionResult() {
   const accuracy = reviewed > 0 ? Math.round((correct / reviewed) * 100) : 0;
 
   const { data: profile } = useProfile();
+  // only offer another round when there is genuinely something left
+  const { data: due } = useDueWords(40);
+  const stillDue = due?.length ?? 0;
   const permSheet = useRef<SheetRef>(null);
   const [asked, setAsked] = useState(false);
 
@@ -104,41 +108,41 @@ export default function SessionResult() {
           entering={FadeInDown.delay(120).duration(400).springify()}
           style={{ alignItems: "center", gap: spacing.xs }}
         >
-          <Text variant="display" center style={{ fontSize: 30, fontWeight: "800" }}>
-            Great job!
+          <Text variant="title" center style={{ fontWeight: "800" }}>
+            {t("review.doneTitle")}
           </Text>
-          <Text variant="body" tone="muted" center style={{ fontSize: 16 }}>
-            You reviewed {reviewed > 0 ? reviewed : 20} words.
+          <Text variant="body" tone="muted" center>
+            {t("review.reviewed", { count: reviewed })}
           </Text>
         </Animated.View>
       </View>
 
-      {/* Summary Chips Grid: Correct (16) / Wrong (4) / Accuracy (80%) */}
+      {/* what actually happened this session */}
       <Animated.View entering={FadeInDown.delay(240).duration(400).springify()} style={{ marginVertical: spacing.lg }}>
         <Surface tone="glass" elevation="md" radiusKey="xl" padded={spacing.lg}>
-          <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-            <View style={{ alignItems: "center", gap: 4 }}>
-              <Badge label="Correct" tone="chipLearned" icon="checkmark-circle" />
-              <Text variant="display" style={{ fontSize: 24, fontWeight: "700", marginTop: 4 }}>
-                {correct > 0 ? correct : 16}
+          <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
+            <View style={{ flex: 1, alignItems: "center", gap: 4 }}>
+              <Badge label={t("review.correctCount")} tone="chipLearned" icon="checkmark-circle" />
+              <Text variant="title" style={{ fontWeight: "700", marginTop: 4 }}>
+                {correct}
               </Text>
             </View>
 
             <View style={{ width: 1, backgroundColor: colors.border }} />
 
-            <View style={{ alignItems: "center", gap: 4 }}>
-              <Badge label="Wrong" tone="chipHard" icon="close-circle" />
-              <Text variant="display" style={{ fontSize: 24, fontWeight: "700", marginTop: 4 }}>
-                {reviewed - correct > 0 ? reviewed - correct : 4}
+            <View style={{ flex: 1, alignItems: "center", gap: 4 }}>
+              <Badge label={t("review.wrongCount")} tone="chipHard" icon="close-circle" />
+              <Text variant="title" style={{ fontWeight: "700", marginTop: 4 }}>
+                {Math.max(0, reviewed - correct)}
               </Text>
             </View>
 
             <View style={{ width: 1, backgroundColor: colors.border }} />
 
-            <View style={{ alignItems: "center", gap: 4 }}>
-              <Badge label="Accuracy" tone="chipReview" icon="stats-chart" />
-              <Text variant="display" style={{ fontSize: 24, fontWeight: "700", marginTop: 4 }}>
-                {accuracy > 0 ? accuracy : 80}%
+            <View style={{ flex: 1, alignItems: "center", gap: 4 }}>
+              <Badge label={t("review.accuracy")} tone="chipReview" icon="stats-chart" />
+              <Text variant="title" style={{ fontWeight: "700", marginTop: 4 }}>
+                {accuracy}%
               </Text>
             </View>
           </View>
@@ -171,18 +175,22 @@ export default function SessionResult() {
 
       <View style={{ gap: spacing.md, marginTop: spacing.xl, paddingBottom: spacing.xxl }}>
         <Button
-          title="Continue"
+          title={t("review.backHome")}
           size="lg"
           fullWidth
+          icon="home-outline"
           onPress={() => router.replace("/(tabs)")}
         />
-        <Button
-          title="Review wrong answers"
-          variant="secondary"
-          size="lg"
-          fullWidth
-          onPress={() => router.replace("/session/review")}
-        />
+        {stillDue > 0 ? (
+          <Button
+            title={t("review.keepGoing")}
+            variant="secondary"
+            size="lg"
+            fullWidth
+            icon="play"
+            onPress={() => router.replace("/session/review")}
+          />
+        ) : null}
       </View>
 
       </Screen>

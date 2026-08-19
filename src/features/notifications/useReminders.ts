@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { useProfile } from "@/api/profile";
 import { supabase } from "@/lib/supabase";
-import { flushQueue } from "@/lib/offline";
+import { flushQueue, refreshPendingCount } from "@/lib/offline";
 import { syncReminders, type ReminderTime } from "./index";
 import type { HomeSummary } from "@/lib/database.types";
 
@@ -76,6 +76,9 @@ export function useReminders(enabled: boolean) {
     if (!enabled) return;
 
     async function drain() {
+      // the count on disk is the truth at startup; after that deltas keep it live
+      await refreshPendingCount();
+
       const { data } = await supabase.auth.getSession();
       if (!data.session) return;
 

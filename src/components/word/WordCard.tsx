@@ -3,6 +3,7 @@ import { I18nManager, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/theme/ThemeProvider";
+import { PRESS_SCALE_SMALL } from "@/theme/motion";
 import { StatusBadge, Text, Touchable } from "@/components/ui";
 import { speak } from "@/features/tts";
 import type { MyWordRow } from "@/lib/database.types";
@@ -23,7 +24,6 @@ export function WordCard({
       accessibilityRole="button"
       accessibilityLabel={`${row.lemma}, ${row.ar_preview}`}
       onPress={onPress}
-      scaleTo={0.985}
       style={[
         {
           flexDirection: "row",
@@ -67,7 +67,7 @@ export function WordCard({
         haptic="select"
         accessibilityRole="button"
         accessibilityLabel={t("a11y.listenTo", { word: row.lemma })}
-        scaleTo={0.88}
+      scaleTo={PRESS_SCALE_SMALL}
         hitSlop={8}
         onPress={() => speak(row.lemma)}
         style={{

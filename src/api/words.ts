@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase, SUPABASE_URL } from "@/lib/supabase";
+import { isOnline } from "@/lib/network";
 import type {
   DictionaryEntry,
   MyWordRow,
@@ -34,6 +35,15 @@ export async function enrichWord(
   word: string,
   add = false,
 ): Promise<EnrichResponse> {
+  /**
+   * Generating a word is the one thing in Kalima that genuinely cannot work
+   * offline — the explanation comes from the server. Checking first turns a
+   * thirty-second timeout into an immediate, honest answer.
+   */
+  if (!isOnline()) {
+    throw new EnrichError("offline", "مفيش اتصال بالإنترنت");
+  }
+
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   if (!token) throw new EnrichError("unauthenticated", "لازم تسجّل دخول الأول");
@@ -74,6 +84,8 @@ export function useDictionarySearch(query: string) {
     queryKey: ["dict-search", q.toLowerCase()],
     enabled: q.length >= 2,
     staleTime: 5 * 60_000,
+    // one entry per prefix typed — don't let them pile up in memory either
+    gcTime: 5 * 60_000,
     queryFn: async (): Promise<SearchResult[]> => {
       const { data, error } = await supabase.rpc("search_dictionary", {
         p_query: q,

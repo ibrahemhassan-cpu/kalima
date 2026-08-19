@@ -13,6 +13,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { useTheme } from "@/theme/ThemeProvider";
+import { duration } from "@/theme/motion";
 import { Badge, Button, SpeakButton, Surface, Text, Touchable } from "@/components/ui";
 import { speak } from "@/features/tts";
 import type { SessionItem } from "@/api/session";
@@ -113,10 +114,7 @@ export function QuizCard({
           {item.options.map((opt, i) => (
             <Animated.View
               key={opt}
-              entering={FadeInDown.delay(i * 55)
-                .duration(300)
-                .springify()
-                .damping(18)}
+              entering={FadeIn.duration(duration.normal)}
             >
               <OptionButton
                 label={opt}
@@ -152,7 +150,8 @@ function PromptBody({ item }: { item: QuizCardItem }) {
     const parts = (item.prompt ?? "").split("____");
     return (
       <View style={{ gap: spacing.md }}>
-        <Text variant="heading" ltr style={{ lineHeight: 34 }}>
+        {/* leading comes from the variant; a fixed one clamps under the glyphs at large sizes */}
+        <Text variant="heading" ltr>
           {parts[0]}
           <Text
             variant="heading"
@@ -242,7 +241,6 @@ function OptionButton({
       onPress={onPress}
       disabled={disabled}
       haptic="light"
-      scaleTo={0.98}
       accessibilityRole="button"
       accessibilityLabel={label}
       style={[
@@ -264,7 +262,7 @@ function OptionButton({
       <Text
         variant="bodyStrong"
         ltr={ltr}
-        style={{ flex: 1, color: fg, fontSize: 16 }}
+        style={{ flex: 1, color: fg }}
         numberOfLines={2}
       >
         {label}

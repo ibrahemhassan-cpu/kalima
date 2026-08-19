@@ -105,7 +105,6 @@ export default function ReminderSetting() {
               onPress={() => toggle(h)}
               disabled={locked}
               haptic="select"
-              scaleTo={0.985}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: on, disabled: locked }}
               accessibilityLabel={formatHour(h, i18n.language)}

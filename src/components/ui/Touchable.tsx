@@ -13,6 +13,7 @@ import Animated, {
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { useTheme } from "@/theme/ThemeProvider";
+import { PRESS_SCALE } from "@/theme/motion";
 
 const APressable = Animated.createAnimatedComponent(Pressable);
 
@@ -20,7 +21,11 @@ export type TouchableProps = Omit<PressableProps, "style"> & {
   children: React.ReactNode;
   /** StyleProp so callers can pass conditional/undefined entries in an array */
   style?: StyleProp<ViewStyle>;
-  /** how far it shrinks on press */
+  /**
+   * Overriding this is almost always wrong — the app has one press response.
+   * Small circular targets are the exception, and they say so by passing
+   * PRESS_SCALE_SMALL rather than a number picked by eye.
+   */
   scaleTo?: number;
   haptic?: false | "light" | "medium" | "select";
 };
@@ -32,7 +37,7 @@ export type TouchableProps = Omit<PressableProps, "style"> & {
 export function Touchable({
   children,
   style,
-  scaleTo = 0.97,
+  scaleTo = PRESS_SCALE,
   haptic = "light",
   onPressIn,
   onPressOut,

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "كلمة",
+    "name": "Kalima",
     "slug": "kalima",
     "version": "0.1.0",
     "orientation": "portrait",
@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#3B5BFF"
+      "backgroundColor": "#5B5BF5"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -33,7 +33,7 @@
       "package": "app.kalima.vocab",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#3B5BFF"
+        "backgroundColor": "#5B5BF5"
       }
     },
     "plugins": [
@@ -48,7 +48,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#3B5BFF",
+          "backgroundColor": "#5B5BF5",
           "image": "./assets/splash.png",
           "imageWidth": 180
         }

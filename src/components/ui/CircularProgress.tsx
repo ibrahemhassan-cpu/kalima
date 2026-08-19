@@ -29,13 +29,19 @@ export type CircularProgressProps = {
 export function CircularProgress({
   current,
   total,
-  size = 170,
+  size: baseSize = 170,
   strokeWidth = 12,
   title,
   label,
   style,
 }: CircularProgressProps) {
-  const { colors, spring } = useTheme();
+  const { colors, spring, textScale } = useTheme();
+  /**
+   * The ring grows with the type it holds. It used to be a fixed diameter
+   * around three hardcoded text sizes, so raising the text setting pushed the
+   * numbers straight through the stroke.
+   */
+  const size = Math.round(baseSize * textScale);
   const pct = total > 0 ? Math.min(1, Math.max(0, current / total)) : 0;
   const progressVal = useSharedValue(0);
 
@@ -105,15 +111,23 @@ export function CircularProgress({
       />
 
       {/* Center Label Display */}
-      <View style={{ alignItems: "center", justifyContent: "center", gap: 2 }}>
+      <View
+        style={{
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 2,
+          // never let the labels run under the stroke
+          paddingHorizontal: strokeWidth * 2,
+        }}
+      >
         {title ? (
-          <Text variant="caption" tone="muted" center style={{ fontSize: 12 }}>
+          <Text variant="micro" tone="muted" center numberOfLines={1}>
             {title}
           </Text>
         ) : null}
-        <Text variant="display" style={{ fontSize: 32, fontWeight: "700" }}>
+        <Text variant="display" numberOfLines={1} adjustsFontSizeToFit style={{ fontWeight: "700" }}>
           {current}{" "}
-          <Text variant="title" tone="muted" style={{ fontSize: 20 }}>
+          <Text variant="title" tone="muted">
             / {total}
           </Text>
         </Text>

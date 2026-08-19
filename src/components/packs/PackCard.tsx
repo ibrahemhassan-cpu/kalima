@@ -5,7 +5,13 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { ProgressBar, Surface, Text, Touchable } from "@/components/ui";
 import { useTheme } from "@/theme/ThemeProvider";
-import { packSubtitle, packTitle, type PackAccent, type TopicPack } from "@/api/packs";
+import {
+  isTooHard,
+  packSubtitle,
+  packTitle,
+  type PackAccent,
+  type TopicPack,
+} from "@/api/packs";
 
 /** Packs store a theme token, so the colour still comes from `colors` only. */
 export function usePackAccent(accent: PackAccent) {
@@ -60,7 +66,7 @@ export function PackCard({
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
 }) {
-  const { spacing } = useTheme();
+  const { colors, spacing } = useTheme();
   const { t, i18n } = useTranslation();
 
   const done = pack.word_count > 0 ? pack.owned_count / pack.word_count : 0;
@@ -70,7 +76,6 @@ export function PackCard({
     <Touchable
       onPress={onPress}
       haptic="select"
-      scaleTo={0.97}
       accessibilityRole="button"
       accessibilityLabel={packTitle(pack, i18n.language)}
       style={style}
@@ -101,14 +106,28 @@ export function PackCard({
             })}
           />
 
-          <Text variant="micro" tone="muted">
-            {complete
-              ? t("packs.allAdded")
-              : t("packs.owned", {
-                  owned: pack.owned_count,
-                  total: pack.word_count,
-                })}
-          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: spacing.sm,
+            }}
+          >
+            <Text variant="micro" tone="muted" style={{ flex: 1 }}>
+              {complete
+                ? t("packs.allAdded")
+                : t("packs.owned", {
+                    owned: pack.owned_count,
+                    total: pack.word_count,
+                  })}
+            </Text>
+            {isTooHard(pack) ? (
+              <Text variant="micro" style={{ color: colors.warning }}>
+                {t("packs.aboveLevel")}
+              </Text>
+            ) : null}
+          </View>
         </View>
       </Surface>
     </Touchable>
@@ -124,10 +143,10 @@ export function PackChip({ pack, onPress }: { pack: TopicPack; onPress: () => vo
     <Touchable
       onPress={onPress}
       haptic="select"
-      scaleTo={0.96}
       accessibilityRole="button"
       accessibilityLabel={packTitle(pack, i18n.language)}
-      style={{ width: 156 }}
+      // a range, not a fixed width — the title inside grows with the text setting
+      style={{ minWidth: 156, maxWidth: 240 }}
     >
       <Surface tone="glass" radiusKey="lg" padded={spacing.md}>
         <View style={{ gap: spacing.sm }}>

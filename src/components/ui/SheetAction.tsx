@@ -29,7 +29,6 @@ export function SheetAction({
     <Touchable
       onPress={onPress}
       haptic="select"
-      scaleTo={0.985}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected }}

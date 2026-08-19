@@ -1,13 +1,21 @@
 import React from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 
-import { Header, ProgressBar, Screen, Surface, Text } from "@/components/ui";
+import {
+  Header,
+  ProgressBar,
+  Screen,
+  SkeletonList,
+  Surface,
+  Text,
+} from "@/components/ui";
 import { useTheme } from "@/theme/ThemeProvider";
+import { duration } from "@/theme/motion";
 import { useAchievements, type AchievementRow } from "@/api/achievements";
 
 export default function Achievements() {
@@ -25,7 +33,7 @@ export default function Achievements() {
 
       {isLoading ? (
         <View style={{ paddingVertical: spacing.xxxl, alignItems: "center" }}>
-          <ActivityIndicator size="large" color={colors.brand} />
+          <SkeletonList count={5} />
         </View>
       ) : (
         <>
@@ -53,10 +61,7 @@ export default function Achievements() {
             {data?.map((a, i) => (
               <Animated.View
                 key={a.code}
-                entering={FadeInDown.delay(Math.min(i, 10) * 40)
-                  .duration(320)
-                  .springify()
-                  .damping(18)}
+                entering={FadeIn.duration(duration.normal)}
               >
                 <BadgeRow row={a} lang={i18n.language} />
               </Animated.View>

@@ -130,7 +130,6 @@ export default function SignUp() {
           </Text>
           <Touchable
             haptic="select"
-            scaleTo={0.94}
             onPress={() => router.replace("/(auth)/sign-in")}
           >
             <Text variant="bodyStrong" tone="brand">

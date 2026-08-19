@@ -12,7 +12,9 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { Button, Header, Input, Screen, Surface, Text, Touchable } from "@/components/ui";
 import { FormError, RevealToggle } from "@/components/auth/AuthForm";
+import { AnimatedLogo } from "@/components/brand/AnimatedLogo";
 import { useTheme } from "@/theme/ThemeProvider";
+import { PRESS_SCALE_SMALL } from "@/theme/motion";
 import { useSignIn } from "@/features/auth/actions";
 import {
   authErrorKey,
@@ -104,30 +106,39 @@ export default function SignIn() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <Screen scroll>
-        <Header
-          title={t("auth.signIn")}
-          subtitle={t("auth.signInSubtitle")}
-          onBack={() => router.back()}
-        />
+        <Header onBack={() => router.back()} />
+
+        {/* the mark, at the size of a greeting rather than a logo drop */}
+        <View style={{ alignItems: "center", gap: spacing.sm, paddingTop: spacing.md }}>
+          <AnimatedLogo size={72} />
+          <Text variant="title" center style={{ fontWeight: "800" }}>
+            {t("auth.signInSubtitle")}
+          </Text>
+          <Text variant="body" tone="muted" center style={{ maxWidth: 280 }}>
+            {t("app.tagline")}
+          </Text>
+        </View>
 
         {canQuick ? (
-          <View style={{ gap: spacing.md, alignItems: "center" }}>
+          <View style={{ gap: spacing.lg, alignItems: "center", paddingTop: spacing.sm }}>
             {/*
-              A big round target rather than only a bar: if the system prompt
-              never appears, or the user dismisses it by accident, this stays on
-              screen and re-opens it on every tap.
+              One target, not two. It was a large circle *and* a full-width
+              button doing the same thing — the circle is the affordance people
+              already know from every lock screen, so the button went.
+              It stays on screen after a failed or dismissed scan, so tapping
+              again always re-opens the system prompt.
             */}
             <Touchable
               onPress={quick}
               disabled={quickBusy}
               haptic="medium"
-              scaleTo={0.92}
+              scaleTo={PRESS_SCALE_SMALL}
               accessibilityRole="button"
               accessibilityLabel={t(`auth.quickSignIn_${kind}`)}
               style={{
-                width: 84,
-                height: 84,
-                borderRadius: 42,
+                width: 96,
+                height: 96,
+                borderRadius: 48,
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: colors.brandSoft,
@@ -140,34 +151,29 @@ export default function SignIn() {
               ) : (
                 <Ionicons
                   name={kind === "face" ? "scan-outline" : "finger-print"}
-                  size={42}
+                  size={46}
                   color={colors.brand}
                 />
               )}
             </Touchable>
 
-            <Button
-              title={t(`auth.quickSignIn_${kind}`)}
-              size="lg"
-              fullWidth
-              variant="secondary"
-              icon={kind === "face" ? "scan-outline" : "finger-print-outline"}
-              loading={quickBusy}
-              onPress={quick}
-            />
+            <Text variant="bodyStrong" tone="brand" center>
+              {t(`auth.quickSignIn_${kind}`)}
+            </Text>
+
             <View
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                justifyContent: "center",
-                gap: spacing.sm,
+                gap: spacing.md,
+                alignSelf: "stretch",
               }}
             >
-              <Ionicons name="ellipse" size={4} color={colors.textFaint} />
+              <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
               <Text variant="caption" tone="faint">
                 {t("auth.orPassword")}
               </Text>
-              <Ionicons name="ellipse" size={4} color={colors.textFaint} />
+              <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
             </View>
           </View>
         ) : null}
@@ -210,7 +216,6 @@ export default function SignIn() {
                 <RevealToggle shown={show} onToggle={() => setShow((v) => !v)} />
                 <Touchable
                   haptic="select"
-                  scaleTo={0.94}
                   onPress={() => router.push("/(auth)/forgot-password")}
                 >
                   <Text variant="caption" tone="brand">
@@ -245,7 +250,6 @@ export default function SignIn() {
           </Text>
           <Touchable
             haptic="select"
-            scaleTo={0.94}
             onPress={() => router.replace("/(auth)/sign-up")}
           >
             <Text variant="bodyStrong" tone="brand">
