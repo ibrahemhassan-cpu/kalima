@@ -49,7 +49,6 @@
     "recent": "Recently added",
     "statWords": "Words",
     "statMastered": "Mastered",
-    "statLevel": "Level",
     "currentStreak": "Current streak",
     "todayProgress": "Today's progress",
     "wordsReviewed": "words reviewed",
@@ -58,7 +57,11 @@
     "emptyPacks": "Browse packs",
     "shieldsHint_one": "{{count}} shield protects your streak if you miss a day",
     "shieldsHint_other": "{{count}} shields protect your streak if you miss a day",
-    "shieldsA11y": "{{count}} streak shields"
+    "shieldsA11y": "{{count}} streak shields",
+    "wordOfDay": "Word of the day",
+    "wordOfDayAdd": "Add to my words",
+    "wordOfDayOpen": "Open word",
+    "statLongest": "Longest streak"
   },
   "word": {
     "addTitle": "Add a word",
@@ -89,14 +92,9 @@
     "listenSlow": "Listen slowly",
     "favorite": "Add to favorites",
     "unfavorite": "Remove from favorites",
-    "reportTitle": "What's wrong?",
-    "reportSubtitle": "We'll review it and fix it for everyone",
-    "reportTranslation": "Translation is wrong",
-    "reportExample": "Example doesn't fit",
-    "reportThanks": "Thanks — report received",
     "deleteTitle": "Delete word",
     "deleteBody": "\"{{word}}\" and all your progress on it will be removed. Sure?",
-    "aiDisclaimer": "Translations are AI-generated and may contain mistakes. You can report any problem from the word screen.",
+    "aiDisclaimer": "Translations are AI-generated and may contain mistakes. If one is wrong, you can correct it yourself from the word screen.",
     "progress": "Your progress",
     "reviews": "Reviews",
     "lapses": "Forgotten",
@@ -104,7 +102,26 @@
     "leechHint": "This one keeps slipping away. Try writing a personal note that ties it to something you already know — it helps more than repetition.",
     "whichMeaning": "Which meaning did you come across?",
     "whichMeaningHint": "We'll build your reviews around the one you pick.",
-    "didYouMean": "Did you mean…"
+    "didYouMean": "Did you mean…",
+    "yourEdit": "Your edit",
+    "editTranslation": "Edit translation",
+    "editTranslationHint": "Only you see your correction",
+    "editTranslationBody": "If the translation is off, write what you think is right. It's saved against your copy of the word, and the quiz will accept it.",
+    "translationLabel": "Translation",
+    "originalTranslation": "Dictionary translation",
+    "resetTranslation": "Restore dictionary translation",
+    "editSaved": "Correction saved",
+    "editReset": "Dictionary translation restored",
+    "archive": "Archive word",
+    "archiveHint": "Stop reviewing it without losing your progress",
+    "archived": "Archived",
+    "restore": "Restore",
+    "restoreHint": "Bring it back into the review queue",
+    "restored": "Back in review",
+    "archivedNotice": "This word is archived — it won't come up in reviews.",
+    "quotaOut": "No new words left today. You can still add any word already in the dictionary, and reviewing works as normal.",
+    "quotaLeft_one": "1 new word left today. Words already in the dictionary don't count.",
+    "quotaLeft_other": "{{count}} new words left today. Words already in the dictionary don't count."
   },
   "status": {
     "new": "New",
@@ -143,7 +160,8 @@
     "emptyBody": "The first word you add shows up here",
     "emptyAction": "Add your first word",
     "noResultsTitle": "Nothing found",
-    "noResultsBody": "Try another word or change the filter"
+    "noResultsBody": "Try another word or change the filter",
+    "filterArchived": "Archived"
   },
   "packs": {
     "title": "Ready-made packs",
@@ -200,8 +218,6 @@
     "wrongCount": "Wrong"
   },
   "profile": {
-    "level": "Level {{level}}",
-    "xp": "{{count}} XP",
     "statWords": "words",
     "statMastered": "mastered",
     "statStreak": "best streak",
@@ -219,7 +235,9 @@
     "photoPermission": "We need access to your photos to set a profile picture",
     "photoFailed": "Couldn't upload the photo. Try again",
     "saveFailed": "Couldn't save. Check your connection",
-    "achievements": "Achievements"
+    "achievements": "Achievements",
+    "masteredOf": "{{mastered}} of {{total}} mastered",
+    "statCurrentStreak": "Current streak"
   },
   "settings": {
     "title": "Settings",
@@ -236,7 +254,7 @@
     "fontXl": "Extra large",
     "preview": "Preview",
     "simpleMode": "Simple mode",
-    "simpleModeHint": "Bigger text, fewer options",
+    "simpleModeHint": "Bigger text, fewer numbers",
     "language": "Language",
     "learning": "Learning",
     "dailyGoal": "Daily goal",
@@ -481,7 +499,8 @@
   },
   "achievements": {
     "unlocked": "Unlocked",
-    "empty": "Your first badge is one word away"
+    "empty": "Your first badge is one word away",
+    "justUnlocked": "Just unlocked"
   },
   "offline": {
     "queued_one": "{{count}} review waiting to sync",

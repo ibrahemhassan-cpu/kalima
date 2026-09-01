@@ -44,11 +44,9 @@ export default function ProfileTab() {
   });
 
   const name = profile?.display_name ?? "—";
-  const level = summary?.level ?? 1;
-  const xp = summary?.total_xp ?? 0;
 
-  const inLevel = summary?.xp_this_level ?? 0;
-  const span = Math.max(1, (summary?.xp_to_next ?? 0) + inLevel);
+  const mastered = summary?.mastered_words ?? 0;
+  const totalWords = summary?.total_words ?? 0;
 
   return (
     <>
@@ -89,13 +87,19 @@ export default function ProfileTab() {
               }}
             >
               <Text variant="label" tone="brand">
-                {t("profile.level", { level })}
+                {t("profile.masteredOf", { mastered, total: totalWords })}
               </Text>
               <Text variant="caption" tone="muted">
-                {t("profile.xp", { count: xp })}
+                {totalWords > 0
+                  ? `${Math.round((mastered / totalWords) * 100)}%`
+                  : "—"}
               </Text>
             </View>
-            <ProgressBar value={inLevel / span} height={8} />
+            <ProgressBar
+              value={totalWords > 0 ? mastered / totalWords : 0}
+              height={8}
+              tone={mastered > 0 && mastered === totalWords ? "success" : "brand"}
+            />
           </View>
         </View>
       </Surface>
@@ -103,8 +107,8 @@ export default function ProfileTab() {
       <View style={{ flexDirection: "row", gap: spacing.md }}>
         <MiniStat label={t("profile.statWords")} value={summary?.total_words ?? 0} />
         <MiniStat
-          label={t("profile.statMastered")}
-          value={summary?.mastered_words ?? 0}
+          label={t("profile.statCurrentStreak")}
+          value={summary?.current_streak ?? 0}
         />
         <MiniStat
           label={t("profile.statStreak")}

@@ -128,7 +128,13 @@ export function useAddWord() {
 // قائمة كلماتي
 // ═══════════════════════════════════════════════════════════
 
-export type WordFilter = "all" | "learning" | "mastered" | "hard" | "favorite";
+export type WordFilter =
+  | "all"
+  | "learning"
+  | "mastered"
+  | "hard"
+  | "favorite"
+  | "archived";
 export type WordSort = "recent" | "alpha" | "hardest";
 
 export function useMyWords(opts: {
@@ -167,6 +173,8 @@ export type WordDetail = {
   last_review_at: string | null;
   mastered_at: string | null;
   personal_note: string | null;
+  /** the user's own fix for a wrong AI translation; null = use the entry's */
+  custom_translation: string | null;
   is_favorite: boolean;
   created_at: string;
   entry: DictionaryEntry;
@@ -194,6 +202,7 @@ export function useUpdateWord(userWordId?: string) {
   return useMutation({
     mutationFn: async (patch: {
       personal_note?: string | null;
+      custom_translation?: string | null;
       is_favorite?: boolean;
       status?: WordStatus;
     }) => {
@@ -206,9 +215,25 @@ export function useUpdateWord(userWordId?: string) {
       if (error) throw error;
       return data as unknown as WordDetail;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, patch) => {
       qc.setQueryData(["word", userWordId], data);
       void qc.invalidateQueries({ queryKey: ["my-words"] });
+
+      /**
+       * A corrected translation changes what the quiz accepts as the right
+       * answer — see answer_for_user() in 0010. Questions already in a cache
+       * still carry the old option, so drop them; a favourite toggle doesn't
+       * need any of this.
+       */
+      if (patch.custom_translation !== undefined) {
+        void qc.invalidateQueries({ queryKey: ["word-quiz", userWordId] });
+        void qc.invalidateQueries({ queryKey: ["session-items"] });
+        void qc.invalidateQueries({ queryKey: ["due-words"] });
+        // screens that look a word up by entry rather than by user_word
+        void qc.invalidateQueries({
+          queryKey: ["custom-translation", data.entry.id],
+        });
+      }
     },
   });
 }
@@ -231,25 +256,58 @@ export function useDeleteWord() {
   });
 }
 
+/**
+ * The caller's own correction for a dictionary entry, if they own it.
+ *
+ * Screens that show a word by entry rather than by user_word — the related
+ * word sheet, for one — otherwise print the dictionary text and contradict
+ * an edit the user already made. RLS scopes the row to them, so no user id
+ * is needed here.
+ */
+export function useCustomTranslation(entryId?: string) {
+  return useQuery({
+    queryKey: ["custom-translation", entryId],
+    enabled: !!entryId,
+    queryFn: async (): Promise<string | null> => {
+      const { data, error } = await supabase
+        .from("user_words")
+        .select("custom_translation")
+        .eq("entry_id", entryId!)
+        .maybeSingle();
+      if (error) throw error;
+      return (data?.custom_translation as string | null) ?? null;
+    },
+  });
+}
+
 // ═══════════════════════════════════════════════════════════
-// بلاغ عن خطأ في الترجمة
+// أرشفة كلمة
+//
+// «بلّغ عن خطأ» كان بيكتب في جدول محدش بيقراه — وعد بفعل ميحصلش. اتشال
+// لصالح تعديل الترجمة مباشرةً (custom_translation فوق)، وهو اللي المستخدم
+// عايزه أصلًا. والأرشفة هنا بتدّيه مخرج من الكلمة اللي مش عايزها من غير
+// ما يمسح تقدّمه فيها.
 // ═══════════════════════════════════════════════════════════
 
-export function useReportWord() {
+export function useSetArchived() {
+  const qc = useQueryClient();
+
   return useMutation({
-    mutationFn: async (vars: {
-      entryId: string;
-      reason: "wrong_translation" | "bad_example" | "offensive" | "other";
-      note?: string;
-    }) => {
-      const { data: auth } = await supabase.auth.getUser();
-      const { error } = await supabase.from("word_reports").insert({
-        entry_id: vars.entryId,
-        reason: vars.reason,
-        note: vars.note,
-        user_id: auth.user!.id,
+    mutationFn: async (vars: { userWordId: string; archived: boolean }) => {
+      const { data, error } = await supabase.rpc("set_word_archived", {
+        p_user_word_id: vars.userWordId,
+        p_archived: vars.archived,
       });
       if (error) throw error;
+      return data as unknown as { status: WordStatus; archived: boolean };
+    },
+    onSuccess: (_data, vars) => {
+      void qc.invalidateQueries({ queryKey: ["word", vars.userWordId] });
+      void qc.invalidateQueries({ queryKey: ["my-words"] });
+      void qc.invalidateQueries({ queryKey: ["home-summary"] });
+      // an archived word leaves the queue; a restored one rejoins it
+      void qc.invalidateQueries({ queryKey: ["due-words"] });
+      void qc.invalidateQueries({ queryKey: ["session-items"] });
     },
   });
 }

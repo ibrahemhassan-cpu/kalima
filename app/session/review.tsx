@@ -28,7 +28,6 @@ import type { DueWord, ReviewResult } from "@/lib/database.types";
 type Tally = {
   reviewed: number;
   correct: number;
-  xp: number;
   streak: number;
   goalMet: boolean;
   badges: string[];
@@ -58,7 +57,6 @@ export default function ReviewSession() {
   const tally = useRef<Tally>({
     reviewed: 0,
     correct: 0,
-    xp: 0,
     streak: 0,
     goalMet: false,
     badges: [],
@@ -86,7 +84,6 @@ export default function ReviewSession() {
       params: {
         reviewed: String(q.reviewed),
         correct: String(q.correct),
-        xp: String(q.xp),
         streak: String(q.streak),
         goalMet: q.goalMet ? "1" : "0",
         mastered: String(q.mastered),
@@ -354,12 +351,12 @@ function toDueWord(i: SessionItem): DueWord {
     due_at: i.due_at,
     personal_note: null,
     is_favorite: false,
+    custom_translation: i.custom_translation,
   };
 }
 
 function applyResult(q: Tally, res: ReviewResult) {
   if (!res || res.duplicate) return;
-  q.xp += res.xp_gained ?? 0;
   q.streak = res.current_streak ?? q.streak;
   q.goalMet = q.goalMet || !!res.goal_met;
   if (res.mastered_now) q.mastered += 1;

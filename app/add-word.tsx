@@ -34,8 +34,10 @@ import {
   type EnrichResponse,
   useAddWord,
   useDictionarySearch,
+  useCustomTranslation,
   useMyWords,
 } from "@/api/words";
+import { useAiQuota } from "@/api/ai";
 
 type Phase = "input" | "loading" | "result";
 
@@ -55,6 +57,16 @@ export default function AddWord() {
   const [errorCode, setErrorCode] = useState<string | null>(null);
   const [didYouMean, setDidYouMean] = useState<string[]>([]);
   const [senseIndex, setSenseIndex] = useState(0);
+
+  // asked before anything is spent, not reported after the fact
+  const { data: quota } = useAiQuota();
+
+  /**
+   * Looking a word up again is a normal way to re-read one you already own.
+   * Without this the screen prints the AI translation the user explicitly
+   * replaced, with no sign it was ever edited.
+   */
+  const { data: myTranslation } = useCustomTranslation(result?.entry.id);
 
   useEffect(() => {
     const id = setTimeout(() => setDebounced(term), 250);
@@ -81,6 +93,13 @@ export default function AddWord() {
       const res = await enrichWord(word, false);
       setResult(res);
       setPhase("result");
+      /**
+       * Only a generation spends quota — enrich-word returns from the shared
+       * dictionary before it ever charges (see its step 3). Without this the
+       * note keeps showing the count from when the screen opened, because
+       * going back to the input phase re-renders rather than remounts.
+       */
+      if (!res.cached) void qc.invalidateQueries({ queryKey: ["ai-quota"] });
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (e) {
       const err = e as EnrichError;
@@ -184,7 +203,7 @@ export default function AddWord() {
           />
 
           <Animated.View entering={FadeInDown.duration(380).springify().damping(18)}>
-            <EntryBody entry={result.entry} />
+            <EntryBody entry={result.entry} override={myTranslation} />
           </Animated.View>
 
           <Surface tone="glass" radiusKey="xl">
@@ -263,6 +282,8 @@ export default function AddWord() {
           onSubmitEditing={() => term.trim().length >= 2 && lookup(term)}
           error={error ?? undefined}
         />
+
+        {online && quota ? <QuotaNote remaining={quota.remaining} /> : null}
 
         <DidYouMean
           suggestions={didYouMean}
@@ -411,5 +432,47 @@ export default function AddWord() {
         </View>
       </Screen>
     </KeyboardAvoidingView>
+  );
+}
+
+/**
+ * How many brand-new words are left today.
+ *
+ * The count only ever appeared *after* a successful generation, so the user
+ * discovered the cap by hitting it. The wording matters twice over: the limit
+ * is on AI generation, and a word already in the shared dictionary never
+ * reaches the model. So at zero remaining, looking up a known word still
+ * works — which is why nothing here disables the button.
+ */
+function QuotaNote({ remaining }: { remaining: number }) {
+  const { colors, spacing, radius } = useTheme();
+  const { t } = useTranslation();
+
+  const spent = remaining <= 5;
+
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: spacing.sm,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+        borderRadius: radius.md,
+        backgroundColor: spent ? colors.warningSoft : colors.sunken,
+      }}
+    >
+      <Ionicons
+        name={remaining <= 0 ? "hourglass-outline" : "sparkles-outline"}
+        size={15}
+        color={spent ? colors.warning : colors.textMuted}
+        style={{ marginTop: 2 }}
+      />
+      <Text variant="micro" tone="muted" style={{ flex: 1 }}>
+        {remaining <= 0
+          ? t("word.quotaOut")
+          : t("word.quotaLeft", { count: remaining })}
+      </Text>
+    </View>
   );
 }

@@ -63,6 +63,13 @@ alter table public.user_words add constraint user_words_source_check
 --   ready_count كم واحدة منها جاهزة في القاموس (الباقي يحتاج توليد)
 --   owned_count كم واحدة في مكتبة المستخدم بالفعل
 -- ═══════════════════════════════════════════════════════════
+-- 0009 بيضيف level_gap لشكل الإرجاع، وPostgres ما بيسمحش بتغيير شكل
+-- الإرجاع بـ create or replace. لو الميجريشن دي اتعادت على قاعدة فيها
+-- نسخة 0009 خلاص — مثلًا اتشغّلت يدويًّا في SQL Editor قبل ما تتسجّل في
+-- تاريخ الميجريشن — الاستبدال بيفشل بـ 42P13. الإسقاط الأول بيخلّي
+-- إعادة التشغيل تنجح في الحالتين: قاعدة فاضية وقاعدة متقدّمة.
+drop function if exists public.list_topic_packs();
+
 create or replace function public.list_topic_packs()
 returns table (
   pack_id     uuid,

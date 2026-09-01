@@ -26,11 +26,13 @@ import { PRESS_SCALE_SMALL } from "@/theme/motion";
 import {
   formatDue,
   useDeleteWord,
-  useReportWord,
+  useSetArchived,
   useUpdateWord,
   useWordDetail,
 } from "@/api/words";
+import { useSettings } from "@/store/settings";
 import { masteryOf } from "@/api/quiz";
+import { isOnline } from "@/lib/network";
 import { speak } from "@/features/tts";
 
 export default function WordDetail() {
@@ -42,22 +44,75 @@ export default function WordDetail() {
   const { t } = useTranslation();
   const router = useRouter();
 
+  const simple = useSettings((s) => s.simpleMode);
+
   const { data: word, isLoading, error } = useWordDetail(id);
   const update = useUpdateWord(id);
   const remove = useDeleteWord();
-  const report = useReportWord();
+  const archive = useSetArchived();
 
   const actions = useRef<SheetRef>(null);
-  const reportSheet = useRef<SheetRef>(null);
+  const editSheet = useRef<SheetRef>(null);
   const deleteSheet = useRef<SheetRef>(null);
 
   const [note, setNote] = useState("");
   const [dirty, setDirty] = useState(false);
-  const [status, setStatus] = useState<string | null>(null);
+  const [status, setStatus] = useState<{ text: string; ok: boolean } | null>(
+    null,
+  );
+
+  /** the translation being edited in the sheet, separate from what's saved */
+  const [draft, setDraft] = useState("");
+
+  const say = (text: string) => setStatus({ text, ok: true });
+
+  /**
+   * Mutations here run with networkMode "offlineFirst" (queryCache.ts), so
+   * offline they reject rather than queue. Without this the promise rejected
+   * unhandled and the screen said nothing at all — the archive silently
+   * didn't happen, the correction was silently lost.
+   */
+  const complain = () =>
+    setStatus({
+      text: t(isOnline() ? "errors.generic" : "errors.network"),
+      ok: false,
+    });
 
   useEffect(() => {
     if (word && !dirty) setNote(word.personal_note ?? "");
   }, [word, dirty]);
+
+  const dictTranslation =
+    word?.entry.senses[0]?.ar_translations.join(" · ") ?? "";
+  const shownTranslation = word?.custom_translation?.trim()
+    ? word.custom_translation.trim()
+    : dictTranslation;
+
+  function openEditor() {
+    setDraft(shownTranslation);
+    actions.current?.close();
+    setTimeout(() => editSheet.current?.open(), 260);
+  }
+
+  async function saveTranslation(value: string | null) {
+    try {
+      await update.mutateAsync({ custom_translation: value });
+      editSheet.current?.close();
+      say(t(value ? "word.editSaved" : "word.editReset"));
+    } catch {
+      // the sheet stays open, so the text they typed is still there to retry
+      complain();
+    }
+  }
+
+  async function setArchived(archived: boolean) {
+    try {
+      await archive.mutateAsync({ userWordId: word!.id, archived });
+      say(t(archived ? "word.archived" : "word.restored"));
+    } catch {
+      complain();
+    }
+  }
 
   /**
    * The iOS widget's speaker button lands here with ?speak=1.
@@ -132,7 +187,7 @@ export default function WordDetail() {
         <WordGlassCard
           lemma={word.entry.lemma}
           ipa={word.entry.ipa}
-          translation={word.entry.senses[0]?.ar_translations.join(" · ") ?? ""}
+          translation={shownTranslation}
           isFavorite={word.is_favorite}
           onToggleFavorite={() =>
             update.mutate({ is_favorite: !word.is_favorite })
@@ -140,7 +195,26 @@ export default function WordDetail() {
           onSpeak={() => speak(word.entry.lemma)}
         />
 
-        <EntryBody entry={word.entry} />
+        <EntryBody entry={word.entry} override={word.custom_translation} />
+
+        {word.status === "archived" ? (
+          <Surface tone="glass" radiusKey="xl">
+            <View
+              style={{ flexDirection: "row", gap: spacing.md, alignItems: "center" }}
+            >
+              <Ionicons name="archive" size={20} color={colors.textMuted} />
+              <Text variant="caption" tone="muted" style={{ flex: 1 }}>
+                {t("word.archivedNotice")}
+              </Text>
+              <Button
+                title={t("word.restore")}
+                variant="secondary"
+                loading={archive.isPending}
+                onPress={() => setArchived(false)}
+              />
+            </View>
+          </Surface>
+        ) : null}
 
         {/* progress */}
         <Surface tone="glass" radiusKey="xl">
@@ -158,18 +232,22 @@ export default function WordDetail() {
               />
             </View>
 
-            <View style={{ flexDirection: "row", gap: spacing.md }}>
-              <Metric label={t("word.reviews")} value={word.repetitions} />
-              <Metric label={t("word.lapses")} value={word.lapses} />
-              <Metric
-                label={t("word.interval")}
-                value={
-                  word.interval_days < 1
-                    ? t("due.lessThanDay")
-                    : t("due.daysShort", { count: Math.round(word.interval_days) })
-                }
-              />
-            </View>
+            {!simple ? (
+              <View style={{ flexDirection: "row", gap: spacing.md }}>
+                <Metric label={t("word.reviews")} value={word.repetitions} />
+                <Metric label={t("word.lapses")} value={word.lapses} />
+                <Metric
+                  label={t("word.interval")}
+                  value={
+                    word.interval_days < 1
+                      ? t("due.lessThanDay")
+                      : t("due.daysShort", {
+                          count: Math.round(word.interval_days),
+                        })
+                  }
+                />
+              </View>
+            ) : null}
 
             {/* how far this one word has actually got */}
             <View style={{ gap: spacing.sm }}>
@@ -244,9 +322,15 @@ export default function WordDetail() {
                 fullWidth
                 loading={update.isPending}
                 onPress={async () => {
-                  await update.mutateAsync({ personal_note: note.trim() || null });
-                  setDirty(false);
-                  setStatus(t("common.saved"));
+                  try {
+                    await update.mutateAsync({
+                      personal_note: note.trim() || null,
+                    });
+                    setDirty(false);
+                    say(t("common.saved"));
+                  } catch {
+                    complain();
+                  }
                 }}
               />
             ) : null}
@@ -254,8 +338,12 @@ export default function WordDetail() {
         </Surface>
 
         {status ? (
-          <Text variant="caption" tone="muted" center>
-            {status}
+          <Text
+            variant="caption"
+            tone={status.ok ? "muted" : "danger"}
+            center
+          >
+            {status.text}
           </Text>
         ) : null}
 
@@ -283,15 +371,31 @@ export default function WordDetail() {
               This used to say "Practice" and start a whole review session of
               other words. On a screen about one word, that's the wrong verb
               and the wrong destination — it quizzes *this* word now.
+
+              An archived word is paused, so practice isn't the thing to lead
+              with; bringing it back is. Practising it stays available in the
+              progress card above, and no longer un-archives it either way.
             */}
-            <Button
-              title={t("quiz.testMe")}
-              variant="primary"
-              size="lg"
-              fullWidth
-              icon="help-circle-outline"
-              onPress={() => router.push(`/quiz/${word.id}`)}
-            />
+            {word.status === "archived" ? (
+              <Button
+                title={t("word.restore")}
+                variant="primary"
+                size="lg"
+                fullWidth
+                icon="refresh-outline"
+                loading={archive.isPending}
+                onPress={() => setArchived(false)}
+              />
+            ) : (
+              <Button
+                title={t("quiz.testMe")}
+                variant="primary"
+                size="lg"
+                fullWidth
+                icon="help-circle-outline"
+                onPress={() => router.push(`/quiz/${word.id}`)}
+              />
+            )}
           </View>
         </View>
       </Screen>
@@ -307,12 +411,20 @@ export default function WordDetail() {
           }}
         />
         <SheetAction
-          icon="flag-outline"
-          label={t("word.reportTitle")}
-          sublabel={t("word.reportSubtitle")}
+          icon="create-outline"
+          label={t("word.editTranslation")}
+          sublabel={t("word.editTranslationHint")}
+          onPress={openEditor}
+        />
+        <SheetAction
+          icon={word.status === "archived" ? "refresh-outline" : "archive-outline"}
+          label={t(word.status === "archived" ? "word.restore" : "word.archive")}
+          sublabel={t(
+            word.status === "archived" ? "word.restoreHint" : "word.archiveHint",
+          )}
           onPress={() => {
             actions.current?.close();
-            setTimeout(() => reportSheet.current?.open(), 260);
+            void setArchived(word.status !== "archived");
           }}
         />
         <SheetAction
@@ -326,31 +438,62 @@ export default function WordDetail() {
         />
       </Sheet>
 
-      <Sheet ref={reportSheet} title={t("word.reportTitle")}>
-        <Text variant="caption" tone="muted">
-          {t("word.reportSubtitle")}
-        </Text>
-        <SheetAction
-          icon="language-outline"
-          label={t("word.reportTranslation")}
-          onPress={() => {
-            report.mutate({
-              entryId: word.entry.id,
-              reason: "wrong_translation",
-            });
-            reportSheet.current?.close();
-            setStatus(t("word.reportThanks"));
-          }}
-        />
-        <SheetAction
-          icon="chatbox-outline"
-          label={t("word.reportExample")}
-          onPress={() => {
-            report.mutate({ entryId: word.entry.id, reason: "bad_example" });
-            reportSheet.current?.close();
-            setStatus(t("word.reportThanks"));
-          }}
-        />
+      {/*
+        This used to be "report an error", which wrote a row into a table
+        nothing ever read — a button that promised an action that never came.
+        The user's actual goal was a correct translation, so they just make
+        one. It's theirs alone: the dictionary entry is shared cache.
+      */}
+      <Sheet ref={editSheet} title={t("word.editTranslation")}>
+        <View style={{ gap: spacing.md }}>
+          <Text variant="caption" tone="muted">
+            {t("word.editTranslationBody")}
+          </Text>
+
+          <Input
+            label={t("word.translationLabel")}
+            value={draft}
+            onChangeText={setDraft}
+            placeholder={dictTranslation}
+            maxLength={200}
+            multiline
+            style={{ minHeight: 64, textAlignVertical: "top" }}
+          />
+
+          <View
+            style={{
+              backgroundColor: colors.sunken,
+              padding: spacing.md,
+              borderRadius: radius.md,
+              gap: 2,
+            }}
+          >
+            <Text variant="micro" tone="faint">
+              {t("word.originalTranslation")}
+            </Text>
+            <Text variant="caption" tone="muted">
+              {dictTranslation || "—"}
+            </Text>
+          </View>
+
+          <Button
+            title={t("common.save")}
+            size="lg"
+            fullWidth
+            loading={update.isPending}
+            disabled={draft.trim().length === 0}
+            onPress={() => saveTranslation(draft.trim())}
+          />
+          {word.custom_translation ? (
+            <Button
+              title={t("word.resetTranslation")}
+              variant="ghost"
+              size="lg"
+              fullWidth
+              onPress={() => saveTranslation(null)}
+            />
+          ) : null}
+        </View>
       </Sheet>
 
       <Sheet ref={deleteSheet}>

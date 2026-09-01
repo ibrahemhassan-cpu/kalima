@@ -54,7 +54,17 @@ export const queryClient = new QueryClient({
  * persister stops saving silently, taking offline support down with it. They
  * are also the cheapest things to refetch, so losing them costs nothing.
  */
-const VOLATILE_KEYS = new Set(["dict-search", "lookup-words"]);
+const VOLATILE_KEYS = new Set([
+  "dict-search",
+  "lookup-words",
+  // today's AI allowance: restoring yesterday's count states a number that
+  // is confidently wrong, and it costs one cheap call to ask again
+  "ai-quota",
+  // keyed per dictionary entry, so it grows with every synonym tapped and
+  // is null for almost all of them. The screens that read it need the
+  // network anyway, so persisting buys nothing.
+  "custom-translation",
+]);
 
 /** True for a query worth carrying to the next launch. */
 export function shouldPersist(queryKey: readonly unknown[]): boolean {

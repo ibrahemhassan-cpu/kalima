@@ -72,6 +72,14 @@ export function FlipCard({
   };
 
   const primary = word.senses[0];
+  /**
+   * A correction the user made has to show up here above all: this is the
+   * card they see every day. It reached the word screen and the quiz answer
+   * long before it reached the review itself.
+   */
+  const corrected = word.custom_translation?.trim()
+    ? word.custom_translation.trim()
+    : null;
   const example = word.examples[0];
 
   return (
@@ -169,7 +177,7 @@ export function FlipCard({
                 }}
               >
                 <Text variant="title" tone="brand">
-                  {primary.ar_translations.join(" · ")}
+                  {corrected ?? primary.ar_translations.join(" · ")}
                 </Text>
                 <Text variant="body" tone="muted">
                   {primary.ar_definition}

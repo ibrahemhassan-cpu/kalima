@@ -20,6 +20,7 @@ import {
   usePulse,
 } from "@/components/ui";
 import { WordCard } from "@/components/word/WordCard";
+import { WordOfDayCard } from "@/components/word/WordOfDayCard";
 import { PackChip } from "@/components/packs/PackCard";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useSettings } from "@/store/settings";
@@ -27,6 +28,7 @@ import { useOnline } from "@/lib/network";
 import { useProfile } from "@/api/profile";
 import { useTopicPacks } from "@/api/packs";
 import { useMyWords } from "@/api/words";
+import { useWordOfDay } from "@/api/wordOfDay";
 import { supabase } from "@/lib/supabase";
 import type { HomeSummary } from "@/lib/database.types";
 
@@ -53,6 +55,7 @@ export default function Home() {
     sort: "recent",
   });
   const { data: packs } = useTopicPacks();
+  const { data: wordOfDay } = useWordOfDay();
 
   /**
    * A brand-new account has nothing to summarise. Showing a streak of zero, a
@@ -268,20 +271,22 @@ export default function Home() {
         </View>
       </Surface>
 
-      {/* stats summary grid */}
-      <View style={{ flexDirection: "row", gap: spacing.md }}>
-        <Stat label={t("home.statWords")} value={total} icon="library-outline" />
-        <Stat
-          label={t("home.statMastered")}
-          value={summary?.mastered_words ?? 0}
-          icon="ribbon-outline"
-        />
-        <Stat
-          label={t("home.statLevel")}
-          value={summary?.level ?? 1}
-          icon="trending-up-outline"
-        />
-      </View>
+      {/* stats summary grid — simple mode keeps the actions, drops the metrics */}
+      {!simpleMode ? (
+        <View style={{ flexDirection: "row", gap: spacing.md }}>
+          <Stat label={t("home.statWords")} value={total} icon="library-outline" />
+          <Stat
+            label={t("home.statMastered")}
+            value={summary?.mastered_words ?? 0}
+            icon="ribbon-outline"
+          />
+          <Stat
+            label={t("home.statLongest")}
+            value={summary?.longest_streak ?? 0}
+            icon="trophy-outline"
+          />
+        </View>
+      ) : null}
 
       {/* recent words */}
       {recent && recent.length > 0 ? (
@@ -321,8 +326,22 @@ export default function Home() {
       </>
       ) : null}
 
-      {/* topic packs — the way into Discover; simple mode hides it by design */}
-      {!simpleMode && packs && packs.length > 0 ? (
+      {/*
+        Something to do on a day with nothing due. Deliberately outside the
+        branch above: an empty account needs a first word more than anyone,
+        and useWordOfDay keeps this cached precisely so it survives being
+        offline — which is when `unknown` is true. It sits below the review
+        CTA either way, so it never competes with reviewing what you have.
+      */}
+      {wordOfDay ? (
+        <WordOfDayCard
+          word={wordOfDay}
+          onOpen={(userWordId) => router.push(`/word/${userWordId}`)}
+        />
+      ) : null}
+
+      {/* topic packs — Discover's only entry point, so it always shows */}
+      {packs && packs.length > 0 ? (
         <View style={{ gap: spacing.md }}>
           <View
             style={{

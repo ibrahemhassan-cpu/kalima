@@ -12,6 +12,7 @@ import {
   EnrichError,
   enrichWord,
   useAddWord,
+  useCustomTranslation,
   type EnrichResponse,
 } from "@/api/words";
 
@@ -35,6 +36,18 @@ export const RelatedWordSheet = forwardRef<RelatedSheetRef>(
     const [data, setData] = useState<EnrichResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [added, setAdded] = useState(false);
+
+    /**
+     * The user's own correction wins over the dictionary text here too.
+     *
+     * entry.id only arrives with the enrichWord response, so this can't run
+     * in parallel with it. Rather than print the dictionary text and swap it
+     * a moment later, the block below waits for this to settle — the lookup
+     * is a single indexed row right after a network call that already took
+     * far longer.
+     */
+    const { data: myTranslation, isFetching: loadingMine } =
+      useCustomTranslation(data?.entry.id);
 
     useImperativeHandle(ref, () => ({
       open: (w: string) => {
@@ -124,7 +137,7 @@ export const RelatedWordSheet = forwardRef<RelatedSheetRef>(
                 />
               </View>
 
-              {primary ? (
+              {primary && !loadingMine ? (
                 <View
                   style={{
                     backgroundColor: colors.brandSoft,
@@ -134,7 +147,9 @@ export const RelatedWordSheet = forwardRef<RelatedSheetRef>(
                   }}
                 >
                   <Text variant="heading" tone="brand">
-                    {primary.ar_translations.join(" · ")}
+                    {myTranslation?.trim()
+                      ? myTranslation.trim()
+                      : primary.ar_translations.join(" · ")}
                   </Text>
                   <Text variant="caption" tone="muted">
                     {primary.ar_definition}

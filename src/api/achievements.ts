@@ -22,16 +22,22 @@ const TARGET: Record<string, (s: HomeSummary) => [number, number]> = {
   streak_7: (s) => [s.current_streak, 7],
   streak_30: (s) => [s.current_streak, 30],
   streak_100: (s) => [s.current_streak, 100],
-  level_5: (s) => [s.level, 5],
-  level_10: (s) => [s.level, 10],
+  // level_5 / level_10 are retired in 0010: they rewarded a number the app
+  // no longer shows anywhere. is_active keeps the earned rows without
+  // displaying a bar that fills toward something invisible.
 };
 
-export function useAchievements() {
+export function useAchievements(opts?: { enabled?: boolean }) {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ["achievements", user?.id],
-    enabled: !!user,
+    /**
+     * The catalog costs three round-trips, so callers that only need it
+     * sometimes — the result screen, which usually has no new badges to
+     * name — can switch it off.
+     */
+    enabled: !!user && (opts?.enabled ?? true),
     queryFn: async (): Promise<AchievementRow[]> => {
       const [catalog, mine, summary] = await Promise.all([
         supabase.from("achievements").select("*").order("sort_order"),
@@ -48,7 +54,16 @@ export function useAchievements() {
       const earned = new Map(earnedRows.map((r) => [r.code, r.earned_at]));
       const s = summary.data as unknown as HomeSummary | null;
 
-      return (catalog.data as Achievement[]).map((a) => {
+      /**
+        * Filtered here rather than with .eq("is_active", true): naming the
+        * column in the query makes the whole catalog 400 against a database
+        * that hasn't run 0010 yet, taking out the Achievements screen and
+        * the badge moment rather than just the two retired rows. Undefined
+        * (pre-migration) reads as active, which is the old behaviour.
+        */
+      return (catalog.data as Achievement[])
+        .filter((a) => a.is_active !== false)
+        .map((a) => {
         const at = earned.get(a.code) ?? null;
         let progress = at ? 1 : 0;
 

@@ -33,6 +33,8 @@ export type SessionItem = {
   difficulty: number | null;
   /** already shuffled server-side; the correct answer is not marked */
   options: string[];
+  /** the user's own fix for the translation; null = use the entry's */
+  custom_translation: string | null;
 };
 
 export function useSessionItems(limit = 20) {

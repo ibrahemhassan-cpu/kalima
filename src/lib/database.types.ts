@@ -105,6 +105,9 @@ export type Achievement = {
   icon: string;
   xp_reward: number;
   sort_order: number;
+  /** false = retired; kept for already-earned rows but never displayed.
+   *  Optional: absent on a database that predates 0010. */
+  is_active?: boolean;
 };
 
 // ── مخرجات دوال الـ RPC ────────────────────────────────────
@@ -128,6 +131,11 @@ export type DueWord = {
   due_at: string;
   personal_note: string | null;
   is_favorite: boolean;
+  /**
+   * The user's own fix for the translation. get_session_items returns it;
+   * get_due_words does not, because the due list only prints lemmas.
+   */
+  custom_translation?: string | null;
 };
 
 export type MyWordRow = {

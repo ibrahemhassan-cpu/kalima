@@ -23,7 +23,15 @@ import { useSettings } from "@/store/settings";
 import { useMyWords, type WordFilter, type WordSort } from "@/api/words";
 import { TAB_BAR_HEIGHT } from "@/theme/spacing";
 
-const FILTERS: WordFilter[] = ["all", "learning", "mastered", "hard", "favorite"];
+const FILTERS: WordFilter[] = [
+  "all",
+  "learning",
+  "mastered",
+  "hard",
+  "favorite",
+  // last on purpose: the archive is somewhere you go looking, not a daily view
+  "archived",
+];
 const SORTS: WordSort[] = ["recent", "alpha", "hardest"];
 
 const FILTER_KEY: Record<WordFilter, string> = {
@@ -32,6 +40,7 @@ const FILTER_KEY: Record<WordFilter, string> = {
   mastered: "words.filterMastered",
   hard: "words.filterHard",
   favorite: "words.filterFavorite",
+  archived: "words.filterArchived",
 };
 const SORT_KEY: Record<WordSort, string> = {
   recent: "words.sortRecent",

@@ -16,11 +16,23 @@ import type { DictionaryEntry } from "@/lib/database.types";
  * Shared between the add screen and the detail screen so a word looks
  * identical wherever you meet it.
  */
-export function EntryBody({ entry }: { entry: DictionaryEntry }) {
+export function EntryBody({
+  entry,
+  override,
+}: {
+  entry: DictionaryEntry;
+  /**
+   * The user's own fix for the primary translation. The dictionary row is
+   * shared between everyone, so a correction lives on their word instead —
+   * this is where it gets shown.
+   */
+  override?: string | null;
+}) {
   const { colors, spacing, radius } = useTheme();
   const { t } = useTranslation();
   const related = useRef<RelatedSheetRef>(null);
   const primary = entry.senses[0];
+  const corrected = override?.trim() ? override.trim() : null;
 
   return (
     <View style={{ gap: spacing.md }}>
@@ -55,11 +67,20 @@ export function EntryBody({ entry }: { entry: DictionaryEntry }) {
               }}
             >
               <Text variant="heading" tone="brand">
-                {primary.ar_translations.join(" · ")}
+                {corrected ?? primary.ar_translations.join(" · ")}
               </Text>
               <Text variant="body" tone="muted">
                 {primary.ar_definition}
               </Text>
+              {corrected ? (
+                <View style={{ flexDirection: "row", marginTop: spacing.xs }}>
+                  <Badge
+                    label={t("word.yourEdit")}
+                    tone="neutral"
+                    icon="create-outline"
+                  />
+                </View>
+              ) : null}
             </View>
           ) : null}
         </View>

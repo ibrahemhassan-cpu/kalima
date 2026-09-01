@@ -102,7 +102,7 @@ const privacyAr: LegalDoc = {
       title: "المحتوى المولّد بالـ AI",
       blocks: [
         p(
-          "الترجمات والتعريفات والأمثلة وحيل الحفظ والأسئلة في التطبيق مولّدة آليًا بالذكاء الاصطناعي. بنبذل مجهود إنها تبقى دقيقة، لكنها ممكن تحتوي أخطاء. تقدر تعدّل أي حقل بنفسك أو تبلّغنا عن خطأ. ما تعتمدش عليها في سياقات حسّاسة زي الترجمة القانونية أو الطبية.",
+          "الترجمات والتعريفات والأمثلة وحيل الحفظ والأسئلة في التطبيق مولّدة آليًا بالذكاء الاصطناعي. بنبذل مجهود إنها تبقى دقيقة، لكنها ممكن تحتوي أخطاء. لو لقيت ترجمة غلط، تقدر تصحّحها بنفسك من شاشة الكلمة — والتصحيح بيبان لك إنت بس. ما تعتمدش عليها في سياقات حسّاسة زي الترجمة القانونية أو الطبية.",
         ),
       ],
     },
@@ -226,7 +226,7 @@ const privacyEn: LegalDoc = {
       title: "AI-generated content",
       blocks: [
         p(
-          "The translations, definitions, examples, memory hooks and questions in the app are generated automatically by AI. We work to keep them accurate, but they may contain mistakes. You can edit any field yourself or report an error to us. Don't rely on them in sensitive contexts such as legal or medical translation.",
+          "The translations, definitions, examples, memory hooks and questions in the app are generated automatically by AI. We work to keep them accurate, but they may contain mistakes. If a translation is wrong you can correct it yourself from the word screen — your correction is visible only to you. Don't rely on them in sensitive contexts such as legal or medical translation.",
         ),
       ],
     },
@@ -339,7 +339,7 @@ const termsAr: LegalDoc = {
         p(
           "ما تعتمدش على مخرجات التطبيق في أي سياق حسّاس — ترجمة قانونية أو طبية أو رسمية أو أي قرار مهم. المسؤولية عن التحقق من المعلومة تقع عليك.",
         ),
-        p("لو لقيت خطأ، تقدر تعدّله بنفسك أو تبلّغنا عنه من داخل التطبيق."),
+        p("لو لقيت ترجمة غلط، تقدر تصحّحها بنفسك من شاشة الكلمة، والتصحيح بيتحفظ على نسختك من الكلمة وحدها."),
       ],
     },
     {
@@ -453,7 +453,7 @@ const termsEn: LegalDoc = {
           "Do not rely on the app's output in any sensitive context — legal, medical or official translation, or any important decision. Verifying the information is your responsibility.",
         ),
         p(
-          "If you find a mistake, you can correct it yourself or report it from inside the app.",
+          "If a translation is wrong you can correct it yourself from the word screen; the correction is saved against your copy of the word alone.",
         ),
       ],
     },
