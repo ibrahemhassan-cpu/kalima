@@ -8,14 +8,14 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import { useTheme } from "@/theme/ThemeProvider";
 import { PRESS_SCALE_SMALL } from "@/theme/motion";
-import { radius as radii, TAB_BAR } from "@/theme/spacing";
+import { TAB_BAR } from "@/theme/spacing";
 import { Touchable } from "@/components/ui/Touchable";
 import { Text } from "@/components/ui/Text";
 
 type CustomTabBarProps = Parameters<NonNullable<React.ComponentProps<typeof Tabs>["tabBar"]>>[0];
 
 function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
-  const { colors, shadow } = useTheme();
+  const { colors, radius, shadow } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -73,7 +73,12 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
         style={[
           styles.barWrapper,
           shadow.lg,
-          { backgroundColor: colors.solid, borderColor: colors.border },
+          {
+            height: TAB_BAR.height,
+            borderRadius: radius.xl,
+            backgroundColor: colors.solid,
+            borderColor: colors.border,
+          },
         ]}
       >
         <View style={styles.tabItemsRow}>
@@ -128,12 +133,23 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
           })}
 
           {/* Center Elevated Floating '+' Button */}
-          <View style={styles.centerButtonWrapper}>
+          <View style={[styles.centerButtonWrapper, { top: -TAB_BAR.lift }]}>
             <Touchable
               onPress={() => router.push("/add-word")}
       scaleTo={PRESS_SCALE_SMALL}
               haptic="medium"
-              style={[styles.plusButton, shadow.brand]}
+              style={[
+                styles.plusButton,
+                shadow.brand,
+                {
+                  width: TAB_BAR.plus,
+                  height: TAB_BAR.plus,
+                  borderRadius: TAB_BAR.plus / 2,
+                  // opaque, and no clipping here: iOS derives the glow from
+                  // this view's own alpha and "overflow: hidden" would cut it
+                  backgroundColor: colors.brand,
+                },
+              ]}
               accessibilityRole="button"
               accessibilityLabel={t("a11y.addWord")}
             >
@@ -141,7 +157,11 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
                 colors={[colors.brand, colors.brandAlt]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFill}
+                // rounds itself, so the button needn't clip and keep its glow
+                style={[
+                  StyleSheet.absoluteFill,
+                  { borderRadius: TAB_BAR.plus / 2 },
+                ]}
               />
               <Ionicons name="add" size={28} color={colors.onBrand} />
             </Touchable>
@@ -230,8 +250,6 @@ const styles = StyleSheet.create({
     // a phone-width pill, centred — the app supports tablets, where a bar
     // stretched across 736pt with five items in it reads as broken furniture
     maxWidth: 420,
-    height: TAB_BAR.height,
-    borderRadius: radii.xl,
     borderWidth: StyleSheet.hairlineWidth,
     // the "+" rises out of the pill, so this must not clip
     overflow: "visible",
@@ -250,17 +268,12 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   centerButtonWrapper: {
-    top: -TAB_BAR.lift,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 10,
   },
   plusButton: {
-    width: TAB_BAR.plus,
-    height: TAB_BAR.plus,
-    borderRadius: TAB_BAR.plus / 2,
     alignItems: "center",
     justifyContent: "center",
-    overflow: "hidden",
   },
 });
