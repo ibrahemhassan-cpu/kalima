@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Button, ChoiceList, Header, ProgressDots, Screen, Text } from "@/components/ui";
 import { useTheme } from "@/theme/ThemeProvider";
 import { goalOptions, useOnboarding } from "@/features/onboarding/store";
+import { ICON_FORWARD } from "@/i18n/rtl";
 
 export default function GoalStep() {
   const { spacing } = useTheme();
@@ -35,7 +36,7 @@ export default function GoalStep() {
         title={t("common.next")}
         size="lg"
         fullWidth
-        iconEnd="arrow-forward"
+        iconEnd={ICON_FORWARD}
         disabled={!dailyGoal}
         onPress={() => router.push("/(onboarding)/reminder")}
       />

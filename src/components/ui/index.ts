@@ -12,6 +12,7 @@ export { Avatar } from "./Avatar";
 export { ChoiceList, ProgressDots } from "./Choice";
 export { LanguageToggle } from "./LanguageToggle";
 export { Touchable } from "./Touchable";
+export { Elevated } from "./Elevated";
 export { CircularProgress } from "./CircularProgress";
 export { EmptyState } from "./EmptyState";
 export { Skeleton, SkeletonRow, SkeletonList, SkeletonCard } from "./Skeleton";

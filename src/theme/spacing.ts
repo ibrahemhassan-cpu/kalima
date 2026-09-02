@@ -9,12 +9,59 @@ export const spacing = {
 } as const;
 
 /**
- * Vertical room the floating tab bar occupies, *excluding* the bottom
- * safe-area inset: 68px bar + 12px gap + a little breathing space.
- * The bar is absolutely positioned, so every screen inside (tabs) must
- * reserve this or its last element hides behind it.
+ * The floating tab bar's geometry, in one place.
+ *
+ * Three files need these numbers: the bar draws itself from them, and both
+ * Screen and the Words list reserve room from them. They used to be written
+ * out separately — 88 here, "68 + 12" spelled again in the bar — so the
+ * reserved room and the room actually taken could drift apart silently, and
+ * the "+" button's overhang was never counted at all.
  */
-export const TAB_BAR_HEIGHT = 88;
+export const TAB_BAR = {
+  /** the pill itself */
+  height: 68,
+  /** the centre "+" that rises out of it */
+  plus: 56,
+  /** gap between the pill and the bottom safe-area edge */
+  gap: 12,
+  /** how far the "+" is shifted up out of the pill (its `top` offset) */
+  lift: 18,
+  /**
+   * Floor for insets.bottom under the pill. A device with no home indicator
+   * reports 0, and the pill should not sit flush against the glass.
+   */
+  minInset: 8,
+} as const;
+
+/**
+ * How far the "+" actually rises above the pill's top edge.
+ *
+ * Not the same as `lift`: the button is centred in the pill first, which
+ * already insets it by half the height difference, so it clears the top by
+ * the lift minus that inset.
+ */
+export const TAB_BAR_OVERHANG =
+  TAB_BAR.lift - (TAB_BAR.height - TAB_BAR.plus) / 2;
+
+/**
+ * Vertical room the bar occupies above the bottom safe-area inset —
+ * pill + gap + the part of the "+" that sticks out above it.
+ */
+export const TAB_BAR_HEIGHT =
+  TAB_BAR.height + TAB_BAR.gap + TAB_BAR_OVERHANG;
+
+/**
+ * Bottom padding a screen inside (tabs) needs so its last element clears the
+ * bar on any device, with `extra` of visible breathing room beneath it.
+ *
+ * Derived from the same constants the bar positions itself with, so the two
+ * cannot disagree: with a home indicator (inset 34) it reserves 142 against
+ * 126 taken; with none (inset 0) it reserves 116 against 100. The visible
+ * clearance is `extra` on every device, which is the point.
+ */
+export function tabBarClearance(insetBottom: number, extra = 16): number {
+  return Math.max(insetBottom, TAB_BAR.minInset) + TAB_BAR_HEIGHT + extra;
+}
 
 /** Generous radii — the single biggest lever on "modern vs dated". */
 export const radius = {

@@ -1,5 +1,5 @@
 import React from "react";
-import { I18nManager, View } from "react-native";
+import { View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/theme/ThemeProvider";
@@ -8,6 +8,7 @@ import { StatusBadge, Text, Touchable } from "@/components/ui";
 import { speak } from "@/features/tts";
 import type { MyWordRow } from "@/lib/database.types";
 import { formatDue } from "@/api/words";
+import { ICON_CHEVRON_FORWARD } from "@/i18n/rtl";
 
 export function WordCard({
   row,
@@ -83,7 +84,7 @@ export function WordCard({
       </Touchable>
 
       <Ionicons
-        name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"}
+        name={ICON_CHEVRON_FORWARD}
         size={18}
         color={colors.textFaint}
       />

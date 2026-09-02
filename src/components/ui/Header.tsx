@@ -1,5 +1,5 @@
 import React from "react";
-import { I18nManager, View } from "react-native";
+import { View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/theme/ThemeProvider";
@@ -7,6 +7,7 @@ import { PRESS_SCALE_SMALL } from "@/theme/motion";
 import { Text } from "./Text";
 import { Touchable } from "./Touchable";
 import { LanguageToggle } from "./LanguageToggle";
+import { ICON_CHEVRON_BACK } from "@/i18n/rtl";
 
 export type HeaderProps = {
   title?: string;
@@ -55,7 +56,7 @@ export function Header({
             }}
           >
             <Ionicons
-              name={I18nManager.isRTL ? "chevron-forward" : "chevron-back"}
+              name={ICON_CHEVRON_BACK}
               size={20}
               color={colors.text}
             />

@@ -1,8 +1,10 @@
 import React from "react";
-import { I18nManager, Pressable, Switch, View } from "react-native";
+import { Pressable, Switch, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/theme/ThemeProvider";
+import { Elevated } from "./Elevated";
 import { Text } from "./Text";
+import { ICON_CHEVRON_FORWARD } from "@/i18n/rtl";
 
 export type ListRowProps = {
   icon?: keyof typeof Ionicons.glyphMap;
@@ -78,7 +80,7 @@ export function ListRow({
           ) : null}
           {onPress ? (
             <Ionicons
-              name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"}
+              name={ICON_CHEVRON_FORWARD}
               size={20}
               color={colors.textFaint}
             />
@@ -119,21 +121,18 @@ export function ListGroup({
           {title}
         </Text>
       ) : null}
-      <View
-        style={[
-          {
-            backgroundColor: colors.card,
-            borderRadius: radius.lg,
-            // shadow separates in light, hairline separates in dark
-            borderWidth: isDark ? 1 : 0,
-            borderColor: colors.border,
-            overflow: "hidden",
-          },
-          shadow.sm,
-        ]}
+      <Elevated
+        radius={radius.lg}
+        shadow={shadow.sm}
+        fill={colors.card}
+        style={{
+          // shadow separates in light, hairline separates in dark
+          borderWidth: isDark ? 1 : 0,
+          borderColor: colors.border,
+        }}
       >
         {children}
-      </View>
+      </Elevated>
     </View>
   );
 }

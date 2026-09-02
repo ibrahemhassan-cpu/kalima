@@ -6,7 +6,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeIn, FadeInDown, ZoomIn } from "react-native-reanimated";
 
-import { Button, LanguageToggle, ProgressDots, Screen, Surface, Text } from "@/components/ui";
+import {
+  Button,
+  Elevated,
+  LanguageToggle,
+  ProgressDots,
+  Screen,
+  Surface,
+  Text,
+} from "@/components/ui";
 import { useTheme } from "@/theme/ThemeProvider";
 import { duration } from "@/theme/motion";
 
@@ -29,18 +37,16 @@ export default function Welcome() {
 
       <View style={{ alignItems: "center", gap: spacing.lg, paddingTop: spacing.xxl }}>
         <Animated.View entering={ZoomIn.duration(500).springify().damping(13)}>
-          <View
-            style={[
-              {
-                width: 110,
-                height: 110,
-                borderRadius: 28,
-                alignItems: "center",
-                justifyContent: "center",
-                overflow: "hidden",
-              },
-              shadow.brand,
-            ]}
+          <Elevated
+            radius={28}
+            shadow={shadow.brand}
+            fill={colors.brand}
+            style={{
+              width: 110,
+              height: 110,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
             <LinearGradient
               colors={[colors.brand, colors.brandAlt]}
@@ -49,7 +55,7 @@ export default function Welcome() {
               style={{ position: "absolute", inset: 0 }}
             />
             <Ionicons name="bookmark" size={54} color={colors.onBrand} />
-          </View>
+          </Elevated>
         </Animated.View>
 
         <Animated.View

@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "@/theme/ThemeProvider";
-import { TAB_BAR_HEIGHT } from "@/theme/spacing";
+import { tabBarClearance } from "@/theme/spacing";
 import { OfflineBar } from "./OfflineBar";
 
 export type ScreenProps = {
@@ -36,9 +36,19 @@ export function Screen({
 
   const inner: StyleProp<ViewStyle> = {
     paddingTop: top + (padded ? spacing.md : 0),
-    // inside (tabs) the floating bar covers the bottom of the screen, so the
-    // last element needs to clear it — everywhere else a normal gap is enough
-    paddingBottom: bottom + (tabBar ? TAB_BAR_HEIGHT + spacing.lg : spacing.xl),
+    /**
+     * Inside (tabs) the floating bar covers the bottom of the screen, so the
+     * last element has to clear it — the pill, the gap under it, and the part
+     * of the "+" that rises above it. tabBarClearance derives all of that from
+     * the same constants the bar positions itself with, so the room reserved
+     * here and the room actually taken cannot drift apart.
+     */
+    paddingBottom:
+      edges?.bottom === false
+        ? 0
+        : tabBar
+          ? tabBarClearance(insets.bottom)
+          : bottom + spacing.xl,
     paddingHorizontal: padded ? spacing.lg : 0,
     gap: spacing.lg,
   };

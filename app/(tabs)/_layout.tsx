@@ -1,22 +1,21 @@
 import React from "react";
-import { Platform, View, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { Tabs, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
 import { useTheme } from "@/theme/ThemeProvider";
 import { PRESS_SCALE_SMALL } from "@/theme/motion";
-import { TAB_BAR_HEIGHT } from "@/theme/spacing";
+import { radius as radii, TAB_BAR } from "@/theme/spacing";
 import { Touchable } from "@/components/ui/Touchable";
 import { Text } from "@/components/ui/Text";
 
 type CustomTabBarProps = Parameters<NonNullable<React.ComponentProps<typeof Tabs>["tabBar"]>>[0];
 
 function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
-  const { colors, radius, shadow, isDark } = useTheme();
+  const { colors, shadow } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -48,22 +47,35 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
     <View
       style={[
         styles.floatingContainer,
-        // sit above the gesture bar, never on top of it
-        { bottom: Math.max(insets.bottom, 8) + 12 },
+        // sit above the gesture bar, never on top of it — same constants the
+        // screens reserve their bottom padding from, so the two can't drift
+        { bottom: Math.max(insets.bottom, TAB_BAR.minInset) + TAB_BAR.gap },
       ]}
       pointerEvents="box-none"
     >
-      <View style={[styles.barWrapper, shadow.lg, { backgroundColor: Platform.OS === "android" ? colors.solid : "transparent" }]}>
-        {Platform.OS === "ios" ? (
-          <BlurView
-            intensity={isDark ? 50 : 75}
-            tint={colors.blurTint}
-            style={[StyleSheet.absoluteFill, { borderRadius: radius.xl, backgroundColor: colors.glassStrong }]}
-          />
-        ) : (
-          <View style={[StyleSheet.absoluteFill, { borderRadius: radius.xl, backgroundColor: colors.solid, borderWidth: 1, borderColor: colors.border }]} />
-        )}
+      {/*
+        Opaque pill, hairline border, real shadow — on both platforms.
 
+        This used to be a transparent wrapper holding a BlurView. Three things
+        went wrong at once on iOS and they only showed up together: iOS derives
+        a view's shadow from its own alpha, so a transparent wrapper cast none;
+        the iOS branch had no border while the Android one did; and expo-blur
+        does not round itself to a parent's radius, so the "glass" painted a
+        square behind a pill. The result was a 92%-white shape with no edge, no
+        shadow and no corners, floating over near-white cards — it read as
+        loose icons sitting on the content.
+
+        The blur is gone rather than repaired: at 92% opacity it was never
+        really glass, and keeping it is what forced the transparent wrapper.
+        Surface and WordGlassCard still use expo-blur where it shows.
+      */}
+      <View
+        style={[
+          styles.barWrapper,
+          shadow.lg,
+          { backgroundColor: colors.solid, borderColor: colors.border },
+        ]}
+      >
         <View style={styles.tabItemsRow}>
           {/* Left Tabs */}
           {leftRoutes.map((route: { key: string; name: string }) => {
@@ -100,6 +112,9 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
                 />
                 <Text
                   variant="micro"
+                  // one line always: at the largest text setting a wrapped
+                  // label would push the row past the pill's fixed height
+                  numberOfLines={1}
                   style={{
                     color: isFocused ? colors.brand : colors.textFaint,
                     fontWeight: isFocused ? "700" : "500",
@@ -167,6 +182,7 @@ function CustomTabBar({ state, descriptors, navigation }: CustomTabBarProps) {
                 />
                 <Text
                   variant="micro"
+                  numberOfLines={1}
                   style={{
                     color: isFocused ? colors.brand : colors.textFaint,
                     fontWeight: isFocused ? "700" : "500",
@@ -211,8 +227,13 @@ const styles = StyleSheet.create({
   },
   barWrapper: {
     width: "100%",
-    height: 68,
-    borderRadius: 28,
+    // a phone-width pill, centred — the app supports tablets, where a bar
+    // stretched across 736pt with five items in it reads as broken furniture
+    maxWidth: 420,
+    height: TAB_BAR.height,
+    borderRadius: radii.xl,
+    borderWidth: StyleSheet.hairlineWidth,
+    // the "+" rises out of the pill, so this must not clip
     overflow: "visible",
   },
   tabItemsRow: {
@@ -229,15 +250,15 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   centerButtonWrapper: {
-    top: -18,
+    top: -TAB_BAR.lift,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 10,
   },
   plusButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: TAB_BAR.plus,
+    height: TAB_BAR.plus,
+    borderRadius: TAB_BAR.plus / 2,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",

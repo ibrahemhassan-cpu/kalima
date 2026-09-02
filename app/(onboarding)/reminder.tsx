@@ -21,6 +21,7 @@ import {
 } from "@/features/onboarding/store";
 import { deviceTimezone, useUpdateProfile } from "@/api/profile";
 import { useSettings } from "@/store/settings";
+import { ICON_FORWARD } from "@/i18n/rtl";
 
 export default function ReminderStep() {
   const { colors, spacing, radius, minTouch } = useTheme();
@@ -156,7 +157,7 @@ export default function ReminderStep() {
         title={t("onboarding.finish")}
         size="lg"
         fullWidth
-        iconEnd="arrow-forward"
+        iconEnd={ICON_FORWARD}
         loading={update.isPending}
         onPress={finish}
       />

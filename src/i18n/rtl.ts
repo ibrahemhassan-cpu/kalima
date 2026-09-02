@@ -42,6 +42,29 @@ export async function applyMirroredLayout(enabled: boolean) {
  */
 export const ltrText = { writingDirection: "ltr" as const };
 
+/**
+ * Direction-aware glyphs.
+ *
+ * A "next" arrow has to point the way the reader moves, and Ionicons names
+ * are physical: arrow-forward always points right. Nine call sites needed the
+ * flip and only four did it, so a next button pointed backwards on any device
+ * that resolved to RTL — which is device- and platform-dependent here, since
+ * ensureRTLAllowed only opts Android in.
+ *
+ * Read once at module load: I18nManager.isRTL is fixed for the process, and a
+ * change requires a reload anyway.
+ */
+const rtl = I18nManager.isRTL;
+
+/** Onward, in the reading direction. */
+export const ICON_FORWARD = rtl ? "arrow-back" : "arrow-forward";
+/** Back, against the reading direction. */
+export const ICON_BACK = rtl ? "arrow-forward" : "arrow-back";
+/** The chevron on a row that drills in. */
+export const ICON_CHEVRON_FORWARD = rtl ? "chevron-back" : "chevron-forward";
+/** The chevron on a back button. */
+export const ICON_CHEVRON_BACK = rtl ? "chevron-forward" : "chevron-back";
+
 export function ensureRTLAllowed() {
   if (Platform.OS === "android") I18nManager.allowRTL(true);
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   FlatList,
   RefreshControl,
+  StyleSheet,
   View,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -21,7 +22,7 @@ import { useOnline } from "@/lib/network";
 import { duration } from "@/theme/motion";
 import { useSettings } from "@/store/settings";
 import { useMyWords, type WordFilter, type WordSort } from "@/api/words";
-import { TAB_BAR_HEIGHT } from "@/theme/spacing";
+import { tabBarClearance } from "@/theme/spacing";
 
 const FILTERS: WordFilter[] = [
   "all",
@@ -77,12 +78,26 @@ export default function Words() {
 
   const header = useMemo(
     () => (
+      /**
+        * Opaque, because this header is sticky.
+        *
+        * It had padding and nothing else, so once the list scrolled the word
+        * rows slid underneath the title, the search field and the filter
+        * button and showed straight through them.
+        *
+        * bgTop is the colour the page gradient starts at, so at rest the bar
+        * is invisible against it; the hairline only earns its keep once
+        * content has scrolled under.
+        */
       <View
         style={{
           paddingTop: insets.top + spacing.lg,
           paddingHorizontal: spacing.lg,
           paddingBottom: spacing.md,
           gap: spacing.md,
+          backgroundColor: colors.bgTop,
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderBottomColor: colors.border,
         }}
       >
         <View
@@ -175,8 +190,9 @@ export default function Words() {
           contentContainerStyle={{
             paddingHorizontal: spacing.lg,
             gap: spacing.sm,
-            // clear the floating tab bar
-            paddingBottom: insets.bottom + TAB_BAR_HEIGHT + spacing.lg,
+            // clear the floating tab bar — same helper Screen uses, so this
+            // hand-rolled list stays in step with every other tab screen
+            paddingBottom: tabBarClearance(insets.bottom),
             flexGrow: 1,
           }}
           refreshControl={

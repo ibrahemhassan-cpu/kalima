@@ -7,6 +7,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 
 import {
+  Elevated,
   Header,
   ProgressBar,
   Screen,
@@ -90,18 +91,16 @@ function BadgeRow({ row, lang }: { row: AchievementRow; lang: string }) {
       style={done ? undefined : { opacity: 0.72 }}
     >
       <View style={{ flexDirection: "row", gap: spacing.lg, alignItems: "center" }}>
-        <View
-          style={[
-            {
-              width: 52,
-              height: 52,
-              borderRadius: radius.md,
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-            },
-            done ? shadow.brand : undefined,
-          ]}
+        <Elevated
+          radius={radius.md}
+          shadow={done ? shadow.brand : undefined}
+          fill={done ? colors.brand : colors.sunken}
+          style={{
+            width: 52,
+            height: 52,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
           {done ? (
             <LinearGradient
@@ -120,7 +119,7 @@ function BadgeRow({ row, lang }: { row: AchievementRow; lang: string }) {
             size={24}
             color={done ? colors.onBrand : colors.textFaint}
           />
-        </View>
+        </Elevated>
 
         <View style={{ flex: 1, gap: 3 }}>
           <View

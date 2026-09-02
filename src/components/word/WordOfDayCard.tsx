@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { I18nManager, View } from "react-native";
+import { View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -9,6 +9,7 @@ import { useTheme } from "@/theme/ThemeProvider";
 import { useAddWord } from "@/api/words";
 import { isOnline } from "@/lib/network";
 import type { WordOfDay } from "@/api/wordOfDay";
+import { ICON_FORWARD } from "@/i18n/rtl";
 
 /**
  * One new word a day, on the home screen.
@@ -111,7 +112,7 @@ export function WordOfDayCard({
             title={t("home.wordOfDayOpen")}
             variant="secondary"
             fullWidth
-            icon={I18nManager.isRTL ? "arrow-back" : "arrow-forward"}
+            icon={ICON_FORWARD}
             onPress={() => onOpen(addedId)}
           />
         ) : (

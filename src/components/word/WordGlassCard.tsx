@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 
-import { Text, Touchable } from "@/components/ui";
+import { Elevated, Text, Touchable } from "@/components/ui";
 import { useTheme } from "@/theme/ThemeProvider";
 import { PRESS_SCALE_SMALL } from "@/theme/motion";
 
@@ -51,7 +51,7 @@ export function WordGlassCard({
   const arVariant = compact ? "heading" : "title";
 
   return (
-    <View style={[{ borderRadius: radius.xxl, overflow: "hidden" }, shadow.lg]}>
+    <Elevated radius={radius.xxl} shadow={shadow.lg} fill={colors.brand}>
       {/* the coloured ground the glass sits on */}
       <LinearGradient
         colors={[colors.brand, colors.brandAlt]}
@@ -152,7 +152,7 @@ export function WordGlassCard({
           </View>
         </View>
       </GlassPane>
-    </View>
+    </Elevated>
   );
 }
 

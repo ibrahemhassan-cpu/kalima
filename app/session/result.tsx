@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { I18nManager, View } from "react-native";
+import { View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
@@ -26,6 +26,7 @@ import {
   syncReminders,
 } from "@/features/notifications";
 import { parseReminderTimes } from "@/features/notifications/useReminders";
+import { ICON_CHEVRON_FORWARD } from "@/i18n/rtl";
 
 export default function SessionResult() {
   const { colors, spacing, radius, shadow } = useTheme();
@@ -331,7 +332,7 @@ function UnlockedBadge({
         </Text>
       </View>
       <Ionicons
-        name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"}
+        name={ICON_CHEVRON_FORWARD}
         size={18}
         color={colors.textFaint}
       />

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Button, ChoiceList, Header, ProgressDots, Screen, Text } from "@/components/ui";
 import { useTheme } from "@/theme/ThemeProvider";
 import { levelOptions, useOnboarding } from "@/features/onboarding/store";
+import { ICON_FORWARD } from "@/i18n/rtl";
 
 export default function LevelStep() {
   const { spacing } = useTheme();
@@ -31,7 +32,7 @@ export default function LevelStep() {
         title={t("common.next")}
         size="lg"
         fullWidth
-        iconEnd="arrow-forward"
+        iconEnd={ICON_FORWARD}
         disabled={!level}
         onPress={() => router.push("/(onboarding)/goal")}
       />

@@ -38,10 +38,11 @@ export function SpeakButton({
           borderRadius: radius.pill,
           alignItems: "center",
           justifyContent: "center",
-          overflow: "hidden",
           borderWidth: slow ? 1 : 0,
           borderColor: colors.border,
-          backgroundColor: slow ? colors.glassStrong : undefined,
+          // opaque either way: iOS derives a shadow from the view's own alpha,
+          // and "overflow: hidden" here would have clipped that shadow away
+          backgroundColor: slow ? colors.glassStrong : colors.brand,
         },
         slow ? undefined : shadow.brand,
       ]}
@@ -51,7 +52,8 @@ export function SpeakButton({
           colors={[colors.brand, colors.brandAlt]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={{ position: "absolute", inset: 0 }}
+          // rounds itself, so the parent needn't clip
+          style={{ position: "absolute", inset: 0, borderRadius: radius.pill }}
         />
       ) : null}
       <Ionicons

@@ -9,6 +9,7 @@ import Animated from "react-native-reanimated";
 
 import {
   Button,
+  Elevated,
   EmptyState,
   LanguageToggle,
   ProgressBar,
@@ -204,18 +205,16 @@ export default function Home() {
           <View
             style={{ flexDirection: "row", alignItems: "center", gap: spacing.lg }}
           >
-            <View
-              style={[
-                {
-                  width: 62,
-                  height: 62,
-                  borderRadius: radius.lg,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  overflow: "hidden",
-                },
-                due > 0 ? shadow.brand : undefined,
-              ]}
+            <Elevated
+              radius={radius.lg}
+              shadow={due > 0 ? shadow.brand : undefined}
+              fill={due > 0 ? colors.brand : colors.successSoft}
+              style={{
+                width: 62,
+                height: 62,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
               {due > 0 ? (
                 <LinearGradient
@@ -238,7 +237,7 @@ export default function Home() {
                 size={28}
                 color={due > 0 ? colors.onBrand : colors.success}
               />
-            </View>
+            </Elevated>
 
             <View style={{ flex: 1, gap: 2 }}>
               <Text variant="micro" tone="muted">

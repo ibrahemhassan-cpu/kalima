@@ -38,6 +38,7 @@ import {
   useMyWords,
 } from "@/api/words";
 import { useAiQuota } from "@/api/ai";
+import { ICON_CHEVRON_FORWARD } from "@/i18n/rtl";
 
 type Phase = "input" | "loading" | "result";
 
@@ -348,7 +349,7 @@ export default function AddWord() {
                     </Text>
                   </View>
                   <Ionicons
-                    name="chevron-forward"
+                    name={ICON_CHEVRON_FORWARD}
                     size={19}
                     color={colors.textFaint}
                     style={{

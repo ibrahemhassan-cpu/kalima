@@ -20,6 +20,7 @@ import {
 import { QuizCard, type AnswerState } from "@/components/review/QuizCard";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useWordDetail } from "@/api/words";
+import { ICON_FORWARD } from "@/i18n/rtl";
 import {
   useCheckAnswer,
   useFinishWordQuiz,
@@ -204,7 +205,7 @@ export default function WordQuiz() {
           title={index + 1 < total ? t("common.next") : t("quiz.seeResult")}
           size="lg"
           fullWidth
-          icon="arrow-forward"
+          icon={ICON_FORWARD}
           loading={finish.isPending}
           onPress={next}
         />
