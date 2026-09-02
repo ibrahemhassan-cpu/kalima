@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
-import { I18nManager, View } from "react-native";
+import { View } from "react-native";
+import * as Haptics from "expo-haptics";
 import ReanimatedSwipeable, {
   type SwipeableMethods,
 } from "react-native-gesture-handler/ReanimatedSwipeable";
@@ -12,6 +13,14 @@ import { speak } from "@/features/tts";
 import type { MyWordRow } from "@/lib/database.types";
 import { formatDue } from "@/api/words";
 import { ICON_CHEVRON_FORWARD } from "@/i18n/rtl";
+
+/**
+ * How far a row travels on a swipe.
+ *
+ * Short on purpose: the gesture is a nudge that raises a confirm, not a drag
+ * that performs the action, so the card should never leave its lane.
+ */
+const SWIPE_PANEL = 96;
 
 export function WordCard({
   row,
@@ -29,6 +38,11 @@ export function WordCard({
   const { colors, spacing, radius, shadow, minTouch, isDark } = useTheme();
   const { t } = useTranslation();
   const swipe = useRef<SwipeableMethods>(null);
+
+  // an archived row swipes back the other way, so say so on the panel
+  const archiveLabel = t(
+    row.status === "archived" ? "word.restore" : "word.archive",
+  );
 
   const card = (
     <Touchable
@@ -113,16 +127,16 @@ export function WordCard({
     tone: string,
     icon: keyof typeof Ionicons.glyphMap,
     label: string,
-    align: "flex-start" | "flex-end",
   ) => (
     <View
       style={{
-        flex: 1,
+        // a fixed width, not flex: the drag is clamped to whatever the panel
+        // measures, so "flex: 1" let the card be dragged clear off the row
+        width: SWIPE_PANEL,
         backgroundColor: tone,
         borderRadius: radius.lg,
         justifyContent: "center",
-        alignItems: align,
-        paddingHorizontal: spacing.xl,
+        alignItems: "center",
         gap: 4,
       }}
     >
@@ -137,42 +151,36 @@ export function WordCard({
     <ReanimatedSwipeable
       ref={swipe}
       friction={2}
-      leftThreshold={72}
-      rightThreshold={72}
+      // trips well before the panel is fully out, so a short drag is enough
+      leftThreshold={SWIPE_PANEL / 2}
+      rightThreshold={SWIPE_PANEL / 2}
       overshootLeft={false}
       overshootRight={false}
       renderLeftActions={
         onArchive
-          ? () =>
-              panel(
-                colors.brand,
-                "archive",
-                t("word.archive"),
-                I18nManager.isRTL ? "flex-end" : "flex-start",
-              )
+          ? () => panel(colors.brand, "archive", archiveLabel)
           : undefined
       }
       renderRightActions={
-        onDelete
-          ? () =>
-              panel(
-                colors.danger,
-                "trash",
-                t("common.delete"),
-                I18nManager.isRTL ? "flex-start" : "flex-end",
-              )
-          : undefined
+        onDelete ? () => panel(colors.danger, "trash", t("common.delete")) : undefined
       }
       /**
-       * Fire on release and snap shut straight away: the confirm sheet is the
-       * decision point, so leaving the row hanging open behind it would ask
-       * twice and leave the list looking half-acted-on if the user cancels.
+       * onSwipeableOpen reports the direction the card *moved*, not the side
+       * whose panel appeared — dragging right gives "right" while revealing
+       * the left panel. Reading it the other way had each swipe raising the
+       * other one's confirm.
+       *
+       * The action fires on release rather than after the open animation, so
+       * the tick and the sheet arrive together and the row is already on its
+       * way back. The confirm is the decision point; leaving the row hanging
+       * open behind it would ask twice.
        */
-      onSwipeableOpen={(direction) => {
-        swipe.current?.close();
-        if (direction === "left") onArchive?.();
+      onSwipeableWillOpen={(direction) => {
+        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        if (direction === "right") onArchive?.();
         else onDelete?.();
       }}
+      onSwipeableOpen={() => swipe.current?.close()}
     >
       {card}
     </ReanimatedSwipeable>
