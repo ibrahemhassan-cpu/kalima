@@ -21,6 +21,7 @@ import { QuizCard, type AnswerState } from "@/components/review/QuizCard";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useWordDetail } from "@/api/words";
 import { ICON_FORWARD } from "@/i18n/rtl";
+import { useGoBack } from "@/lib/navigation";
 import {
   useCheckAnswer,
   useFinishWordQuiz,
@@ -39,6 +40,7 @@ export default function WordQuiz() {
   const { colors, spacing } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = useGoBack();
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const { data: word } = useWordDetail(id);
@@ -121,7 +123,7 @@ export default function WordQuiz() {
         outcome={outcome}
         lemma={word?.entry.lemma ?? ""}
         onRetry={restart}
-        onDone={() => router.back()}
+        onDone={() => goBack()}
       />
     );
   }
@@ -130,7 +132,7 @@ export default function WordQuiz() {
   if (isLoading) {
     return (
       <Screen>
-        <Header onBack={() => router.back()} language={false} />
+        <Header onBack={() => goBack()} language={false} />
         <SkeletonCard lines={4} />
       </Screen>
     );
@@ -142,7 +144,7 @@ export default function WordQuiz() {
       <Screen>
         <Header
           title={word?.entry.lemma ?? ""}
-          onBack={() => router.back()}
+          onBack={() => goBack()}
           language={false}
         />
         <View
@@ -169,7 +171,7 @@ export default function WordQuiz() {
     <Screen>
       <Header
         title={word?.entry.lemma ?? ""}
-        onBack={() => router.back()}
+        onBack={() => goBack()}
         language={false}
         right={
           <Badge

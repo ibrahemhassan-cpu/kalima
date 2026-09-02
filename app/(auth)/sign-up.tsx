@@ -9,6 +9,7 @@ import { Button, Header, Input, Screen, Surface, Text, Touchable } from "@/compo
 import { FormError, RevealToggle, StrengthMeter } from "@/components/auth/AuthForm";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useResendConfirmation, useSignUp } from "@/features/auth/actions";
+import { useGoBack } from "@/lib/navigation";
 import {
   authErrorKey,
   validateEmail,
@@ -20,6 +21,7 @@ export default function SignUp() {
   const { colors, spacing } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = useGoBack();
   const signUp = useSignUp();
 
   const [name, setName] = useState("");
@@ -57,7 +59,7 @@ export default function SignUp() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <Screen scroll>
-        <Header title={t("auth.signUp")} onBack={() => router.back()} />
+        <Header title={t("auth.signUp")} onBack={() => goBack()} />
 
         <Surface tone="glass" radiusKey="xl" elevation="md">
           <View style={{ gap: spacing.lg }}>

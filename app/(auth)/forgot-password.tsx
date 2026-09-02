@@ -10,11 +10,13 @@ import { FormError } from "@/components/auth/AuthForm";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useRequestPasswordReset } from "@/features/auth/actions";
 import { authErrorKey, validateEmail } from "@/features/auth/errors";
+import { useGoBack } from "@/lib/navigation";
 
 export default function ForgotPassword() {
   const { colors, spacing } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = useGoBack();
   const request = useRequestPasswordReset();
 
   const [email, setEmail] = useState("");
@@ -39,7 +41,7 @@ export default function ForgotPassword() {
   if (sent) {
     return (
       <Screen scroll>
-        <Header onBack={() => router.back()} />
+        <Header onBack={() => goBack()} />
         <View
           style={{ alignItems: "center", gap: spacing.lg, paddingTop: spacing.xxl }}
         >
@@ -81,7 +83,7 @@ export default function ForgotPassword() {
       <Header
         title={t("auth.forgotTitle")}
         subtitle={t("auth.forgotSubtitle")}
-        onBack={() => router.back()}
+        onBack={() => goBack()}
       />
 
       <Surface tone="glass" radiusKey="xl" elevation="md">

@@ -19,6 +19,7 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { formatHour } from "@/features/onboarding/store";
 import { requestPermission, syncReminders } from "@/features/notifications";
 import { parseReminderTimes } from "@/features/notifications/useReminders";
+import { useGoBack } from "@/lib/navigation";
 import {
   biometricAvailable,
   clearQuickLogin,
@@ -29,6 +30,7 @@ export default function Settings() {
   const { spacing } = useTheme();
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const goBack = useGoBack();
   const s = useSettings();
   const { data: profile } = useProfile();
   const { user } = useAuth();
@@ -85,7 +87,7 @@ export default function Settings() {
 
   return (
     <Screen scroll>
-      <Header title={t("settings.title")} onBack={() => router.back()} />
+      <Header title={t("settings.title")} onBack={() => goBack()} />
 
       <ListGroup title={t("settings.appearance")}>
         <ListRow

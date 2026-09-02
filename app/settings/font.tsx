@@ -6,6 +6,7 @@ import { ChoiceList, Header, Screen, Surface, Text } from "@/components/ui";
 import { useSettings } from "@/store/settings";
 import { fontScales, type FontScaleName } from "@/theme/typography";
 import { useTheme } from "@/theme/ThemeProvider";
+import { useGoBack } from "@/lib/navigation";
 
 const LABEL: Record<FontScaleName, string> = {
   sm: "settings.fontSm",
@@ -16,6 +17,7 @@ const LABEL: Record<FontScaleName, string> = {
 
 export default function FontSetting() {
   const router = useRouter();
+  const goBack = useGoBack();
   const { t } = useTranslation();
   const { spacing } = useTheme();
   const fontScale = useSettings((s) => s.fontScale);
@@ -23,7 +25,7 @@ export default function FontSetting() {
 
   return (
     <Screen scroll>
-      <Header title={t("settings.fontSize")} onBack={() => router.back()} />
+      <Header title={t("settings.fontSize")} onBack={() => goBack()} />
 
       <Surface tone="glass" radiusKey="xl">
         <View style={{ gap: spacing.sm }}>

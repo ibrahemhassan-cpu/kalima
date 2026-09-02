@@ -24,9 +24,11 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { useSignOut } from "@/features/auth/actions";
 import { supabase } from "@/lib/supabase";
 import type { HomeSummary } from "@/lib/database.types";
+import { useRefreshAll } from "@/lib/refresh";
 
 export default function ProfileTab() {
   const { colors, spacing, radius } = useTheme();
+  const { refreshing, onRefresh } = useRefreshAll();
   const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
@@ -50,7 +52,7 @@ export default function ProfileTab() {
 
   return (
     <>
-      <Screen scroll tabBar>
+      <Screen scroll tabBar onRefresh={onRefresh} refreshing={refreshing}>
       <Header title={t("tabs.profile")} />
 
       <Surface tone="glass" elevation="lg" radiusKey="xxl" padded={spacing.xl}>

@@ -45,11 +45,6 @@ export function EntryBody({
               <Text variant="word" ltr>
                 {entry.lemma}
               </Text>
-              {entry.ipa ? (
-                <Text variant="caption" tone="faint" ltr>
-                  {entry.ipa}
-                </Text>
-              ) : null}
             </View>
             <SpeakButton word={entry.lemma} />
             <SpeakButton word={entry.lemma} slow size="sm" />

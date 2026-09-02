@@ -16,6 +16,7 @@ import { AnimatedLogo } from "@/components/brand/AnimatedLogo";
 import { useTheme } from "@/theme/ThemeProvider";
 import { PRESS_SCALE_SMALL } from "@/theme/motion";
 import { useSignIn } from "@/features/auth/actions";
+import { useGoBack } from "@/lib/navigation";
 import {
   authErrorKey,
   validateEmail,
@@ -33,6 +34,7 @@ export default function SignIn() {
   const { colors, spacing } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = useGoBack();
   const signIn = useSignIn();
 
   const [email, setEmail] = useState("");
@@ -106,7 +108,7 @@ export default function SignIn() {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <Screen scroll>
-        <Header onBack={() => router.back()} />
+        <Header onBack={() => goBack()} />
 
         {/* the mark, at the size of a greeting rather than a logo drop */}
         <View style={{ alignItems: "center", gap: spacing.sm, paddingTop: spacing.md }}>

@@ -14,16 +14,18 @@ import {
 import { PackCard } from "@/components/packs/PackCard";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useTopicPacks } from "@/api/packs";
+import { useRefreshAll } from "@/lib/refresh";
 
 export default function Discover() {
   const { colors, spacing, radius } = useTheme();
+  const { refreshing, onRefresh } = useRefreshAll();
   const { t } = useTranslation();
   const router = useRouter();
 
   const { data: packs, isLoading } = useTopicPacks();
 
   return (
-    <Screen scroll tabBar>
+    <Screen scroll tabBar onRefresh={onRefresh} refreshing={refreshing}>
       <Header
         title={t("packs.discoverTitle")}
         subtitle={t("packs.discoverSubtitle")}

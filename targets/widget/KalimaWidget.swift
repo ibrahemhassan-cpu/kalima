@@ -65,10 +65,6 @@ struct KalimaWidgetView: View {
   var body: some View {
     VStack(spacing: 6) {
       if let card = entry.card {
-        Text("كلمة")
-          .font(.system(size: 10))
-          .foregroundStyle(.white.opacity(0.55))
-
         Text(card.word)
           .font(.system(size: 26, weight: .bold))
           .foregroundStyle(.white)
@@ -76,21 +72,9 @@ struct KalimaWidgetView: View {
           .minimumScaleFactor(0.6)
           .environment(\.layoutDirection, .leftToRight)
 
-        if !card.ipa.isEmpty {
-          Text(card.ipa)
-            .font(.system(size: 12))
-            .foregroundStyle(.white.opacity(0.75))
-            .lineLimit(1)
-            .environment(\.layoutDirection, .leftToRight)
-        }
-
         Divider()
           .overlay(.white.opacity(0.38))
           .padding(.vertical, 4)
-
-        Text("معناها")
-          .font(.system(size: 10))
-          .foregroundStyle(.white.opacity(0.55))
 
         Text(card.translation)
           .font(.system(size: 16, weight: .semibold))

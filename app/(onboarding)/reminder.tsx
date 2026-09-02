@@ -22,11 +22,13 @@ import {
 import { deviceTimezone, useUpdateProfile } from "@/api/profile";
 import { useSettings } from "@/store/settings";
 import { ICON_FORWARD } from "@/i18n/rtl";
+import { useGoBack } from "@/lib/navigation";
 
 export default function ReminderStep() {
   const { colors, spacing, radius, minTouch } = useTheme();
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const goBack = useGoBack();
 
   const { level, dailyGoal, reminderHour, reminderEnabled, setReminder, reset } =
     useOnboarding();
@@ -56,7 +58,7 @@ export default function ReminderStep() {
 
   return (
     <Screen scroll>
-      <Header onBack={() => router.back()} />
+      <Header onBack={() => goBack()} />
       <ProgressDots total={3} index={2} />
 
       <View style={{ gap: spacing.sm, paddingTop: spacing.lg }}>

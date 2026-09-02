@@ -115,12 +115,6 @@ export function FlipCard({
               {word.lemma}
             </Text>
 
-            {word.ipa ? (
-              <Text variant="caption" tone="faint" ltr>
-                {word.ipa}
-              </Text>
-            ) : null}
-
             <View style={{ flexDirection: "row", gap: spacing.md }}>
               <SpeakButton word={word.lemma} />
               <SpeakButton word={word.lemma} slow size="sm" />

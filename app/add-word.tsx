@@ -39,6 +39,7 @@ import {
 } from "@/api/words";
 import { useAiQuota } from "@/api/ai";
 import { ICON_CHEVRON_FORWARD } from "@/i18n/rtl";
+import { useGoBack } from "@/lib/navigation";
 
 type Phase = "input" | "loading" | "result";
 
@@ -46,6 +47,7 @@ export default function AddWord() {
   const { colors, spacing, radius, minTouch } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = useGoBack();
   const qc = useQueryClient();
   const addWord = useAddWord();
 
@@ -128,7 +130,7 @@ export default function AddWord() {
       });
       void qc.invalidateQueries({ queryKey: ["home-summary"] });
       void qc.invalidateQueries({ queryKey: ["due-words"] });
-      router.back();
+      goBack();
     } catch {
       setError(t("errors.generic"));
     }
@@ -248,7 +250,7 @@ export default function AddWord() {
         <Header
           title={t("word.addTitle")}
           subtitle={t("word.addSubtitle")}
-          onBack={() => router.back()}
+          onBack={() => goBack()}
         />
 
         {!online ? (

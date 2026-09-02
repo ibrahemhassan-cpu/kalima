@@ -18,19 +18,23 @@ import {
 import { useTheme } from "@/theme/ThemeProvider";
 import { duration } from "@/theme/motion";
 import { useAchievements, type AchievementRow } from "@/api/achievements";
+import { useGoBack } from "@/lib/navigation";
+import { useRefreshAll } from "@/lib/refresh";
 
 export default function Achievements() {
   const { colors, spacing } = useTheme();
+  const { refreshing, onRefresh } = useRefreshAll();
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const goBack = useGoBack();
   const { data, isLoading } = useAchievements();
 
   const earned = data?.filter((a) => a.earned_at).length ?? 0;
   const total = data?.length ?? 0;
 
   return (
-    <Screen scroll>
-      <Header title={t("profile.achievements")} onBack={() => router.back()} />
+    <Screen scroll onRefresh={onRefresh} refreshing={refreshing}>
+      <Header title={t("profile.achievements")} onBack={() => goBack()} />
 
       {isLoading ? (
         <View style={{ paddingVertical: spacing.xxxl, alignItems: "center" }}>

@@ -34,6 +34,7 @@ import { useSettings } from "@/store/settings";
 import { masteryOf } from "@/api/quiz";
 import { isOnline } from "@/lib/network";
 import { speak } from "@/features/tts";
+import { useGoBack } from "@/lib/navigation";
 
 export default function WordDetail() {
   const { id, speak: speakParam } = useLocalSearchParams<{
@@ -43,6 +44,7 @@ export default function WordDetail() {
   const { colors, spacing, radius, minTouch } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = useGoBack();
 
   const simple = useSettings((s) => s.simpleMode);
 
@@ -129,7 +131,7 @@ export default function WordDetail() {
   if (isLoading) {
     return (
       <Screen scroll>
-        <Header onBack={() => router.back()} language={false} />
+        <Header onBack={() => goBack()} language={false} />
         <SkeletonCard lines={2} />
         <SkeletonCard lines={4} />
       </Screen>
@@ -139,7 +141,7 @@ export default function WordDetail() {
   if (error || !word) {
     return (
       <Screen>
-        <Header onBack={() => router.back()} />
+        <Header onBack={() => goBack()} />
         <View
           style={{
             flex: 1,
@@ -164,7 +166,7 @@ export default function WordDetail() {
     >
       <Screen scroll>
         <Header
-          onBack={() => router.back()}
+          onBack={() => goBack()}
           language={false}
           right={
             <View style={{ flexDirection: "row", gap: spacing.sm }}>
@@ -186,7 +188,6 @@ export default function WordDetail() {
 
         <WordGlassCard
           lemma={word.entry.lemma}
-          ipa={word.entry.ipa}
           translation={shownTranslation}
           isFavorite={word.is_favorite}
           onToggleFavorite={() =>
@@ -507,7 +508,7 @@ export default function WordDetail() {
           onConfirm={async () => {
             await remove.mutateAsync(word.id);
             deleteSheet.current?.close();
-            router.back();
+            goBack();
           }}
         />
       </Sheet>

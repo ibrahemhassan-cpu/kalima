@@ -32,9 +32,11 @@ import { useMyWords } from "@/api/words";
 import { useWordOfDay } from "@/api/wordOfDay";
 import { supabase } from "@/lib/supabase";
 import type { HomeSummary } from "@/lib/database.types";
+import { useRefreshAll } from "@/lib/refresh";
 
 export default function Home() {
   const { colors, spacing, radius, shadow } = useTheme();
+  const { refreshing, onRefresh } = useRefreshAll();
   const { t } = useTranslation();
   const router = useRouter();
   const simpleMode = useSettings((s) => s.simpleMode);
@@ -82,7 +84,7 @@ export default function Home() {
   const streak = summary?.current_streak ?? 0;
 
   return (
-    <Screen scroll tabBar>
+    <Screen scroll tabBar onRefresh={onRefresh} refreshing={refreshing}>
       {/* header */}
       <View
         style={{

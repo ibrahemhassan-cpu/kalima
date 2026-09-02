@@ -123,7 +123,7 @@
     "editReset": "رجعنا ترجمة القاموس",
     "archive": "أرشف الكلمة",
     "archiveHint": "توقّف مراجعتها من غير ما تضيّع تقدّمك",
-    "archived": "اتأرشفت",
+    "archived": "اتأرشفت — تلاقيها في «كلماتي ← المؤرشفة»",
     "restore": "رجّعها",
     "restoreHint": "ترجع لطابور المراجعة تاني",
     "restored": "رجعت للمراجعة",
@@ -264,7 +264,10 @@
     "saveFailed": "تعذّر الحفظ. تحقّق من اتصالك",
     "achievements": "الإنجازات",
     "masteredOf": "أتقنت {{mastered}} من {{total}}",
-    "statCurrentStreak": "سلسلتك الحالية"
+    "statCurrentStreak": "سلسلتك الحالية",
+    "photoActions": "صورة حسابك",
+    "viewPhoto": "اعرض الصورة",
+    "addPhoto": "أضف صورة"
   },
   "settings": {
     "title": "الإعدادات",
@@ -498,8 +501,6 @@
     "blocked": "التنبيهات مُعطّلة في إعدادات هاتفك"
   },
   "card": {
-    "word": "كلمة",
-    "meaning": "معناها",
     "flip": "اقلب البطاقة",
     "settingsTitle": "بطاقة الكلمة",
     "settingsSubtitle": "كلمة من مكتبتك على شاشتك الرئيسية",

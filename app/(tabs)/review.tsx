@@ -21,9 +21,11 @@ import { useDueWords } from "@/api/review";
 import { formatDue } from "@/api/words";
 import { supabase } from "@/lib/supabase";
 import type { HomeSummary } from "@/lib/database.types";
+import { useRefreshAll } from "@/lib/refresh";
 
 export default function ReviewTab() {
   const { colors, spacing } = useTheme();
+  const { refreshing, onRefresh } = useRefreshAll();
   const { t } = useTranslation();
   const router = useRouter();
 
@@ -56,7 +58,7 @@ export default function ReviewTab() {
   }, [due]);
 
   return (
-    <Screen scroll tabBar>
+    <Screen scroll tabBar onRefresh={onRefresh} refreshing={refreshing}>
       <Header
         title={t("review.title")}
         right={

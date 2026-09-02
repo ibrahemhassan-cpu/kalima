@@ -20,6 +20,7 @@ import { useMyWords } from "@/api/words";
 import { requestPermission } from "@/features/notifications";
 import { speak } from "@/features/tts";
 import { isWidgetSupported, widgetsPlaced } from "@modules/word-widget";
+import { useGoBack } from "@/lib/navigation";
 
 const INTERVALS = [15, 30, 60, 120];
 
@@ -30,6 +31,7 @@ const INTERVALS = [15, 30, 60, 120];
  */
 export default function WordCardSetting() {
   const router = useRouter();
+  const goBack = useGoBack();
   const { t } = useTranslation();
   const { colors, spacing, radius } = useTheme();
 
@@ -58,7 +60,7 @@ export default function WordCardSetting() {
       <Header
         title={t("card.settingsTitle")}
         subtitle={t("card.settingsSubtitle")}
-        onBack={() => router.back()}
+        onBack={() => goBack()}
       />
 
 {/*

@@ -20,7 +20,6 @@ import { PRESS_SCALE_SMALL } from "@/theme/motion";
  */
 export function WordGlassCard({
   lemma,
-  ipa,
   translation,
   isFavorite,
   onToggleFavorite,
@@ -29,7 +28,6 @@ export function WordGlassCard({
   compact,
 }: {
   lemma: string;
-  ipa?: string | null;
   translation: string;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
@@ -90,11 +88,15 @@ export function WordGlassCard({
             />
           </View>
 
-          {/* the word */}
-          <View style={{ alignItems: "center", gap: spacing.xs }}>
-            <Text variant="micro" center style={{ color: colors.onBrandFaint }}>
-              {t("card.word")}
-            </Text>
+          {/*
+            No "word" / "means" captions and no phonetics.
+
+            One English word sits above a divider and its Arabic below it —
+            nobody needs telling which is which. The IPA was the loudest thing
+            after the word itself and is unreadable to anyone who was never
+            taught the alphabet, which is nearly everyone.
+          */}
+          <View style={{ alignItems: "center" }}>
             <Text
               variant={wordVariant}
               center
@@ -105,16 +107,6 @@ export function WordGlassCard({
             >
               {lemma}
             </Text>
-            {ipa ? (
-              <Text
-                variant="body"
-                center
-                ltr
-                style={{ color: colors.onBrandMuted }}
-              >
-                {ipa}
-              </Text>
-            ) : null}
           </View>
 
           {/* divider with the flip affordance sitting on it */}
@@ -137,10 +129,7 @@ export function WordGlassCard({
           </View>
 
           {/* the meaning */}
-          <View style={{ alignItems: "center", gap: spacing.xs }}>
-            <Text variant="micro" center style={{ color: colors.onBrandFaint }}>
-              {t("card.meaning")}
-            </Text>
+          <View style={{ alignItems: "center" }}>
             <Text
               variant={arVariant}
               center

@@ -92,11 +92,6 @@ export const RelatedWordSheet = forwardRef<RelatedSheetRef>(
               <Text variant="title" ltr>
                 {data?.entry.lemma ?? word}
               </Text>
-              {data?.entry.ipa ? (
-                <Text variant="caption" tone="faint" ltr>
-                  {data.entry.ipa}
-                </Text>
-              ) : null}
             </View>
             <SpeakButton word={data?.entry.lemma ?? word} size="sm" />
           </View>

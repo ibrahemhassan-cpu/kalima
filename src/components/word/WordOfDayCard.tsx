@@ -86,11 +86,6 @@ export function WordOfDayCard({
             <Text variant="heading" ltr numberOfLines={2}>
               {word.lemma}
             </Text>
-            {word.ipa ? (
-              <Text variant="micro" tone="faint" ltr numberOfLines={1}>
-                {word.ipa}
-              </Text>
-            ) : null}
           </View>
           <SpeakButton word={word.lemma} />
         </View>

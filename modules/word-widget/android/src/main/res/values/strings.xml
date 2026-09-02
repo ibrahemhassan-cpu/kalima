@@ -5,7 +5,5 @@
   <string name="kalima_widget_label">Kalima</string>
   <string name="kalima_widget_speak">استمع</string>
   <string name="kalima_widget_next">كلمة أخرى</string>
-  <string name="kalima_widget_word">كلمة</string>
-  <string name="kalima_widget_meaning">معناها</string>
   <string name="kalima_widget_empty">أضِف كلمات من التطبيق</string>
 </resources>

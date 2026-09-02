@@ -181,11 +181,6 @@ function PromptBody({ item }: { item: QuizCardItem }) {
       <Text variant="word" center ltr={!isArabicPrompt}>
         {item.prompt ?? item.lemma}
       </Text>
-      {item.mode === "mcq_en_ar" && item.ipa ? (
-        <Text variant="caption" tone="faint" ltr>
-          {item.ipa}
-        </Text>
-      ) : null}
       {item.mode === "typing" && item.prompt_hint ? (
         <Text variant="caption" tone="muted" center>
           {item.prompt_hint}

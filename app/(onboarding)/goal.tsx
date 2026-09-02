@@ -6,17 +6,19 @@ import { Button, ChoiceList, Header, ProgressDots, Screen, Text } from "@/compon
 import { useTheme } from "@/theme/ThemeProvider";
 import { goalOptions, useOnboarding } from "@/features/onboarding/store";
 import { ICON_FORWARD } from "@/i18n/rtl";
+import { useGoBack } from "@/lib/navigation";
 
 export default function GoalStep() {
   const { spacing } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = useGoBack();
   const dailyGoal = useOnboarding((s) => s.dailyGoal);
   const setDailyGoal = useOnboarding((s) => s.setDailyGoal);
 
   return (
     <Screen scroll>
-      <Header onBack={() => router.back()} />
+      <Header onBack={() => goBack()} />
       <ProgressDots total={3} index={1} />
 
       <View style={{ gap: spacing.sm, paddingTop: spacing.lg }}>

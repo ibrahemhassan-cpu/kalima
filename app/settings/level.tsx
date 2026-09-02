@@ -5,9 +5,11 @@ import { ChoiceList, Header, Screen } from "@/components/ui";
 import { useProfile, useUpdateProfile } from "@/api/profile";
 import { levelOptions } from "@/features/onboarding/store";
 import type { CefrLevel } from "@/lib/database.types";
+import { useGoBack } from "@/lib/navigation";
 
 export default function LevelSetting() {
   const router = useRouter();
+  const goBack = useGoBack();
   const { t } = useTranslation();
   const { data: profile } = useProfile();
   const update = useUpdateProfile();
@@ -17,7 +19,7 @@ export default function LevelSetting() {
       <Header
         title={t("settings.myLevel")}
         subtitle={t("settings.myLevelHint")}
-        onBack={() => router.back()}
+        onBack={() => goBack()}
       />
       <ChoiceList<CefrLevel>
         options={levelOptions(t)}

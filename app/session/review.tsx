@@ -24,6 +24,7 @@ import {
 } from "@/api/session";
 import { queueReview } from "@/lib/offline";
 import type { DueWord, ReviewResult } from "@/lib/database.types";
+import { useGoBack } from "@/lib/navigation";
 
 type Tally = {
   reviewed: number;
@@ -41,6 +42,7 @@ export default function ReviewSession() {
   const { colors, spacing, radius, minTouch } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = useGoBack();
   const autoplay = useSettings((s) => s.autoplayAudio);
 
   const { data: queue, isLoading } = useSessionItems(20);
@@ -188,7 +190,7 @@ export default function ReviewSession() {
 
   function confirmExit() {
     if (tally.current.reviewed === 0) {
-      router.back();
+      goBack();
       return;
     }
     exitSheet.current?.open();
@@ -219,7 +221,7 @@ export default function ReviewSession() {
           <Text variant="title" center>
             {t("review.nothingDueTitle")}
           </Text>
-          <Touchable onPress={() => router.back()}>
+          <Touchable onPress={() => goBack()}>
             <Text variant="bodyStrong" tone="brand">
               {t("review.backHome")}
             </Text>

@@ -16,6 +16,7 @@ import { useTheme } from "@/theme/ThemeProvider";
 import { useProfile, useUpdateProfile } from "@/api/profile";
 import { formatHour, REMINDER_HOURS } from "@/features/onboarding/store";
 import { MAX_REMINDERS } from "@/features/notifications";
+import { useGoBack } from "@/lib/navigation";
 
 const pad = (h: number) => `${String(h).padStart(2, "0")}:00:00`;
 
@@ -27,6 +28,7 @@ const pad = (h: number) => `${String(h).padStart(2, "0")}:00:00`;
  */
 export default function ReminderSetting() {
   const router = useRouter();
+  const goBack = useGoBack();
   const { t, i18n } = useTranslation();
   const { colors, spacing, radius, minTouch } = useTheme();
   const { data: profile } = useProfile();
@@ -65,7 +67,7 @@ export default function ReminderSetting() {
       <Header
         title={t("settings.reminderTime")}
         subtitle={t("settings.reminderTimesHint")}
-        onBack={() => router.back()}
+        onBack={() => goBack()}
       />
 
       <Surface tone="glass" radiusKey="xl">

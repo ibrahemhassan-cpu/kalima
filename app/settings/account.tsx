@@ -12,11 +12,13 @@ import { useTheme } from "@/theme/ThemeProvider";
 import { supabase, SUPABASE_URL } from "@/lib/supabase";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useSignOut } from "@/features/auth/actions";
+import { useGoBack } from "@/lib/navigation";
 
 export default function AccountSettings() {
   const { colors, spacing, radius } = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const goBack = useGoBack();
   const { user, session } = useAuth();
   const signOut = useSignOut();
 
@@ -100,7 +102,7 @@ export default function AccountSettings() {
 
   return (
     <Screen scroll>
-      <Header title={t("profile.account")} onBack={() => router.back()} />
+      <Header title={t("profile.account")} onBack={() => goBack()} />
 
       <Surface tone="glass" radiusKey="xl">
         <View style={{ gap: spacing.md }}>

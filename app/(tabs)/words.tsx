@@ -23,6 +23,7 @@ import { duration } from "@/theme/motion";
 import { useSettings } from "@/store/settings";
 import { useMyWords, type WordFilter, type WordSort } from "@/api/words";
 import { tabBarClearance } from "@/theme/spacing";
+import { useRefreshAll } from "@/lib/refresh";
 
 const FILTERS: WordFilter[] = [
   "all",
@@ -67,7 +68,9 @@ export default function Words() {
     return () => clearTimeout(id);
   }, [search]);
 
-  const { data, isLoading, isRefetching, refetch } = useMyWords({
+  const { refreshing, onRefresh } = useRefreshAll();
+
+  const { data, isLoading } = useMyWords({
     filter,
     search: debounced,
     sort,
@@ -107,12 +110,38 @@ export default function Words() {
             justifyContent: "space-between",
           }}
         >
-          <Text variant="title">{t("words.title")}</Text>
-          {total > 0 ? (
-            <Text variant="caption" tone="faint">
-              {t("words.count", { count: total })}
+          <View
+            style={{ flexDirection: "row", alignItems: "baseline", gap: spacing.sm }}
+          >
+            <Text variant="title">
+              {t(filter === "archived" ? "words.filterArchived" : "words.title")}
             </Text>
-          ) : null}
+            {total > 0 ? (
+              <Text variant="caption" tone="faint">
+                {t("words.count", { count: total })}
+              </Text>
+            ) : null}
+          </View>
+
+          {/* one tap in, one tap back out */}
+          <Touchable
+            onPress={() => setFilter(filter === "archived" ? "all" : "archived")}
+            haptic="select"
+            accessibilityRole="button"
+            style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+          >
+            <Ionicons
+              name={filter === "archived" ? "arrow-undo-outline" : "archive-outline"}
+              size={15}
+              color={filter === "archived" ? colors.brand : colors.textMuted}
+            />
+            <Text
+              variant="caption"
+              tone={filter === "archived" ? "brand" : "muted"}
+            >
+              {t(filter === "archived" ? "words.filterAll" : "words.filterArchived")}
+            </Text>
+          </Touchable>
         </View>
 
         <View style={{ flexDirection: "row", gap: spacing.sm, alignItems: "center" }}>
@@ -163,7 +192,7 @@ export default function Words() {
         </View>
       </View>
     ),
-    [insets.top, spacing, t, total, search, filtered, colors, radius, minTouch],
+    [insets.top, spacing, t, total, search, filtered, filter, colors, radius, minTouch],
   );
 
   return (
@@ -197,8 +226,10 @@ export default function Words() {
           }}
           refreshControl={
             <RefreshControl
-              refreshing={isRefetching}
-              onRefresh={refetch}
+              // the whole screen, not just this list — the header counts and
+              // the filters read from queries of their own
+              refreshing={refreshing}
+              onRefresh={onRefresh}
               tintColor={colors.brand}
             />
           }

@@ -1,5 +1,11 @@
 import React from "react";
-import { ScrollView, type StyleProp, View, type ViewStyle } from "react-native";
+import {
+  RefreshControl,
+  ScrollView,
+  type StyleProp,
+  View,
+  type ViewStyle,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
@@ -16,6 +22,12 @@ export type ScreenProps = {
   /** reserve room for the floating tab bar — set on every screen inside (tabs) */
   tabBar?: boolean;
   edges?: { top?: boolean; bottom?: boolean };
+  /**
+   * Pull-to-refresh. Only reaches the user with `scroll`, since there is
+   * nothing to pull otherwise.
+   */
+  onRefresh?: () => void;
+  refreshing?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -26,6 +38,8 @@ export function Screen({
   glow = true,
   tabBar = false,
   edges,
+  onRefresh,
+  refreshing = false,
   style,
 }: ScreenProps) {
   const { colors, spacing, isDark } = useTheme();
@@ -92,6 +106,17 @@ export function Screen({
           contentContainerStyle={inner}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            onRefresh ? (
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={colors.brand}
+                colors={[colors.brand]}
+                progressBackgroundColor={colors.solid}
+              />
+            ) : undefined
+          }
         >
           <OfflineBar />
           {children}

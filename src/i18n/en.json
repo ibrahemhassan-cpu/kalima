@@ -114,7 +114,7 @@
     "editReset": "Dictionary translation restored",
     "archive": "Archive word",
     "archiveHint": "Stop reviewing it without losing your progress",
-    "archived": "Archived",
+    "archived": "Archived — find it under My words → Archived",
     "restore": "Restore",
     "restoreHint": "Bring it back into the review queue",
     "restored": "Back in review",
@@ -237,7 +237,10 @@
     "saveFailed": "Couldn't save. Check your connection",
     "achievements": "Achievements",
     "masteredOf": "{{mastered}} of {{total}} mastered",
-    "statCurrentStreak": "Current streak"
+    "statCurrentStreak": "Current streak",
+    "photoActions": "Your photo",
+    "viewPhoto": "View photo",
+    "addPhoto": "Add a photo"
   },
   "settings": {
     "title": "Settings",
@@ -471,8 +474,6 @@
     "blocked": "Notifications are off in your phone settings"
   },
   "card": {
-    "word": "word",
-    "meaning": "means",
     "flip": "Flip the card",
     "settingsTitle": "Word card",
     "settingsSubtitle": "A word from your library, on your home screen",

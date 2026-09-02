@@ -22,6 +22,7 @@ import {
 } from "@/components/word/RelatedWordSheet";
 import { usePackAccent } from "@/components/packs/PackCard";
 import { useTheme } from "@/theme/ThemeProvider";
+import { useGoBack } from "@/lib/navigation";
 import {
   packSubtitle,
   packTitle,
@@ -34,6 +35,7 @@ export default function PackDetail() {
   const { colors, spacing, radius, minTouch } = useTheme();
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const goBack = useGoBack();
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const sheet = useRef<RelatedSheetRef>(null);
@@ -79,7 +81,7 @@ export default function PackDetail() {
       <Header
         title={pack ? packTitle(pack, i18n.language) : ""}
         subtitle={pack ? packSubtitle(pack, i18n.language) : undefined}
-        onBack={() => router.back()}
+        onBack={() => goBack()}
       />
 
       {/* progress + bulk add */}

@@ -3,16 +3,18 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ChoiceList, Header, Screen } from "@/components/ui";
 import { useSettings, type ThemePref } from "@/store/settings";
+import { useGoBack } from "@/lib/navigation";
 
 export default function ThemeSetting() {
   const router = useRouter();
+  const goBack = useGoBack();
   const { t } = useTranslation();
   const theme = useSettings((s) => s.theme);
   const setTheme = useSettings((s) => s.setTheme);
 
   return (
     <Screen scroll>
-      <Header title={t("settings.theme")} onBack={() => router.back()} />
+      <Header title={t("settings.theme")} onBack={() => goBack()} />
       <ChoiceList<ThemePref>
         options={[
           { key: "light", title: t("settings.themeLight") },

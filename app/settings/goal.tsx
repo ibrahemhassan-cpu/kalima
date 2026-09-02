@@ -4,9 +4,11 @@ import { useTranslation } from "react-i18next";
 import { ChoiceList, Header, Screen } from "@/components/ui";
 import { useProfile, useUpdateProfile } from "@/api/profile";
 import { goalOptions } from "@/features/onboarding/store";
+import { useGoBack } from "@/lib/navigation";
 
 export default function GoalSetting() {
   const router = useRouter();
+  const goBack = useGoBack();
   const { t } = useTranslation();
   const { data: profile } = useProfile();
   const update = useUpdateProfile();
@@ -16,7 +18,7 @@ export default function GoalSetting() {
       <Header
         title={t("settings.dailyGoal")}
         subtitle={t("settings.dailyGoalHint")}
-        onBack={() => router.back()}
+        onBack={() => goBack()}
       />
       <ChoiceList<number>
         options={goalOptions(t)}
