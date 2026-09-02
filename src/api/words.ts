@@ -301,7 +301,17 @@ export function useSetArchived() {
       if (error) throw error;
       return data as unknown as { status: WordStatus; archived: boolean };
     },
-    onSuccess: (_data, vars) => {
+    onSuccess: (data, vars) => {
+      /**
+       * Write the status the server actually settled on straight into the
+       * cache. Waiting for the invalidation to round-trip left the screen on
+       * the old value for as long as the refetch took — long enough to read
+       * as "restore did nothing" and tap it again.
+       */
+      qc.setQueryData(["word", vars.userWordId], (old: WordDetail | undefined) =>
+        old ? { ...old, status: data.status } : old,
+      );
+
       void qc.invalidateQueries({ queryKey: ["word", vars.userWordId] });
       void qc.invalidateQueries({ queryKey: ["my-words"] });
       void qc.invalidateQueries({ queryKey: ["home-summary"] });

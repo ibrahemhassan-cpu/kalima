@@ -1,5 +1,8 @@
-import React from "react";
-import { View } from "react-native";
+import React, { useRef } from "react";
+import { I18nManager, View } from "react-native";
+import ReanimatedSwipeable, {
+  type SwipeableMethods,
+} from "react-native-gesture-handler/ReanimatedSwipeable";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/theme/ThemeProvider";
@@ -13,14 +16,21 @@ import { ICON_CHEVRON_FORWARD } from "@/i18n/rtl";
 export function WordCard({
   row,
   onPress,
+  onArchive,
+  onDelete,
 }: {
   row: MyWordRow;
   onPress: () => void;
+  /** swipe one way to archive — the caller confirms */
+  onArchive?: () => void;
+  /** swipe the other way to delete — the caller confirms */
+  onDelete?: () => void;
 }) {
   const { colors, spacing, radius, shadow, minTouch, isDark } = useTheme();
   const { t } = useTranslation();
+  const swipe = useRef<SwipeableMethods>(null);
 
-  return (
+  const card = (
     <Touchable
       accessibilityRole="button"
       accessibilityLabel={`${row.lemma}, ${row.ar_preview}`}
@@ -89,5 +99,82 @@ export function WordCard({
         color={colors.textFaint}
       />
     </Touchable>
+  );
+
+  if (!onArchive && !onDelete) return card;
+
+  /**
+   * The panel behind the card while it is being dragged.
+   *
+   * It only has to read as "this is what letting go does" — the action fires
+   * from the swipe itself, so there is nothing here to tap.
+   */
+  const panel = (
+    tone: string,
+    icon: keyof typeof Ionicons.glyphMap,
+    label: string,
+    align: "flex-start" | "flex-end",
+  ) => (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: tone,
+        borderRadius: radius.lg,
+        justifyContent: "center",
+        alignItems: align,
+        paddingHorizontal: spacing.xl,
+        gap: 4,
+      }}
+    >
+      <Ionicons name={icon} size={22} color={colors.onBrand} />
+      <Text variant="micro" style={{ color: colors.onBrand, fontWeight: "700" }}>
+        {label}
+      </Text>
+    </View>
+  );
+
+  return (
+    <ReanimatedSwipeable
+      ref={swipe}
+      friction={2}
+      leftThreshold={72}
+      rightThreshold={72}
+      overshootLeft={false}
+      overshootRight={false}
+      renderLeftActions={
+        onArchive
+          ? () =>
+              panel(
+                colors.brand,
+                "archive",
+                t("word.archive"),
+                I18nManager.isRTL ? "flex-end" : "flex-start",
+              )
+          : undefined
+      }
+      renderRightActions={
+        onDelete
+          ? () =>
+              panel(
+                colors.danger,
+                "trash",
+                t("common.delete"),
+                I18nManager.isRTL ? "flex-start" : "flex-end",
+              )
+          : undefined
+      }
+      /**
+       * Fire on release and snap shut straight away: the confirm sheet is the
+       * decision point, so leaving the row hanging open behind it would ask
+       * twice and leave the list looking half-acted-on if the user cancels.
+       */
+      onSwipeableOpen={(direction) => {
+        swipe.current?.close();
+        if (direction === "left") onArchive?.();
+        else onDelete?.();
+      }}
+    >
+      {card}
+    </ReanimatedSwipeable>
   );
 }

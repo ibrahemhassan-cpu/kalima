@@ -15,13 +15,20 @@ import Animated, { FadeIn } from "react-native-reanimated";
 
 import { Input, SkeletonList, Text, Touchable } from "@/components/ui";
 import { Sheet, type SheetRef } from "@/components/ui/Sheet";
-import { SheetAction } from "@/components/ui/SheetAction";
+import { ConfirmBody, SheetAction } from "@/components/ui/SheetAction";
 import { WordCard } from "@/components/word/WordCard";
 import { useTheme } from "@/theme/ThemeProvider";
-import { useOnline } from "@/lib/network";
+import { isOnline, useOnline } from "@/lib/network";
 import { duration } from "@/theme/motion";
 import { useSettings } from "@/store/settings";
-import { useMyWords, type WordFilter, type WordSort } from "@/api/words";
+import {
+  useDeleteWord,
+  useMyWords,
+  useSetArchived,
+  type WordFilter,
+  type WordSort,
+} from "@/api/words";
+import type { MyWordRow } from "@/lib/database.types";
 import { tabBarClearance } from "@/theme/spacing";
 import { useRefreshAll } from "@/lib/refresh";
 
@@ -58,6 +65,57 @@ export default function Words() {
   const simple = useSettings((s) => s.simpleMode);
 
   const sheet = useRef<SheetRef>(null);
+  const confirmSheet = useRef<SheetRef>(null);
+
+  const archive = useSetArchived();
+  const remove = useDeleteWord();
+
+  /** the row a swipe is asking about, and which way it was swiped */
+  const [pending, setPending] = useState<
+    { row: MyWordRow; kind: "archive" | "delete" } | null
+  >(null);
+
+  /**
+   * A failed archive used to be silent: the row stayed put and nothing said
+   * why, which reads exactly like "the button doesn't work".
+   */
+  const [actionError, setActionError] = useState<string | null>(null);
+  const failed = () =>
+    setActionError(t(isOnline() ? "errors.generic" : "errors.network"));
+
+  function ask(row: MyWordRow, kind: "archive" | "delete") {
+    /**
+     * Restoring is the undo of an archive and costs nothing, so it just
+     * happens — asking twice to put a word back is friction, not safety.
+     */
+    if (kind === "archive" && row.status === "archived") {
+      setActionError(null);
+      archive
+        .mutateAsync({ userWordId: row.user_word_id, archived: false })
+        .catch(failed);
+      return;
+    }
+    setPending({ row, kind });
+    confirmSheet.current?.open();
+  }
+
+  async function confirmPending() {
+    if (!pending) return;
+    const { row, kind } = pending;
+    setActionError(null);
+    try {
+      if (kind === "archive") {
+        await archive.mutateAsync({ userWordId: row.user_word_id, archived: true });
+      } else {
+        await remove.mutateAsync(row.user_word_id);
+      }
+    } catch {
+      failed();
+    } finally {
+      confirmSheet.current?.close();
+      setPending(null);
+    }
+  }
   const [filter, setFilter] = useState<WordFilter>("all");
   const [sort, setSort] = useState<WordSort>("recent");
   const [search, setSearch] = useState("");
@@ -144,6 +202,29 @@ export default function Words() {
           </Touchable>
         </View>
 
+        {actionError ? (
+          <Touchable
+            onPress={() => setActionError(null)}
+            haptic="select"
+            accessibilityRole="button"
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: spacing.sm,
+              paddingHorizontal: spacing.md,
+              paddingVertical: spacing.sm,
+              borderRadius: radius.md,
+              backgroundColor: colors.dangerSoft,
+            }}
+          >
+            <Ionicons name="alert-circle" size={16} color={colors.danger} />
+            <Text variant="caption" tone="danger" style={{ flex: 1 }}>
+              {actionError}
+            </Text>
+            <Ionicons name="close" size={15} color={colors.danger} />
+          </Touchable>
+        ) : null}
+
         <View style={{ flexDirection: "row", gap: spacing.sm, alignItems: "center" }}>
           <View style={{ flex: 1 }}>
             <Input
@@ -192,7 +273,7 @@ export default function Words() {
         </View>
       </View>
     ),
-    [insets.top, spacing, t, total, search, filtered, filter, colors, radius, minTouch],
+    [insets.top, spacing, t, total, search, filtered, filter, actionError, colors, radius, minTouch],
   );
 
   return (
@@ -238,6 +319,8 @@ export default function Words() {
               <WordCard
                 row={item}
                 onPress={() => router.push(`/word/${item.user_word_id}`)}
+                onArchive={() => ask(item, "archive")}
+                onDelete={() => ask(item, "delete")}
               />
             </Animated.View>
           )}
@@ -287,6 +370,32 @@ export default function Words() {
             ))}
           </>
         ) : null}
+      </Sheet>
+
+      {/* one sheet for both swipes — the copy is what changes */}
+      <Sheet ref={confirmSheet}>
+        <ConfirmBody
+          title={t(
+            pending?.kind === "delete"
+              ? "sheet.deleteWordTitle"
+              : "word.archive",
+          )}
+          body={t(
+            pending?.kind === "delete" ? "word.deleteBody" : "word.archiveBody",
+            { word: pending?.row.lemma ?? "" },
+          )}
+          confirmLabel={t(
+            pending?.kind === "delete" ? "common.delete" : "word.archive",
+          )}
+          cancelLabel={t("common.cancel")}
+          danger={pending?.kind === "delete"}
+          loading={archive.isPending || remove.isPending}
+          onCancel={() => {
+            confirmSheet.current?.close();
+            setPending(null);
+          }}
+          onConfirm={confirmPending}
+        />
       </Sheet>
     </View>
   );

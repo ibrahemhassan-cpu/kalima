@@ -121,7 +121,8 @@
     "archivedNotice": "This word is archived — it won't come up in reviews.",
     "quotaOut": "No new words left today. You can still add any word already in the dictionary, and reviewing works as normal.",
     "quotaLeft_one": "1 new word left today. Words already in the dictionary don't count.",
-    "quotaLeft_other": "{{count}} new words left today. Words already in the dictionary don't count."
+    "quotaLeft_other": "{{count}} new words left today. Words already in the dictionary don't count.",
+    "archiveBody": "“{{word}}” stops coming up in reviews. You can bring it back any time from My words → Archived, with its progress intact."
   },
   "status": {
     "new": "New",
