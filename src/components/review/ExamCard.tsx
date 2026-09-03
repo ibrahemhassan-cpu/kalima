@@ -25,9 +25,9 @@ export type ExamAnswer = {
 /**
  * One question of a single-word exam.
  *
- * Four of the five kinds take a typed answer and show no options at all —
- * that is the whole point, so the input is the default and the option list is
- * the exception.
+ * A step with options renders them; the one without takes a typed answer.
+ * Only the last question is typed, and it shows the word's letter pattern, so
+ * the exam asks what you remember rather than how well you spell on a phone.
  */
 export function ExamCard({
   step,
@@ -97,15 +97,16 @@ export function ExamCard({
             </Text>
           ) : (
             <Text
-              variant={step.kind === "recall" ? "word" : "heading"}
-              center={step.kind === "recall"}
-              ltr={step.kind !== "recall"}
+              variant={step.kind === "spell" ? "word" : "heading"}
+              center={step.kind === "spell"}
+              // the spell prompt is the Arabic meaning; everything else is English
+              ltr={step.kind !== "spell"}
             >
               {step.prompt}
             </Text>
           )}
 
-          {step.hint ? (
+          {step.hint && step.kind !== "spell" ? (
             <Text variant="caption" tone="faint">
               {step.hint}
             </Text>
@@ -113,7 +114,7 @@ export function ExamCard({
         </View>
       </Surface>
 
-      {step.kind === "meaning" ? (
+      {step.options ? (
         <View style={{ gap: spacing.sm }}>
           {step.options.map((opt) => {
             const isChosen = answered?.given === opt;
@@ -174,6 +175,22 @@ export function ExamCard({
         </View>
       ) : (
         <View style={{ gap: spacing.md }}>
+          {/*
+            The letter pattern turns a spelling trap into a memory test: a
+            learner who knows exactly what the word means still can't produce
+            it from a blank box on a phone keyboard.
+          */}
+          {step.hint && step.kind === "spell" && !answered ? (
+            <Text
+              variant="heading"
+              center
+              ltr
+              style={{ color: colors.brand, letterSpacing: 2 }}
+            >
+              {step.hint}
+            </Text>
+          ) : null}
+
           <Animated.View style={shakeStyle}>
             <TextInput
               value={answered ? answered.given : typed}

@@ -512,11 +512,10 @@
     "cachedNote": "Showing a copy saved on your device"
   },
   "exam": {
-    "recall": "Write the English word",
     "usage": "Complete the sentence",
-    "listening": "Listen and spell it",
-    "definition": "Which word is this?",
-    "meaning": "Which one is closest in meaning?",
-    "typeHere": "Type here"
+    "listening": "Listen and pick the spelling",
+    "typeHere": "Type here",
+    "closest": "Which is closest in meaning?",
+    "spell": "Write the English word"
   }
 }
