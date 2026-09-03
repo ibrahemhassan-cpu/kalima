@@ -18,7 +18,8 @@ import { Sheet, type SheetRef } from "@/components/ui/Sheet";
 import { ConfirmBody, SheetAction } from "@/components/ui/SheetAction";
 import { WordCard } from "@/components/word/WordCard";
 import { useTheme } from "@/theme/ThemeProvider";
-import { isOnline, useOnline } from "@/lib/network";
+import { useOnline } from "@/lib/network";
+import { actionError as actionError_ } from "@/lib/errors";
 import { duration } from "@/theme/motion";
 import { useSettings } from "@/store/settings";
 import {
@@ -80,8 +81,7 @@ export default function Words() {
    * why, which reads exactly like "the button doesn't work".
    */
   const [actionError, setActionError] = useState<string | null>(null);
-  const failed = () =>
-    setActionError(t(isOnline() ? "errors.generic" : "errors.network"));
+  const failed = (e: unknown) => setActionError(actionError_(e, t));
 
   function ask(row: MyWordRow, kind: "archive" | "delete") {
     /**
@@ -92,7 +92,7 @@ export default function Words() {
       setActionError(null);
       archive
         .mutateAsync({ userWordId: row.user_word_id, archived: false })
-        .catch(failed);
+        .catch((e) => failed(e));
       return;
     }
     setPending({ row, kind });
@@ -109,8 +109,8 @@ export default function Words() {
       } else {
         await remove.mutateAsync(row.user_word_id);
       }
-    } catch {
-      failed();
+    } catch (e) {
+      failed(e);
     } finally {
       confirmSheet.current?.close();
       setPending(null);

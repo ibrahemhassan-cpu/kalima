@@ -32,7 +32,7 @@ import {
 } from "@/api/words";
 import { useSettings } from "@/store/settings";
 import { masteryOf } from "@/api/quiz";
-import { isOnline } from "@/lib/network";
+import { actionError } from "@/lib/errors";
 import { speak } from "@/features/tts";
 import { useGoBack } from "@/lib/navigation";
 
@@ -74,11 +74,8 @@ export default function WordDetail() {
    * unhandled and the screen said nothing at all — the archive silently
    * didn't happen, the correction was silently lost.
    */
-  const complain = () =>
-    setStatus({
-      text: t(isOnline() ? "errors.generic" : "errors.network"),
-      ok: false,
-    });
+  const complain = (e: unknown) =>
+    setStatus({ text: actionError(e, t), ok: false });
 
   useEffect(() => {
     if (word && !dirty) setNote(word.personal_note ?? "");
@@ -101,9 +98,9 @@ export default function WordDetail() {
       await update.mutateAsync({ custom_translation: value });
       editSheet.current?.close();
       say(t(value ? "word.editSaved" : "word.editReset"));
-    } catch {
+    } catch (e) {
       // the sheet stays open, so the text they typed is still there to retry
-      complain();
+      complain(e);
     }
   }
 
@@ -111,8 +108,8 @@ export default function WordDetail() {
     try {
       await archive.mutateAsync({ userWordId: word!.id, archived });
       say(t(archived ? "word.archived" : "word.restored"));
-    } catch {
-      complain();
+    } catch (e) {
+      complain(e);
     }
   }
 
@@ -329,8 +326,8 @@ export default function WordDetail() {
                     });
                     setDirty(false);
                     say(t("common.saved"));
-                  } catch {
-                    complain();
+                  } catch (e) {
+                    complain(e);
                   }
                 }}
               />

@@ -573,10 +573,18 @@ begin
      where id = p_user_word_id and user_id = v_user;
   else
     -- الجدولة نفسها مبتتلمسش: لو رجعت كلمة كانت لسه بدري، تفضل بدري.
+    -- الـ cast مش تجميل: CASE اللي كل فروعه نصوص حرفية بيتحلّ نوعه إلى
+    -- text، وcoalesce(word_status, text) بيفشل بـ "types cannot be matched".
+    -- والخطأ بيظهر وقت التشغيل ساعة ما الفرع ده يتنفّذ لأول مرة — فالأرشفة
+    -- كانت تنجح والرجوع وحده هو اللي يقع. srs_next في 0003 بتعمل نفس الـ
+    -- cast لنفس السبب.
     v_status := coalesce(
       v_row.pre_archive_status,
       -- صف اتأرشف قبل وجود العمود ده: أضعف افتراض آمن
-      case when v_row.repetitions = 0 then 'new' else 'review' end
+      case
+        when v_row.repetitions = 0 then 'new'::public.word_status
+        else 'review'::public.word_status
+      end
     );
 
     update public.user_words
