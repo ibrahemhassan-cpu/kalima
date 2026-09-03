@@ -1,5 +1,5 @@
 import React from "react";
-import { Platform, type StyleProp, View, type ViewStyle } from "react-native";
+import { Platform, type StyleProp, View, type ViewStyle, StyleSheet } from "react-native";
 import { BlurView } from "expo-blur";
 import { useTheme } from "@/theme/ThemeProvider";
 
@@ -66,13 +66,24 @@ export function Surface({
   if (tone === "glass" && CAN_BLUR) {
     return (
       <View style={base}>
+        {/*
+          The blur is a backdrop, not a container.
+
+          Holding the children meant the BlurView sized itself to them, so a
+          Surface told to fill — style={{ flex: 1 }} from the flashcard — grew
+          its outer view while the content stayed squashed at the top of it,
+          overlapping its own footer. Android never showed it: that branch puts
+          the fill and the padding on one view.
+
+          flexGrow, not flex: flex sets a 0 basis, which would collapse every
+          content-sized Surface in the app to nothing.
+        */}
         <BlurView
           intensity={isDark ? 30 : 46}
           tint={colors.blurTint}
-          style={[inner, { backgroundColor: colors.glass }]}
-        >
-          {children}
-        </BlurView>
+          style={[StyleSheet.absoluteFill, { backgroundColor: colors.glass }]}
+        />
+        <View style={[inner, { flexGrow: 1 }]}>{children}</View>
       </View>
     );
   }

@@ -287,13 +287,6 @@ export default function WordDetail() {
               </View>
             ) : null}
 
-            <Button
-              title={t("quiz.testMe")}
-              variant="secondary"
-              fullWidth
-              icon="help-circle-outline"
-              onPress={() => router.push(`/quiz/${word.id}`)}
-            />
           </View>
         </Surface>
 
@@ -346,55 +339,38 @@ export default function WordDetail() {
         ) : null}
 
         {/* Bottom Actions Bar matching Screen 3 of Design System */}
-        <View
-          style={{
-            flexDirection: "row",
-            gap: spacing.md,
-            marginTop: spacing.md,
-            paddingBottom: spacing.xl,
-          }}
-        >
-          <View style={{ flex: 1 }}>
+        <View style={{ marginTop: spacing.md, paddingBottom: spacing.xl }}>
+          {/*
+            One action, across the full width.
+
+            It used to share the row with a second button repeating the "⋯"
+            already in the header, which left each about 150pt — not enough for
+            "Test me on this word", so it wrapped to two lines and grew the bar.
+            Word options stays where it already was, at the top.
+
+            An archived word is paused, so practice isn't the thing to lead
+            with; bringing it back is.
+          */}
+          {word.status === "archived" ? (
             <Button
-              title={t("sheet.wordActions")}
-              variant="secondary"
+              title={t("word.restore")}
+              variant="primary"
               size="lg"
               fullWidth
-              icon="ellipsis-horizontal"
-              onPress={() => actions.current?.open()}
+              icon="refresh-outline"
+              loading={archive.isPending}
+              onPress={() => setArchived(false)}
             />
-          </View>
-          <View style={{ flex: 1 }}>
-            {/*
-              This used to say "Practice" and start a whole review session of
-              other words. On a screen about one word, that's the wrong verb
-              and the wrong destination — it quizzes *this* word now.
-
-              An archived word is paused, so practice isn't the thing to lead
-              with; bringing it back is. Practising it stays available in the
-              progress card above, and no longer un-archives it either way.
-            */}
-            {word.status === "archived" ? (
-              <Button
-                title={t("word.restore")}
-                variant="primary"
-                size="lg"
-                fullWidth
-                icon="refresh-outline"
-                loading={archive.isPending}
-                onPress={() => setArchived(false)}
-              />
-            ) : (
-              <Button
-                title={t("quiz.testMe")}
-                variant="primary"
-                size="lg"
-                fullWidth
-                icon="help-circle-outline"
-                onPress={() => router.push(`/quiz/${word.id}`)}
-              />
-            )}
-          </View>
+          ) : (
+            <Button
+              title={t("quiz.testMe")}
+              variant="primary"
+              size="lg"
+              fullWidth
+              icon="help-circle-outline"
+              onPress={() => router.push(`/quiz/${word.id}`)}
+            />
+          )}
         </View>
       </Screen>
 

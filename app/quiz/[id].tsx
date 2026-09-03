@@ -17,15 +17,14 @@ import {
   Text,
   useCountUp,
 } from "@/components/ui";
-import { QuizCard, type AnswerState } from "@/components/review/QuizCard";
+import { ExamCard, type ExamAnswer } from "@/components/review/ExamCard";
+import { buildExam, sameAnswer } from "@/features/exam/buildExam";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useWordDetail } from "@/api/words";
 import { ICON_FORWARD } from "@/i18n/rtl";
 import { useGoBack } from "@/lib/navigation";
 import {
-  useCheckAnswer,
   useFinishWordQuiz,
-  useWordQuiz,
   type QuizOutcome,
 } from "@/api/quiz";
 
@@ -43,62 +42,71 @@ export default function WordQuiz() {
   const goBack = useGoBack();
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const { data: word } = useWordDetail(id);
-  const { data: questions, isLoading } = useWordQuiz(id);
-  const check = useCheckAnswer();
+  const { data: word, isLoading } = useWordDetail(id);
   const finish = useFinishWordQuiz();
 
+  /**
+   * Built once per word, from data the screen already has.
+   *
+   * The exam used to come from the shared question bank — the same
+   * multiple-choice cards the review session uses. On a screen you opened by
+   * tapping "rent", "which of these is rent?" is not a question. Every step
+   * here asks you to produce the word instead, so the answer is never on
+   * screen to be picked out.
+   */
+  const steps = useMemo(
+    () => (word ? buildExam(word.entry, word.custom_translation) : []),
+    [word],
+  );
+
   const [index, setIndex] = useState(0);
-  const [answered, setAnswered] = useState<AnswerState>(null);
+  const [answered, setAnswered] = useState<ExamAnswer>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [outcome, setOutcome] = useState<QuizOutcome | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const startedAt = useRef(Date.now());
-  const total = questions?.length ?? 0;
-  const current = questions?.[index];
+  const total = steps.length;
+  const current = steps[index];
 
-  async function answer(value: string) {
+  /**
+   * Graded here rather than on the server.
+   *
+   * The bank's answers stay server-side because a review question must not
+   * ship its own answer. This exam has no such secret: the answer is the word
+   * you chose to be tested on, and you are looking at its name in the header.
+   * Grading locally makes it instant and works with no connection.
+   */
+  function answer(value: string) {
     if (!current || answered) return;
-    try {
-      const res = await check.mutateAsync({
-        questionId: current.question_id,
-        answer: value,
-      });
-      setAnswered({
-        chosen: value,
-        correct: res.correct,
-        correctAnswer: res.correct_answer,
-        explanation: res.explanation_ar,
-      });
-      if (res.correct) setCorrectCount((c) => c + 1);
-      void Haptics.notificationAsync(
-        res.correct
-          ? Haptics.NotificationFeedbackType.Success
-          : Haptics.NotificationFeedbackType.Warning,
-      );
-    } catch {
-      setError(t("errors.generic"));
-    }
+    const correct = sameAnswer(value, current.answer);
+    setAnswered({ given: value.trim(), correct, expected: current.answer });
+    if (correct) setCorrectCount((c) => c + 1);
+    void Haptics.notificationAsync(
+      correct
+        ? Haptics.NotificationFeedbackType.Success
+        : Haptics.NotificationFeedbackType.Warning,
+    );
   }
 
   async function next() {
-    if (!questions) return;
+    if (steps.length === 0) return;
 
-    if (index + 1 < questions.length) {
+    if (index + 1 < steps.length) {
       setIndex((i) => i + 1);
       setAnswered(null);
       return;
     }
 
-    // last one — settle the whole quiz as a single review
+    // last one — settle the whole exam as a single review
     try {
       const res = await finish.mutateAsync({
         userWordId: id!,
         correct: correctCount,
-        total: questions.length,
+        total: steps.length,
         msTotal: Date.now() - startedAt.current,
-        lastMode: questions[questions.length - 1]!.mode,
+        // every step is produced from memory, which is what typing means here
+        lastMode: "typing",
       });
       setOutcome(res);
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -138,8 +146,8 @@ export default function WordQuiz() {
     );
   }
 
-  // ── no question bank yet ─────────────────────────────────
-  if (!questions || questions.length === 0) {
+  // ── nothing to build an exam from ────────────────────────
+  if (steps.length === 0) {
     return (
       <Screen>
         <Header
@@ -188,12 +196,7 @@ export default function WordQuiz() {
       />
 
       {current ? (
-        <QuizCard
-          item={current}
-          answered={answered}
-          onAnswer={answer}
-          disabled={check.isPending}
-        />
+        <ExamCard step={current} answered={answered} onAnswer={answer} />
       ) : null}
 
       {error ? (

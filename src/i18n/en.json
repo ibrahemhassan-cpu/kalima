@@ -510,5 +510,13 @@
     "synced": "Everything synced",
     "working": "Working offline — your progress is saved",
     "cachedNote": "Showing a copy saved on your device"
+  },
+  "exam": {
+    "recall": "Write the English word",
+    "usage": "Complete the sentence",
+    "listening": "Listen and spell it",
+    "definition": "Which word is this?",
+    "meaning": "Which one is closest in meaning?",
+    "typeHere": "Type here"
   }
 }
